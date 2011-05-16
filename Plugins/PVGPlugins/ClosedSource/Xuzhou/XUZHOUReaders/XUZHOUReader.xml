@@ -1,0 +1,138 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="sources">
+    
+    <SourceProxy name="VentilationReader"
+                class="vtkVentilationReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="ShowArrowOn"
+        command="SetShowArrowOn"
+        number_of_elements="1"
+        default_values="3" >
+        <EnumerationDomain name="enum">
+          <Entry value="3" text="None"/>
+          <Entry value="0" text="Velocity"/>
+          <Entry value="1" text="Area" />
+          <Entry value="2" text="Volume"/>
+        </EnumerationDomain>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+         name="ScaleArrowSize"
+         command="SetScaleArrowSize"
+         number_of_elements="1"
+         animateable="1"
+         default_values="1.0" >
+        <DoubleRangeDomain name="range" min="0.01" max="100" />
+      </DoubleVectorProperty>      
+    </SourceProxy>
+
+    
+    
+    <SourceProxy name="TransportationReader"
+                class="vtkTransportationReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="ShowArrowOn"
+        command="SetShowArrowOn"
+        number_of_elements="1"
+        default_values="4" >
+        <EnumerationDomain name="enum">
+          <Entry value="4" text="None"/>
+          <Entry value="0" text="Capacity"/>
+          <Entry value="1" text="Velocity" />
+          <Entry value="2" text="Width"/>
+          <Entry value="3" text="Dip"/>
+        </EnumerationDomain>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+         name="ScaleArrowSize"
+         command="SetScaleArrowSize"
+         number_of_elements="1"
+         animateable="1"
+         default_values="1.0" >
+        <DoubleRangeDomain name="range" min="0.01" max="100" />
+      </DoubleVectorProperty>
+    </SourceProxy>
+
+    <SourceProxy name="ElectricalReader"
+                class="vtkElectricalReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="ShowArrowOn"
+        command="SetShowArrowOn"
+        number_of_elements="1"
+        default_values="3" >
+        <EnumerationDomain name="enum">
+          <Entry value="3" text="None"/>
+          <Entry value="0" text="Cable"/>
+          <Entry value="1" text="Switch" />
+          <Entry value="2" text="Transformer"/>
+        </EnumerationDomain>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+         name="ScaleArrowSize"
+         command="SetScaleArrowSize"
+         number_of_elements="1"
+         animateable="1"
+         default_values="1.0" >
+        <DoubleRangeDomain name="range" min="0.01" max="100" />
+      </DoubleVectorProperty>
+    </SourceProxy>
+
+    <SourceProxy name="DrainageReader"
+                class="vtkDrainageReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="ShowArrowOn"
+        command="SetShowArrowOn"
+        number_of_elements="1"
+        default_values="5" >
+        <EnumerationDomain name="enum">
+          <Entry value="5" text="None"/>
+          <Entry value="0" text="Power"/>
+          <Entry value="1" text="Quantity" />
+          <Entry value="2" text="Flow"/>
+          <Entry value="3" text="Pump"/>
+          <Entry value="4" text="Dibhole_Capacity"/>
+        </EnumerationDomain>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+         name="ScaleArrowSize"
+         command="SetScaleArrowSize"
+         number_of_elements="1"
+         animateable="1"
+         default_values="1.0" >
+        <DoubleRangeDomain name="range" min="0.01" max="100" />
+      </DoubleVectorProperty>
+    </SourceProxy>    
+    
+  </ProxyGroup>
+</ServerManagerConfiguration>

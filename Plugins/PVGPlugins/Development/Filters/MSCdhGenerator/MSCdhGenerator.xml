@@ -1,0 +1,240 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="MSC Drillholes Generator" class="vtkMSCdhGenerator">
+
+      <InputProperty name="Source" label="Collar Points" command="SetSourceConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+        <Documentation>
+          Something
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty name="Input" label="Block Model" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_array_1" number_of_components="1">
+          <RequiredProperties>
+            <Property name="SelectInputScalars"
+                      function="FieldDataSelection"/>
+          </RequiredProperties>
+        </InputArrayDomain>		
+        <Documentation>
+          Something
+        </Documentation>
+      </InputProperty>    
+
+      <StringVectorProperty
+				name="BlocksMineralValue"
+				command="SetBlocksMineralValue"
+				number_of_elements="1"
+				animateable="0"
+      	label="Blocks Mineral Value">
+        <ArrayListDomain name="array_list"
+												 attribute_type="Scalars"
+												input_domain_name="input_array_1">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          This property indicates the name of the property containing the blocks mineral values.
+        </Documentation>
+      </StringVectorProperty>	  
+
+      <DoubleVectorProperty
+       name="SegmentLength"
+       command="SetSegmentLength"
+       number_of_elements="1"
+       default_values="35.0">
+        <Documentation>
+          Length between any two sampled drillhole points (should be at least as big as the smallest anisotropy magnitude).
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+      name="CostPerMeter"
+      command="SetCostPerMeter"
+      number_of_elements="1"
+      default_values="100">
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+      name="DrillMovingCost"
+      command="SetDrillMovingCost"
+      number_of_elements="1"
+      default_values="1000">
+        <Documentation>
+          This is the cost of moving the drill from on collar point to another.
+        </Documentation>
+      </DoubleVectorProperty>      
+
+      <!-- Drillhole Collar Locations -->
+      <IntVectorProperty
+        name="CollarLocation"
+        command="SetCollarLocation"
+        number_of_elements="1"
+        default_values="0">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="CSV File"/>
+          <Entry value="1" text="In Filter 'Source'"/>
+        </EnumerationDomain>
+      </IntVectorProperty>
+      <StringVectorProperty
+        name="CollarFile"
+        command="SetCollarFile"
+        number_of_elements="1"
+        default_values="">
+        <Documentation>
+          Set the path to your drillhole collar point parameters (CSV).
+        </Documentation>
+      </StringVectorProperty>
+      <StringVectorProperty
+        name="OutputFile"
+        command="SetOutputFile"
+        number_of_elements="1"
+        default_values="">
+      </StringVectorProperty>
+
+      <IntVectorProperty name="ComputeRanges"
+       command="SetComputeRanges"
+       number_of_elements="1"
+       animateable="1"
+       default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this option if you want the azimuth and dip 
+          ranges to be computed automatically.
+        </Documentation>
+      </IntVectorProperty>
+      
+      <!-- Drillhole Constraints -->
+      <DoubleVectorProperty
+        name="DAzimuthMin"
+        command="SetDAzimuthMin"
+        number_of_elements="1"
+        default_values="0">
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+        name="DAzimuthMax"
+        command="SetDAzimuthMax"
+        number_of_elements="1"
+        default_values="360">
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+        name="DAzimuthStep"
+        command="SetDAzimuthStep"
+        number_of_elements="1"
+        default_values="10.0">
+      </DoubleVectorProperty>      
+      
+      <DoubleVectorProperty
+        name="DDipMin"
+        command="SetDDipMin"
+        number_of_elements="1"
+        default_values="0">
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+        name="DDipMax"
+        command="SetDDipMax"
+        number_of_elements="1"
+        default_values="180.0">
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+        name="DDipStep"
+        command="SetDDipStep"
+        number_of_elements="1"
+        default_values="10.0">
+      </DoubleVectorProperty>      
+      
+      <DoubleVectorProperty
+        name="DLengthMin"
+        command="SetDLengthMin"
+        number_of_elements="1"
+        default_values="1000.0">
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+        name="DLengthMax"
+        command="SetDLengthMax"
+        number_of_elements="1"
+        default_values="1200.0">
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+        name="DLengthStep"
+        command="SetDLengthStep"
+        number_of_elements="1"
+        default_values="100">
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="DDepthMin"
+        command="SetDDepthMin"
+        number_of_elements="1"
+        default_values="0">
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="DDepthMax"
+        command="SetDDepthMax"
+        number_of_elements="1"
+        default_values="1000">
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+        name="DRadius"
+        command="SetDRadius"
+        number_of_elements="1"
+        default_values="50">
+      </DoubleVectorProperty>
+
+      <!-- Anisotropy Values -->
+      <DoubleVectorProperty
+        name="EMajor"
+        command="SetEMajor"
+        number_of_elements="1"
+        default_values="140.0">
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+        name="EMedium"
+        command="SetEMedium"
+        number_of_elements="1"
+        default_values="105.0">
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+        name="EMinor"
+        command="SetEMinor"
+        number_of_elements="1"
+        default_values="35.0">
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+        name="EAzimuth"
+        command="SetEAzimuth"
+        number_of_elements="1"
+        default_values="350.0">
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+        name="EDip"
+        command="SetEDip"
+        number_of_elements="1"
+        default_values="270.0">
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+        name="ERake"
+        command="SetERake"
+        number_of_elements="1"
+        default_values="0.0">
+      </DoubleVectorProperty>      
+
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

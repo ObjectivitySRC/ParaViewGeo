@@ -1,0 +1,49 @@
+<ServerManagerConfiguration>
+       <ProxyGroup name="filters">
+          <SourceProxy name="Proximity Threshold" class="vtkProximityThreshold">
+            <InputProperty
+              name="Source"
+              command="SetSourceConnection" >
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources"/>
+                    <Group name="filters"/>
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                      <DataType value="vtkDataSet"/>          
+                </DataTypeDomain>
+            </InputProperty>
+          <InputProperty
+            name="Input"
+            command="SetInputConnection">
+               <ProxyGroupDomain name="groups">
+                 <Group name="sources"/>
+                 <Group name="filters"/>
+               </ProxyGroupDomain>
+               <DataTypeDomain name="input_type">
+                 <DataType value="vtkDataSet"/>
+               </DataTypeDomain>                            
+          </InputProperty>
+          <DoubleVectorProperty
+           name="Distance"
+           command="SetDistance"
+           number_of_elements="1"
+           default_values="-1">
+          </DoubleVectorProperty>
+          <IntVectorProperty
+            name="Invert"
+            command="SetInvert"
+            number_of_elements="1"
+            default_values="0">
+            <BooleanDomain name="bool"/>
+          </IntVectorProperty>
+         <IntVectorProperty
+          name="AllScalars"
+          command="SetAllScalars"
+          number_of_elements="1"
+          default_values="1">
+          <BooleanDomain name="bool"/>
+        </IntVectorProperty>
+
+	    </SourceProxy>
+       </ProxyGroup>
+</ServerManagerConfiguration>

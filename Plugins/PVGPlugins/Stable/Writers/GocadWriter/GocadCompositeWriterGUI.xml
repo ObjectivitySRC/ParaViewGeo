@@ -1,0 +1,6 @@
+﻿<ParaViewWriters>
+  <Writer name="GocadCompositeWriter"
+    extensions="gp"
+    file_description="Gocad Composite ASCII Files">
+  </Writer>
+</ParaViewWriters>

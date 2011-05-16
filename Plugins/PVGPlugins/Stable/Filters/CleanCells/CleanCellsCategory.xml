@@ -1,0 +1,6 @@
+<ParaViewFilters>
+ <Category name="Mirarco">
+  <Filter name="Clean Cells"/>
+  <Filter name="DUMMY_FILTER"/>
+ </Category>
+</ParaViewFilters>

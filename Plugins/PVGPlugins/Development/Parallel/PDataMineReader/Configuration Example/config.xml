@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<VTKFile type="PDataMine" version="0.1" byte_order="LittleEndian" compressor="vtkZLibDataCompressor">
+  <PDataMine GhostLevel="0">
+    <PPoints>
+      <PDataArray type="Float32" NumberOfComponents="6"/>
+    </PPoints>
+		<Piece0 Source="southmod_0.dm"/>
+		<Piece1 Source="southmod_1.dm"/>
+		<Piece2 Source="southmod_2.dm"/>	
+		<Piece3 Source="southmod_3.dm"/>	
+		<Piece4 Source="southmod_4.dm"/>	
+		<Piece5 Source="southmod_5.dm"/>	
+  </PDataMine>
+</VTKFile>
+

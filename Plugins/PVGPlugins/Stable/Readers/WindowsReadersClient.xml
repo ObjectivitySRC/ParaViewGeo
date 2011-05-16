@@ -1,0 +1,24 @@
+<ParaViewReaders>
+  <Reader name="GeoReferencedImageReader"
+    extensions="tif TIF tiff TIFF jpg JPG jpeg JPEG png PNG"
+    file_description="Geo-Referenced Image Files">
+  </Reader>
+
+  <Reader name="MineSightReader"
+    extensions="msr"
+    file_description="MineSight Resource Files">
+  </Reader>
+
+  <Reader name="VulcanTriReader"
+   extensions="00t"
+   file_description="Vulcan Triangle Files">
+  </Reader>
+  <Reader name="VulcanGridReader"
+  extensions="sfg srg"
+  file_description="Vulcan Grid Files">
+  </Reader>
+  <Reader name="VulcanBlockModelReader"
+  extensions="bmf"
+  file_description="Vulcan Block Model Files">
+  </Reader>
+</ParaViewReaders>

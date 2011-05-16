@@ -1,0 +1,14 @@
+<ServerManagerConfiguration>
+  <!-- Begin GXFReader -->
+  <ProxyGroup name="sources">
+    <SourceProxy name="GXFReader" class="vtkGXFReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+    </SourceProxy>
+  </ProxyGroup>
+  <!-- End GXFReader -->
+</ServerManagerConfiguration>

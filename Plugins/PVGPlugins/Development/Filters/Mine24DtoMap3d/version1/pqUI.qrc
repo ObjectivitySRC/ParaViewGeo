@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/CustomWidget" >
+        <file>pqMine24DtoMap3D.ui</file>
+    </qresource>
+</RCC>

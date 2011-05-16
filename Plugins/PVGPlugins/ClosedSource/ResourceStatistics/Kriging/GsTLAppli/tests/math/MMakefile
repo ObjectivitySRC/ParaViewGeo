@@ -1,0 +1,2 @@
+SOURCES = test_random_numbers.cpp 
+TARGET = test_random_numbers

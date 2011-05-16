@@ -1,0 +1,6 @@
+﻿<ParaViewFilters>
+  <Category name="Geology and Statistics">
+    <Filter name="Anisotropic Proximity Threshold"/>
+    <Filter name="DUMMY_FILTER"/>
+  </Category>
+</ParaViewFilters>

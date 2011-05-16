@@ -1,0 +1,6 @@
+<ParaViewFilters>
+ <Category name="ABRI">
+  <Filter name="StopesSelection"/>
+  <Filter name="DUMMY_FILTER"/>
+ </Category>
+</ParaViewFilters>

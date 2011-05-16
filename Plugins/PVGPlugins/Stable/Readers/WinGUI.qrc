@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/WinStableReaders" >
+        <file>GeoReferencedImage/pqGeoReferencedImageReader.ui</file>
+    </qresource>
+</RCC>

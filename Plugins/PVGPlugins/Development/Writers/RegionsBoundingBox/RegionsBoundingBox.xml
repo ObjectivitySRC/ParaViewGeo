@@ -1,0 +1,54 @@
+<ServerManagerConfiguration>
+<ProxyGroup name="writers">
+<WriterProxy name="RegionsBoundingBox" class="vtkRegionsBoundingBox" base_proxygroup="writers">
+  
+  <InputProperty
+    name="Input"
+    command="SetInputConnection">
+    <ProxyGroupDomain name="groups">
+      <Group name="sources"/>
+      <Group name="filters"/>
+    </ProxyGroupDomain>
+    <DataTypeDomain name="input_type">
+      <DataType value="vtkPolyData"/>
+    </DataTypeDomain>
+    <InputArrayDomain name="input_array_1">
+    </InputArrayDomain>
+  </InputProperty>
+
+  <StringVectorProperty
+    name="SegmentID"
+    command="SetSegmentID"
+    number_of_elements="1"
+    animateable="0"
+    label="Segment ID">
+    <ArrayListDomain name="array_list"
+                     attribute_type="Scalars"
+                    input_domain_name="input_array_1">
+      <RequiredProperties>
+        <Property name="Input" function="Input"/>
+      </RequiredProperties>
+    </ArrayListDomain>
+    <Documentation>
+      This property indicates the name of the block number array.
+    </Documentation>
+  </StringVectorProperty>
+
+  <StringVectorProperty 
+        name="FileName" 
+        command="SetFileName"
+        number_of_elements="1">
+       <Documentation>
+        The name of the file to be written.
+        </Documentation>
+      </StringVectorProperty>
+
+
+  <Hints>
+      <Property name="Input" show="0" /> 
+      <Property name="FileName" show="0" /> 
+  </Hints>
+
+  </WriterProxy>
+</ProxyGroup>
+  </ServerManagerConfiguration>

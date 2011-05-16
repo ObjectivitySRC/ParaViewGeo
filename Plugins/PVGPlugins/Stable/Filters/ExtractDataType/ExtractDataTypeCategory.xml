@@ -1,0 +1,6 @@
+<ParaViewFilters>
+ <Category name="Mirarco">
+  <Filter name="ExtractPolyData"/>
+  <Filter name="ExtractUnstrucGrid"/>
+ </Category>
+</ParaViewFilters>

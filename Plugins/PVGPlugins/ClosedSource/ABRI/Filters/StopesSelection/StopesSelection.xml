@@ -1,0 +1,267 @@
+<ServerManagerConfiguration>
+  <!-- Begin StopesSelection -->
+  <ProxyGroup name="filters">
+    <SourceProxy name="StopesSelection" class="vtkStopesSelection">
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+         <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+	   <InputArrayDomain name="input_array">
+        <RequiredProperties>
+          <Property name="SelectInputScalars"
+              function="FieldDataSelection"/>
+        </RequiredProperties>
+       </InputArrayDomain>
+       </InputProperty>
+
+      <StringVectorProperty
+        name = "fileName"
+        command="SetfileName"
+        number_of_elements="1"
+        default_values="">
+      </StringVectorProperty>
+
+      <IntVectorProperty
+       name="fileButton"
+       command="SetfileButton"
+       number_of_elements="1"
+       default_values="1" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Specify the file name to save the SOT properties
+        </Documentation>
+        <Documentation>
+          when this option is checked, the stope can be an irregular shape
+          by the Hanging position.
+        </Documentation>
+      </IntVectorProperty>
+			
+      <StringVectorProperty
+        name="densityInput"
+        command="SetdensityInput"
+        number_of_elements="1"
+        animateable="0"
+        label="Density">
+        <ArrayListDomain name="array_list"
+             attribute_type="Scalars"
+			 input_domain_name="input_array">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          This property indicates the name of the density array.
+        </Documentation>
+      </StringVectorProperty>
+			
+		 <StringVectorProperty
+        name="XINC"
+        command="SetXINC"
+	      number_of_elements="1"
+	      animateable="0"
+	      label="XINC">
+        <ArrayListDomain name="array_list"
+             attribute_type="Scalars"
+			 input_domain_name="input_array">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          This property indicates the name of the NSR id array.
+        </Documentation>
+      </StringVectorProperty>
+	  
+	  <StringVectorProperty
+        name="YINC"
+        command="SetYINC"
+	      number_of_elements="1"
+	      animateable="0"
+	      label="YINC">
+        <ArrayListDomain name="array_list"
+             attribute_type="Scalars"
+			 input_domain_name="input_array">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          This property indicates the name of the NSR id array.
+        </Documentation>
+      </StringVectorProperty>
+	  
+	  <StringVectorProperty
+        name="ZINC"
+        command="SetZINC"
+	      number_of_elements="1"
+	      animateable="0"
+	      label="ZINC">
+        <ArrayListDomain name="array_list"
+             attribute_type="Scalars"
+			 input_domain_name="input_array">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          This property indicates the name of the NSR id array.
+        </Documentation>
+      </StringVectorProperty>
+	  
+       <DoubleVectorProperty
+       name="stopeWidth"
+       command="SetstopeWidth"
+       number_of_elements="1"
+       default_values="30.0">
+        <DoubleRangeDomain name="range" min="1" />
+        <Documentation>
+          Size of Stope by width
+        </Documentation>
+      </DoubleVectorProperty>
+			
+			<DoubleVectorProperty
+       name="stopeDepth"
+       command="SetstopeDepth"
+       number_of_elements="1"
+       default_values="30.0">
+        <DoubleRangeDomain name="range" min="1" />
+        <Documentation>
+          Maximum size of Stope by Depth direction
+        </Documentation>
+      </DoubleVectorProperty>
+			
+      <DoubleVectorProperty
+       name="InstituteTone"
+       command="SetInstituteTone"
+       number_of_elements="1"
+       default_values="250.0">
+        <DoubleRangeDomain name="range" min="0" />
+        <Documentation>
+          Institute tone
+        </Documentation>
+      </DoubleVectorProperty>
+			
+      <DoubleVectorProperty
+       name="Swell"
+       command="SetSwell"
+       number_of_elements="1"
+       default_values="0.60">
+        <DoubleRangeDomain name="range" min="0" />
+        <Documentation>
+          Swell
+        </Documentation>
+      </DoubleVectorProperty>
+			
+      <DoubleVectorProperty
+       name="ExtractionCapacity"
+       command="SetExtractionCapacity"
+       number_of_elements="1"
+       default_values="100000.0">
+        <DoubleRangeDomain name="range" min="0" />
+        <Documentation>
+          Size of Stope by width
+        </Documentation>
+      </DoubleVectorProperty>			
+	  <!--
+	  List of calculator attributes
+	  -->
+	  <Documentation
+       long_help="Compute new attribute arrays as function of existing arrays."
+       short_help="Compute new attribute arrays.">
+		The Calculator widget is a duplicate of calculator filter and it computes a new data array or new point coordinates as a function of existing scalar or vector arrays. If point-centered arrays are used in the computation of a new data array, the resulting array will also be point-centered. Similarly, computations using cell-centered arrays will produce a new cell-centered array. If the function is computing point coordinates, the result of the function must be a three-component vector. The Calculator interface operates similarly to a scientific calculator. In creating the function to evaluate, the standard order of operations applies.
+		Each of the calculator functions is described below. Unless otherwise noted, enclose the operand in parentheses using the ( and ) buttons.
+		Clear: Erase the current function (displayed in the read-only text box above the calculator buttons).
+		/: Divide one scalar by another. The operands for this function are not required to be enclosed in parentheses.
+		*: Multiply two scalars, or multiply a vector by a scalar (scalar multiple). The operands for this function are not required to be enclosed in parentheses.
+		-: Negate a scalar or vector (unary minus), or subtract one scalar or vector from another. The operands for this function are not required to be enclosed in parentheses.
+		+: Add two scalars or two vectors. The operands for this function are not required to be enclosed in parentheses.
+		sin: Compute the sine of a scalar.
+		cos: Compute the cosine of a scalar.
+		tan: Compute the tangent of a scalar.
+		asin: Compute the arcsine of a scalar.
+		acos: Compute the arccosine of a scalar.
+		atan: Compute the arctangent of a scalar.
+		sinh: Compute the hyperbolic sine of a scalar.
+		cosh: Compute the hyperbolic cosine of a scalar.
+		tanh: Compute the hyperbolic tangent of a scalar.
+		x^y: Raise one scalar to the power of another scalar. The operands for this function are not required to be enclosed in parentheses.
+		sqrt: Compute the square root of a scalar.
+		e^x: Raise e to the power of a scalar.
+		log: Compute the logarithm of a scalar.
+		ceil: Compute the ceiling of a scalar.
+		floor: Compute the floor of a scalar.
+		abs: Compute the absolute value of a scalar.
+		v1.v2: Compute the dot product of two vectors. The operands for this function are not required to be enclosed in parentheses.
+		mag: Compute the magnitude of a vector.
+		norm: Normalize a vector.
+		The operands are described below.
+		The digits 0 - 9 and the decimal point are used to enter constant scalar values.
+		iHat, jHat, and kHat are vector constants representing unit vectors in the X, Y, and Z directions, respectively.
+		The scalars menu lists the names of the scalar arrays and the components of the vector arrays of either the point-centered or cell-centered data. The vectors menu lists the names of the point-centered or cell-centered vector arrays. The function will be computed for each point (or cell) using the scalar or vector value of the array at that point (or cell).
+		The filter operates on any type of data set, but the input data set must have at least one scalar or vector array. The arrays can be either point-centered or cell-centered. The Calculator filter's output is of the same data set type as the input.
+    </Documentation>
+	
+	<Property
+        name="RemoveAllVariables"
+        command="RemoveAllVariables"
+        immediate_update="1"
+        is_internal="0"
+        label="Clear">
+        <Documentation>
+          This property erases the current function from the calculator. (See the Function property.)
+        </Documentation>
+     </Property>
+	 SaveInConfigfile
+	 
+	  <StringVectorProperty 
+        name="FitnessArrayName" 
+        command="SetFitnessArrayName" 
+        number_of_elements="1"
+        default_values="FitnessArray">
+        <Documentation>
+          This property contains the name for the output fitness array containing the result of this computation.
+        </Documentation>
+     </StringVectorProperty> 
+	   
+	  <StringVectorProperty 
+        name="Function" 
+        command="SetFunction" 
+        number_of_elements="1">
+        <Documentation>
+          This property contains the equation for computing the new fitrness array.
+        </Documentation>
+     </StringVectorProperty>
+	 
+	 <IntVectorProperty 
+        name="ReplaceInvalidValues" 
+        label="Replace Invalid Results"
+        command="SetReplaceInvalidValues" 
+        number_of_elements="1"
+        default_values="1" > 
+       <BooleanDomain name="bool"/>
+       <Documentation>
+         This property determines whether invalid values in the computation will be replaced with a specific value. (See the ReplacementValue property.)
+       </Documentation>
+     </IntVectorProperty>
+	 
+	 <DoubleVectorProperty
+        name="ReplacementValue"
+        command="SetReplacementValue"
+        number_of_elements="1"
+        default_values="0.0" >
+       <DoubleRangeDomain name="range"/>
+       <Documentation>
+         If invalid values in the computation are to be replaced with another value, this property contains that value.
+       </Documentation>
+     </DoubleVectorProperty>	 
+
+    </SourceProxy>
+  </ProxyGroup>
+  <!-- End StopesSelection -->
+</ServerManagerConfiguration>

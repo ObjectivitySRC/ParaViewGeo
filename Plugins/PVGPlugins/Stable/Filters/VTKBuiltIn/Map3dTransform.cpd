@@ -1,0 +1,133 @@
+<CustomFilterDefinitions>
+  <CustomProxyDefinition name="Map3dTransform" group="filters">
+    <CompoundSourceProxy id="13662" servers="1">
+      <Proxy group="filters" type="Delaunay2D" id="13261" servers="1" compound_name="Delaunay2D3">
+        <Property name="Alpha" id="13261.Alpha" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="range" id="13261.Alpha.range">
+            <Min index="0" value="0"/>
+          </Domain>
+        </Property>
+        <Property name="BoundingTriangulation" id="13261.BoundingTriangulation" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="bool" id="13261.BoundingTriangulation.bool"/>
+        </Property>
+        <Property name="Input" id="13261.Input" number_of_elements="1">
+          <Proxy value="13062" output_port="0"/>
+          <Domain name="groups" id="13261.Input.groups">
+            <Group value="sources"/>
+            <Group value="filters"/>
+          </Domain>
+          <Domain name="input_type" id="13261.Input.input_type">
+            <DataType value="vtkPointSet"/>
+          </Domain>
+        </Property>
+        <Property name="Offset" id="13261.Offset" number_of_elements="1">
+          <Element index="0" value="1"/>
+          <Domain name="range" id="13261.Offset.range">
+            <Min index="0" value="0.75"/>
+          </Domain>
+        </Property>
+        <Property name="ProjectionPlaneMode" id="13261.ProjectionPlaneMode" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="enum" id="13261.ProjectionPlaneMode.enum">
+            <Entry value="0" text="XY Plane"/>
+            <Entry value="2" text="Best-Fitting Plane"/>
+          </Domain>
+        </Property>
+        <Property name="Tolerance" id="13261.Tolerance" number_of_elements="1">
+          <Element index="0" value="1e-05"/>
+          <Domain name="range" id="13261.Tolerance.range">
+            <Min index="0" value="0"/>
+            <Max index="0" value="1"/>
+          </Domain>
+        </Property>
+      </Proxy>
+      <Proxy group="filters" type="TransformFilter" id="13062" servers="1" compound_name="TransformFilter3">
+        <Property name="Input" id="13062.Input" number_of_elements="1">
+          <Domain name="groups" id="13062.Input.groups">
+            <Group value="sources"/>
+            <Group value="filters"/>
+          </Domain>
+          <Domain name="input_type" id="13062.Input.input_type">
+            <DataType value="vtkPointSet"/>
+          </Domain>
+        </Property>
+        <Property name="Transform" id="13062.Transform" number_of_elements="1">
+          <Proxy value="13065"/>
+          <Domain name="groups" id="13062.Transform.groups">
+            <Group value="transforms"/>
+          </Domain>
+          <Domain name="proxy_list" id="13062.Transform.proxy_list">
+            <Proxy value="13065"/>
+          </Domain>
+        </Property>
+      </Proxy>
+      <Proxy group="filters" type="TransformFilter" id="13458" servers="1" compound_name="TransformFilter4">
+        <Property name="Input" id="13458.Input" number_of_elements="1">
+          <Proxy value="13261" output_port="0"/>
+          <Domain name="groups" id="13458.Input.groups">
+            <Group value="sources"/>
+            <Group value="filters"/>
+          </Domain>
+          <Domain name="input_type" id="13458.Input.input_type">
+            <DataType value="vtkPointSet"/>
+          </Domain>
+        </Property>
+        <Property name="Transform" id="13458.Transform" number_of_elements="1">
+          <Proxy value="13461"/>
+          <Domain name="groups" id="13458.Transform.groups">
+            <Group value="transforms"/>
+          </Domain>
+          <Domain name="proxy_list" id="13458.Transform.proxy_list">
+            <Proxy value="13461"/>
+          </Domain>
+        </Property>
+      </Proxy>
+      <Proxy group="transforms" type="Transform2" id="13065" servers="1" compound_name="auto_13065">
+        <Property name="Position" id="13065.Position" number_of_elements="3">
+          <Element index="0" value="0"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="0"/>
+          <Domain name="range" id="13065.Position.range"/>
+        </Property>
+        <Property name="Rotation" id="13065.Rotation" number_of_elements="3">
+          <Element index="0" value="0"/>
+          <Element index="1" value="90"/>
+          <Element index="2" value="0"/>
+          <Domain name="range" id="13065.Rotation.range"/>
+        </Property>
+        <Property name="Scale" id="13065.Scale" number_of_elements="3">
+          <Element index="0" value="1"/>
+          <Element index="1" value="1"/>
+          <Element index="2" value="1"/>
+          <Domain name="range" id="13065.Scale.range"/>
+        </Property>
+      </Proxy>
+      <Proxy group="transforms" type="Transform2" id="13461" servers="1" compound_name="auto_13461">
+        <Property name="Position" id="13461.Position" number_of_elements="3">
+          <Element index="0" value="0"/>
+          <Element index="1" value="0"/>
+          <Element index="2" value="0"/>
+          <Domain name="range" id="13461.Position.range"/>
+        </Property>
+        <Property name="Rotation" id="13461.Rotation" number_of_elements="3">
+          <Element index="0" value="0"/>
+          <Element index="1" value="-90"/>
+          <Element index="2" value="0"/>
+          <Domain name="range" id="13461.Rotation.range"/>
+        </Property>
+        <Property name="Scale" id="13461.Scale" number_of_elements="3">
+          <Element index="0" value="1"/>
+          <Element index="1" value="1"/>
+          <Element index="2" value="1"/>
+          <Domain name="range" id="13461.Scale.range"/>
+        </Property>
+      </Proxy>
+      <ExposedProperties>
+        <Property name="Input" proxy_name="TransformFilter3" exposed_name="Input"/>
+      </ExposedProperties>
+      <OutputPort name="Output" proxy="TransformFilter4" port_index="0"/>
+    </CompoundSourceProxy>
+  </CustomProxyDefinition>
+</CustomFilterDefinitions>

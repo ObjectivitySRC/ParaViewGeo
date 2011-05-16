@@ -1,0 +1,6 @@
+<ParaViewReaders>
+  <Reader name="DipsReader"
+    extensions="DIP"
+    file_description="DIPS File">
+  </Reader>
+</ParaViewReaders>

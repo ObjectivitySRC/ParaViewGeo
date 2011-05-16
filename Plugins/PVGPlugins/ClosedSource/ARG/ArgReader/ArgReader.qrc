@@ -1,0 +1,6 @@
+<RCC>
+	<qresource prefix="/ParaViewResources">
+		<file>ArgReaderGUI.xml</file>
+	</qresource>
+</RCC>
+

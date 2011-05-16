@@ -1,0 +1,6 @@
+<ParaViewFilters>
+ <Category name="Mirarco">
+  <Filter name="Oriented Bounding Box to Grid"/>
+  <Filter name="DUMMY_FILTER"/>
+ </Category>
+</ParaViewFilters>

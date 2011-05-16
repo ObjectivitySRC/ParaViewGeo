@@ -1,0 +1,22 @@
+<parameters>  <algorithm name="cokriging" /> 
+  <Grid_Name  value="grid"  /> 
+  <Property_Name  value="fff" /> 
+  <Hard_Data_Grid  value="grid"  /> 
+  <Primary_Variable  value="train"  /> 
+  <Secondary_Variable  value="train"  /> 
+  <Kriging_Type  value="Simple Kriging (SK)"  /> 
+  <SK_Means  value="0.2 2.0" /> 
+  <Cokriging_Type  value="Markov Model 1"  /> 
+  <Max_Conditioning_Data  value="12" /> 
+  <Search_Ellipsoid_1  value="20 20 20 
+0 0 0 " /> 
+  <Variogram_C11  nugget="0.1" structures_count="1"  >
+  <structure_1  contribution="0.9"  type="Spherical"   >
+    <ranges max="10"  medium="10"  min="10"   />
+    <angles x="0"  y="0"  z="0"   />
+  </structure_1>
+</Variogram_C11>
+  <Var_Z2  value="1.0" /> 
+  <Var_Z1  value="1.0" /> 
+  <Cov_Z1Z2  value="0.8" /> 
+</parameters> 

@@ -1,0 +1,6 @@
+<RCC>
+	<qresource prefix="/ParaViewResources">
+		<file>EPSReaderGUI.xml</file>
+	</qresource>
+</RCC>
+

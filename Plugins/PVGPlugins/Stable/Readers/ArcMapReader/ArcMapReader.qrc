@@ -1,0 +1,6 @@
+<RCC>
+	<qresource prefix="/ParaViewResources">
+		<file>ArcMapReaderGUI.xml</file>
+	</qresource>
+</RCC>
+

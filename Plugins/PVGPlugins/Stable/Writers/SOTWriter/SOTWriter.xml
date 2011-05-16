@@ -1,0 +1,30 @@
+<ServerManagerConfiguration>
+<ProxyGroup name="writers">
+<WriterProxy name="vtkSOTWriter" class="vtkSOTWriter" base_proxygroup="writers">
+  
+<Documentation short_help="Writes data out in SOT Queue format."></Documentation> 
+
+<InputProperty name="Input" command="SetInputConnection">
+ <DataTypeDomain name="input_type" composite_data_supported="1">
+  <DataType value="vtkPolyData" />
+  <DataType value="vtkImageData" />
+  <DataType value="vtkDataSet" />
+  </DataTypeDomain>
+  <Documentation>This specifies the file type(s) supported by this writer.</Documentation> 
+  </InputProperty>
+      <StringVectorProperty 
+        name="FileName" 
+        command="SetFileName"
+        number_of_elements="1">
+        <Documentation>
+        The name of the file to be written.
+        </Documentation>
+      </StringVectorProperty>
+ <Hints>
+  <Property name="Input" show="0" /> 
+  <Property name="FileName" show="0" /> 
+  </Hints>
+
+  </WriterProxy>
+</ProxyGroup>
+  </ServerManagerConfiguration>

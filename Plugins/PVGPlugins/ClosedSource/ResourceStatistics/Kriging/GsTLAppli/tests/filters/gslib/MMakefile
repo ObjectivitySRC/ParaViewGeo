@@ -1,0 +1,3 @@
+LIBS += -L$(QTDIR)/tools/designer/uilib 
+LIBS += -lGsTLAppli_math -lGsTLAppli_utils -lGsTLAppli_gui -lqui
+LIBS += -lGsTLAppli_appli -lGsTLAppli_grid -lGsTLAppli_filters -lGsTLAppli_extragui

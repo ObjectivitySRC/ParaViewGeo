@@ -1,0 +1,6 @@
+<ParaViewFilters>
+ <Category name="Mirarco">
+  <Filter name="Apply Schedule"/>
+  <Filter name="DUMMY_FILTER"/>
+ </Category>
+</ParaViewFilters>

@@ -1,0 +1,6 @@
+<RCC>
+	<qresource prefix="/ParaViewResources">
+		<file>DXFReaderGUI.xml</file>
+	</qresource>
+</RCC>
+

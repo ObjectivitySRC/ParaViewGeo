@@ -1,0 +1,48 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="sources">
+
+    <SourceProxy name="PointSetReader"
+                class="vtkPointSetReader">
+
+      <StringVectorProperty name="Properties"
+       command="SetProperties"
+       number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="Separator"
+       command="SetSeparator"
+       number_of_elements="1"
+       value=",">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="NoDataValue"
+       command="SetNoDataValue"
+       number_of_elements="1"
+       value="99999">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="x1"
+       command="Setx1"
+       number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="y1"
+       command="Sety1"
+       number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="z1"
+       command="Setz1"
+       number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

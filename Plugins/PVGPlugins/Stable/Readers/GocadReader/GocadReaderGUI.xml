@@ -1,0 +1,6 @@
+<ParaViewReaders>
+  <Reader name="GocadReader"
+    extensions="gp ts pl vs vts vo"
+    file_description="Gocad ASCII Files">
+  </Reader>
+</ParaViewReaders>

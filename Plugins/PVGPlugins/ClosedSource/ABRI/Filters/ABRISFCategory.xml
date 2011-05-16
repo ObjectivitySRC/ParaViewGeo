@@ -1,0 +1,9 @@
+<ParaViewFilters>
+ <Category name="ABRI">
+   <!-- Lets try to keep this in alphabetical order -->
+   <Filter name="Fitness Calculator" />
+   <Filter name="ApplySchedule(BlockModel)" /> 
+   <Filter name="Block Model Normalization" />
+   <Filter name="StopesSelection" />
+ </Category>  
+</ParaViewFilters>

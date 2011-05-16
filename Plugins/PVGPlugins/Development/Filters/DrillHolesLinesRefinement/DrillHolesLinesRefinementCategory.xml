@@ -1,0 +1,12 @@
+<ParaViewFilters>
+ <Category name="Mirarco">
+  <Filter name="Holes Lines HierachicalDataSet"/>
+  <Filter name="DUMMY_FILTER"/>
+  <Filter name="Advanced Holes Refinement"/>
+  <Filter name="DUMMY_FILTER"/>
+  <Filter name="Holes Points HierachicalDataSet"/>
+  <Filter name="DUMMY_FILTER"/>
+  <Filter name="Interpolate Holes"/>
+  <Filter name="DUMMY_FILTER"/>
+ </Category>
+</ParaViewFilters>

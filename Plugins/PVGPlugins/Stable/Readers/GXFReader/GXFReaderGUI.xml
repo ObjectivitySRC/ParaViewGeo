@@ -1,0 +1,6 @@
+<ParaViewReaders>
+  <Reader name="GXFReader"
+    extensions="gxf"
+    file_description="Grid eXchange File">
+  </Reader>
+</ParaViewReaders>

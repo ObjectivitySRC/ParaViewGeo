@@ -1,0 +1,93 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="Delaunay 2D" class="vtkMDelaunay2D">
+      <Documentation
+        long_help="Create 2D Delaunay triangulation of input points. 
+It expects a vtkPointSet as input and produces vtkPolyData as output. 
+The points are expected to be in a mostly planar distribution."
+         short_help="Create 2D Delaunay triangulation of input points.">
+Delaunay2D is a filter that constructs a 2D Delaunay triangulation from a list of input points. These points may be represented by any dataset of type vtkPointSet and subclasses. The output of the filter is a polygonal dataset containing a triangle mesh.
+
+The 2D Delaunay triangulation is defined as the triangulation that satisfies the Delaunay criterion for n-dimensional simplexes (in this case n=2 and the simplexes are triangles). This criterion states that a circumsphere of each simplex in a triangulation contains only the n+1 defining points of the simplex. In two dimensions, this translates into an optimal triangulation. That is, the maximum interior angle of any triangle is less than or equal to that of any possible triangulation.
+
+Delaunay triangulations are used to build topological structures from unorganized (or unstructured) points. The input points can be on arbitrary axes (when Best-Fitting option is selected). If they are not on the X-Y plane, the points are translated into the X-Y axes, a surface is created, and they are translated back.
+
+The Delaunay triangulation can be numerically sensitive in some cases. To prevent problems, try to avoid injecting points that will result in triangles with bad aspect ratios (1000:1 or greater). In practice this means inserting points that are "widely dispersed", and enables smooth transition of triangle sizes throughout the mesh. (You may even want to add extra points to create a better point distribution.) If numerical problems are present, you will see a warning message to this effect at the end of the triangulation process.
+
+Warning:
+Points arranged on a regular lattice (termed degenerate cases) can be triangulated in more than one way (at least according to the Delaunay criterion). The choice of triangulation (as implemented by this algorithm) depends on the order of the input points. The first three points will form a triangle; other degenerate points will not break this triangle.
+
+Points that are coincident (or nearly so) may be discarded by the algorithm. This is because the Delaunay triangulation requires unique input points. The output of the Delaunay triangulation is supposedly a convex hull. In certain cases this implementation may not generate the convex hull.
+      </Documentation>
+    <InputProperty
+         name="Input"
+         command="SetInputConnection">
+           <ProxyGroupDomain name="groups">
+             <Group name="sources"/>
+             <Group name="filters"/>
+           </ProxyGroupDomain>
+           <DataTypeDomain name="input_type">
+             <DataType value="vtkPointSet"/>
+           </DataTypeDomain>
+           <Documentation>
+             This property specifies the input dataset to the Delaunay 2D filter.
+           </Documentation>
+      </InputProperty>
+      <IntVectorProperty 
+        name="ProjectionPlaneMode" 
+        command="SetProjectionPlaneMode" 
+        number_of_elements="1"
+        default_values="0"> 
+       <EnumerationDomain name="enum">
+         <Entry value="0" text="XY Plane"/>
+         <Entry value="3" text="YZ Plane"/>
+         <Entry value="4" text="XZ Plane"/>
+         <Entry value="2" text="Best-Fitting Plane"/>
+       </EnumerationDomain>
+       <Documentation>
+         This property determines type of projection plane to use in performing the triangulation.
+       </Documentation>
+      </IntVectorProperty>
+      <DoubleVectorProperty name="Alpha"
+       command="SetAlpha"
+       number_of_elements="1"
+       animateable="1"
+       default_values="0.0">
+       <DoubleRangeDomain name="range" min="0"/>
+       <Documentation>
+         The value of this property controls the output of this filter. For a non-zero alpha value, only edges or triangles contained within a sphere centered at mesh vertices will be output. Otherwise, only triangles will be output.
+       </Documentation>
+     </DoubleVectorProperty>
+     <DoubleVectorProperty name="Tolerance"
+       command="SetTolerance"
+       number_of_elements="1"
+       animateable="1"
+       default_values="0.00001">
+       <DoubleRangeDomain name="range" min="0" max="1.0" />
+       <Documentation>
+         This property specifies a tolerance to control discarding of closely spaced points. This tolerance is specified as a fraction of the diagonal length of the bounding box of the points.
+       </Documentation>
+      </DoubleVectorProperty>
+      <DoubleVectorProperty name="Offset"
+       command="SetOffset"
+       number_of_elements="1"
+       animateable="1"
+       default_values="1.0">
+       <DoubleRangeDomain name="range" min="0.75"/>
+       <Documentation>
+         This property is a multiplier to control the size of the initial, bounding Delaunay triangulation.
+       </Documentation>
+      </DoubleVectorProperty>
+      <IntVectorProperty name="BoundingTriangulation"
+       command="SetBoundingTriangulation"
+       number_of_elements="1"
+       animateable="1"
+       default_values="0">
+       <BooleanDomain name="bool"/>
+       <Documentation>
+         If this property is set to 1, bounding triangulation points (and associated triangles) are included in the output. These are introduced as an initial triangulation to begin the triangulation process. This feature is nice for debugging output.
+       </Documentation>
+     </IntVectorProperty>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

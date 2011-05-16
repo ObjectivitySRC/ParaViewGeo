@@ -1,0 +1,51 @@
+<CustomFilterDefinitions>
+  <CustomProxyDefinition name="Phase2Delaunay" group="filters">
+    <CompoundSourceProxy id="4563" servers="1">
+      <Proxy group="filters" type="Delaunay2D" id="4364" servers="1" compound_name="Delaunay2D2">
+        <Property name="Alpha" id="4364.Alpha" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="range" id="4364.Alpha.range">
+            <Min index="0" value="0"/>
+          </Domain>
+        </Property>
+        <Property name="BoundingTriangulation" id="4364.BoundingTriangulation" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="bool" id="4364.BoundingTriangulation.bool"/>
+        </Property>
+        <Property name="Input" id="4364.Input" number_of_elements="1">
+          <Domain name="groups" id="4364.Input.groups">
+            <Group value="sources"/>
+            <Group value="filters"/>
+          </Domain>
+          <Domain name="input_type" id="4364.Input.input_type">
+            <DataType value="vtkPointSet"/>
+          </Domain>
+        </Property>
+        <Property name="Offset" id="4364.Offset" number_of_elements="1">
+          <Element index="0" value="1"/>
+          <Domain name="range" id="4364.Offset.range">
+            <Min index="0" value="0.75"/>
+          </Domain>
+        </Property>
+        <Property name="ProjectionPlaneMode" id="4364.ProjectionPlaneMode" number_of_elements="1">
+          <Element index="0" value="0"/>
+          <Domain name="enum" id="4364.ProjectionPlaneMode.enum">
+            <Entry value="0" text="XY Plane"/>
+            <Entry value="2" text="Best-Fitting Plane"/>
+          </Domain>
+        </Property>
+        <Property name="Tolerance" id="4364.Tolerance" number_of_elements="1">
+          <Element index="0" value="1e-05"/>
+          <Domain name="range" id="4364.Tolerance.range">
+            <Min index="0" value="0"/>
+            <Max index="0" value="1"/>
+          </Domain>
+        </Property>
+      </Proxy>
+      <ExposedProperties>
+        <Property name="Input" proxy_name="Delaunay2D2" exposed_name="Input"/>
+      </ExposedProperties>
+      <OutputPort name="Output" proxy="Delaunay2D2" port_index="0"/>
+    </CompoundSourceProxy>
+  </CustomProxyDefinition>
+</CustomFilterDefinitions>

@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>369</width>
+    <height>1105</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_5">
+   <item row="0" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QTabWidget" name="tabWidget">
+       <property name="tabShape">
+        <enum>QTabWidget::Triangular</enum>
+       </property>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="tab">
+        <attribute name="title">
+         <string>Settings</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_4">
+         <item row="0" column="0">
+          <widget class="QGroupBox" name="groupBox_2">
+           <property name="title">
+            <string>Axis Selection</string>
+           </property>
+           <layout class="QVBoxLayout">
+            <item>
+             <layout class="QHBoxLayout" name="_2">
+              <item>
+               <widget class="QLabel" name="RadLabel">
+                <property name="text">
+                 <string>Radius Variable</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="radiusVariable"/>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="_3">
+              <item>
+               <widget class="QLabel" name="DistLabel">
+                <property name="text">
+                 <string>Distance Variable</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="distanceVariable"/>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="_4">
+              <item>
+               <widget class="QLabel" name="AngleLabel">
+                <property name="text">
+                 <string>Angle Variable</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="angleVariable"/>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="planeDistanceVariable"/>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="bTransXVariable"/>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="bTransYVariable"/>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="bTransZVariable"/>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="bScaleXVariable"/>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="bScaleYVariable"/>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="bScaleZVariable"/>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="clipType"/>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QGroupBox" name="groupBox_6">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="title">
+            <string>Options</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout">
+            <item row="0" column="0" colspan="2">
+             <layout class="QGridLayout" name="gridLayout_2">
+              <property name="bottomMargin">
+               <number>5</number>
+              </property>
+              <item row="0" column="1">
+               <widget class="QDoubleSpinBox" name="ArtificialMinMineLife">
+                <property name="decimals">
+                 <number>2</number>
+                </property>
+                <property name="maximum">
+                 <double>1000000000.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="MinMineLifeLabel">
+                <property name="text">
+                 <string>Min Mine Life</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QDoubleSpinBox" name="ArtificialMaxMineLife">
+                <property name="maximum">
+                 <double>1000000000.000000000000000</double>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="MaxMineLifeLabel">
+                <property name="text">
+                 <string>Max Mine Life</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="2" column="0" colspan="2">
+             <layout class="QGridLayout" name="gridLayout_3">
+              <property name="bottomMargin">
+               <number>5</number>
+              </property>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="ArtificialMinNPV">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>127</width>
+                  <height>0</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="MinNPVLabel">
+                <property name="minimumSize">
+                 <size>
+                  <width>127</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Min NPV</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLineEdit" name="ArtificialMaxNPV">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>127</width>
+                  <height>0</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="MaxNPVLabel">
+                <property name="minimumSize">
+                 <size>
+                  <width>127</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Max NPV</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QGroupBox" name="groupBox_5">
+           <property name="title">
+            <string>Comparison View</string>
+           </property>
+           <layout class="QGridLayout" name="_10">
+            <item row="1" column="0">
+             <layout class="QHBoxLayout" name="_11">
+              <item>
+               <widget class="QLabel" name="CompLabel">
+                <property name="text">
+                 <string>Comparison Variable</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="thVariable"/>
+              </item>
+             </layout>
+            </item>
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="alignCircles">
+              <property name="text">
+               <string>Enable Comparison View</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QGroupBox" name="groupBox">
+           <property name="title">
+            <string>Reverse</string>
+           </property>
+           <layout class="QVBoxLayout" name="_12">
+            <item>
+             <widget class="QCheckBox" name="reverseRadius">
+              <property name="text">
+               <string>Radius</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QGroupBox" name="groupBox_3">
+           <property name="title">
+            <string>Reference Circle Properties</string>
+           </property>
+           <layout class="QVBoxLayout" name="_13">
+            <item>
+             <layout class="QHBoxLayout" name="_14">
+              <item>
+               <widget class="QLabel" name="ThickLabel">
+                <property name="text">
+                 <string>Thickness</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QDoubleSpinBox" name="CircleThickness">
+                <property name="decimals">
+                 <number>5</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="_15">
+              <item>
+               <widget class="QLabel" name="RadScaleLabel">
+                <property name="text">
+                 <string>Radius Scale</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="referenceCirclesSize"/>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="_16">
+              <item>
+               <widget class="QLabel" name="distScaleLabel">
+                <property name="text">
+                 <string>Distance Scale</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="distanceBetween"/>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="_17">
+              <item>
+               <widget class="QLabel" name="NumGridLabel">
+                <property name="text">
+                 <string>Number Of Grids</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="numberOfGrids"/>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="_18">
+              <item>
+               <widget class="QLabel" name="NumCirLabel">
+                <property name="text">
+                 <string>Number Of Circles</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="numberOfCircles"/>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QGroupBox" name="groupBox_4">
+           <property name="title">
+            <string>Axis Properties</string>
+           </property>
+           <layout class="QVBoxLayout" name="_5">
+            <item>
+             <layout class="QHBoxLayout" name="_6">
+              <item>
+               <widget class="QLabel" name="AxThicknessLabel">
+                <property name="text">
+                 <string>Thickness</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="AxisThickness"/>
+              </item>
+              <item>
+               <spacer>
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>61</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="ApplyPressed">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QGroupBox" name="sliceTypeGroup">
+           <property name="title">
+            <string>Clip</string>
+           </property>
+           <layout class="QVBoxLayout" name="_7">
+            <item>
+             <widget class="QCheckBox" name="enableClip">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="text">
+               <string>Enable Clip</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QGridLayout" name="_9">
+              <item row="0" column="0">
+               <widget class="QStackedWidget" name="sliceFrame">
+                <widget class="QWidget" name="page"/>
+                <widget class="QWidget" name="page_2"/>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item row="7" column="0">
+          <spacer name="spacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>47</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="Properties">
+        <attribute name="title">
+         <string>Properties</string>
+        </attribute>
+        <widget class="QTableWidget" name="DataWidget">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>291</width>
+           <height>1041</height>
+          </rect>
+         </property>
+        </widget>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

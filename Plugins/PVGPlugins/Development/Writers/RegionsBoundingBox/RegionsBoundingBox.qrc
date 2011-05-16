@@ -1,0 +1,6 @@
+<RCC>
+	<qresource prefix="/ParaViewResources">
+		<file>RegionsBoundingBoxGUI.xml</file>
+	</qresource>
+</RCC>
+

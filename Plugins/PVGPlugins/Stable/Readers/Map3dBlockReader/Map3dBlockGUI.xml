@@ -1,0 +1,6 @@
+<ParaViewReaders>
+  <Reader name="Map3dBlock"
+    extensions="inp"
+    file_description="Map3d Block Data">
+  </Reader>
+</ParaViewReaders>

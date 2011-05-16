@@ -1,0 +1,6 @@
+<ParaViewReaders>
+  <Reader name="SplineReader"
+    extensions="dat push"
+    file_description="Spline Data Push Files">
+  </Reader>
+</ParaViewReaders>

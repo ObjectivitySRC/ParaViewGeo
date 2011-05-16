@@ -1,0 +1,6 @@
+<RCC>
+	<qresource prefix="/ParaViewResources">
+		<file>Map3dBlockGUI.xml</file>
+	</qresource>
+</RCC>
+

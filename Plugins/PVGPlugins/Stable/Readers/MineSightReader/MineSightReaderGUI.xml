@@ -1,0 +1,6 @@
+<ParaViewReaders>
+  <Reader name="MineSightReader"
+    extensions="msr"
+    file_description="MineSight Resource Files">
+  </Reader>
+</ParaViewReaders>

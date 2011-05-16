@@ -1,0 +1,6 @@
+<RCC>
+	<qresource prefix="/ParaViewResources">
+		<file>SOTResultGUI.xml</file>
+	</qresource>
+</RCC>
+

@@ -1,0 +1,56 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="PV Intersect Wireframe" class="vtkPVIntersectFilter">
+      <InputProperty
+       name="Source"
+       command="SetSourceConnection" >
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+      </InputProperty>
+      
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>        
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+      </InputProperty>    
+
+      <IntVectorProperty
+      name="Type Points"
+      command="SetTypeOfPoints"
+      number_of_elements="1"
+      default_values="0" >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Inside Points"/>
+          <Entry value="1" text="Outside Points"/>
+        </EnumerationDomain>
+        <Documentation>
+          Inside Points show you the points of the grid inside the defined wireframe
+          Outside Points show you the points of the grid outside the defined wireframe
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="Reconstruction"
+        command="SetReconstruction"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          This property specifies the option to reconstruct the intersection
+        </Documentation>
+      </IntVectorProperty>
+     
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

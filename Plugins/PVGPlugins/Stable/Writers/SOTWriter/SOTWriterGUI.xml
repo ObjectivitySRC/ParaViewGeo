@@ -1,0 +1,6 @@
+<ParaViewWriters>
+  <Writer name="vtkSOTWriter"
+    extensions="sqf"
+    file_description="SOT Queue Files">
+  </Writer>
+</ParaViewWriters>

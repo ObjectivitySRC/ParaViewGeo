@@ -1,0 +1,14 @@
+FORMS = 
+HEADERS = 
+SOURCES = test_cokriging.cpp
+TARGET = test_cokriging
+#DEFINES += GSTL_DEBUG
+
+INCLUDEPATH += /home/nremy/SCRF/GsTL_src/GsTL/src
+
+LIBS += -L$(QTDIR)/tools/designer/uilib 
+LIBS += -lGsTLAppli_math -lGsTLAppli_utils -lGsTLAppli_appli
+LIBS += -lGsTLAppli_geostat -lGsTLAppli_grid -lGsTLAppli_gui -lqui
+LIBS += -lGsTLAppli_extragui 
+LIBS += -L$$QT_PLUGINS -lGsTLwidgets
+

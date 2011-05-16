@@ -1,0 +1,88 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="sources">
+    <SourceProxy name="ArgReader"
+                class="vtkArgReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+      name="FileName"
+      command="GetFileName"
+      information_only="1">
+      <SimpleStringInformationHelper/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+      name="StartDate"
+      command="SetStartDate"
+      number_of_elements="1"
+      default_values="2009-01-01">
+      </StringVectorProperty>
+			
+			<StringVectorProperty
+        name="ArraysInfo"
+        command="GetArraysInfo"
+        information_only="1">
+        <SimpleStringInformationHelper/>
+      </StringVectorProperty> 
+		
+			<StringVectorProperty
+			 name ="ArraySelection"
+			 command="SetArraySelection"
+			 repeat_command="1"
+			 number_of_elements_per_command="2"
+			 element_types="2 0"
+			 immediate_update="1">			
+			 <Documentation>
+			 This property lists which cell-centered arrays to read.
+			 </Documentation>
+      </StringVectorProperty>				
+			
+<!--	<StringVectorProperty
+        name="PUNOArraysInfo"
+        command="GetPUNOArraysInfo"
+        information_only="1">
+        <SimpleStringInformationHelper/>
+      </StringVectorProperty> 
+		
+		 <StringVectorProperty
+			 name ="PUNOArraySelection"
+			 command="SetPUNOArraySelection"
+			 repeat_command="1"
+			 number_of_elements_per_command="2"
+			 element_types="2 0"
+			 immediate_update="1">			
+			 <Documentation>
+			 This property lists which cell-centered arrays to read.
+			 </Documentation>
+      </StringVectorProperty>		 -->	
+			
+			<!--
+			<StringVectorProperty
+        name="DOTArraysInfo"
+        command="GetDOTArraysInfo"
+        information_only="1">
+        <SimpleStringInformationHelper/>
+      </StringVectorProperty> 
+		
+			<StringVectorProperty
+			 name ="DOTArraySelection"
+			 command="SetDOTArraySelection"
+			 repeat_command="1"
+			 number_of_elements_per_command="2"
+			 element_types="2 0"
+			 immediate_update="1">			
+			 <Documentation>
+			 This property lists which cell-centered arrays to read.
+			 </Documentation>
+      </StringVectorProperty>			
+			-->
+			
+    </SourceProxy>
+    <!-- End of Arg Reader -->
+  </ProxyGroup>
+</ServerManagerConfiguration>

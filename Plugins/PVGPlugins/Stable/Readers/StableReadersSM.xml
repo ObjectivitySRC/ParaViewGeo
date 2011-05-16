@@ -1,0 +1,931 @@
+<ServerManagerConfiguration>
+
+  <ProxyGroup name="internal_sources">
+    <SourceProxy name="FDEMReader"
+             class="vtkFDEMReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="Fills"
+        command="SetFill"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="Points"
+        command="SetPoint"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="Cracks"
+        command="SetCrack"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="Joints"
+        command="SetJoint"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
+    </SourceProxy>
+  </ProxyGroup>
+  
+  <ProxyGroup name="sources">
+    <SourceProxy name="ArcMapReader" class="vtkArcMapReader">
+      <OutputPort name="Density2" index="0" />
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+    </SourceProxy>
+
+
+    <SourceProxy name="BlockModelReader"
+                class="vtkBlockModelReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+      <IntVectorProperty
+          name="HeaderExists"
+          command="SetHeaderExists"
+          number_of_elements="1"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+    </SourceProxy>
+
+
+    <SourceProxy name="DataMineWireFrameReader"
+                class="vtkDataMineWireFrameReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+      name="FileName"
+      command="GetFileName"
+      information_only="1">
+        <SimpleStringInformationHelper/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="TopoFileName"
+        command="SetTopoFileName"
+        number_of_elements="1"        
+        label="Topo File Name">
+        <FileListDomain name="default_value" optional="1">
+          <RequiredProperties>
+            <Property name="TopoFileNameInfo" function="TopoFileName"/>
+          </RequiredProperties>
+        </FileListDomain>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+      name="TopoFileNameInfo"
+      command="GetTopoFileName"
+      information_only="1">
+        <SimpleStringInformationHelper/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="PointFileName"
+        command="SetPointFileName"
+        number_of_elements="1"
+        label="Point File Name">
+        <FileListDomain name="default_value" optional="1">
+          <RequiredProperties>
+            <Property name="PointFileNameInfo" function="PointFileName"/>
+          </RequiredProperties>
+        </FileListDomain>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+      name="PointFileNameInfo"
+      command="GetPointFileName"
+      information_only="1">
+        <SimpleStringInformationHelper/>
+      </StringVectorProperty>
+            
+      <StringVectorProperty
+         name="CellArrayInfo"
+         information_only="1"
+         default = "0">
+        <ArraySelectionInformationHelper attribute_name="Cell"/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="CellArrayStatus"
+         command="SetCellArrayStatus"
+         number_of_elements="0"
+         repeat_command="1"
+         number_of_elements_per_command="2"
+         element_types="2 0"
+         information_property="CellArrayInfo"
+         label="Properties">
+        <ArraySelectionDomain name="array_list">
+          <RequiredProperties>
+            <Property name="CellArrayInfo" function="ArrayList"/>
+          </RequiredProperties>
+        </ArraySelectionDomain>
+        <Documentation>
+          This property lists which cell-centered arrays to read.
+        </Documentation>
+      </StringVectorProperty>
+    </SourceProxy>
+    <!-- End of DataMineWireFrame Reader -->
+
+    <SourceProxy name="DataMineBlockModelReader"
+                class="vtkDataMineBlockReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="CellArrayInfo"
+         information_only="1">
+        <ArraySelectionInformationHelper attribute_name="Cell"/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="CellArrayStatus"
+         command="SetCellArrayStatus"
+         number_of_elements="0"
+         repeat_command="1"
+         number_of_elements_per_command="2"
+         element_types="2 0"
+         information_property="CellArrayInfo"
+         label="Point Arrays">
+        <ArraySelectionDomain name="array_list">
+          <RequiredProperties>
+            <Property name="CellArrayInfo" function="ArrayList"/>
+          </RequiredProperties>
+        </ArraySelectionDomain>
+        <Documentation>
+          This property lists which cell-centered arrays to read.
+        </Documentation>
+      </StringVectorProperty>
+
+    </SourceProxy>
+    <!-- End of DataMineBlockModel Reader -->
+
+    <SourceProxy name="DataMineDrillHoleReader"
+                class="vtkDataMineDrillHoleReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+      name="FileName"
+      command="GetFileName"
+      information_only="1">
+        <SimpleStringInformationHelper/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+           name="CellArrayInfo"
+           information_only="1">
+        <ArraySelectionInformationHelper attribute_name="Cell"/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="CellArrayStatus"
+         command="SetCellArrayStatus"
+         number_of_elements="0"
+         repeat_command="1"
+         number_of_elements_per_command="2"
+         element_types="2 0"
+         information_property="CellArrayInfo"
+         label="Point Arrays">
+        <ArraySelectionDomain name="array_list">
+          <RequiredProperties>
+            <Property name="CellArrayInfo" function="ArrayList"/>
+          </RequiredProperties>
+        </ArraySelectionDomain>
+        <Documentation>
+          This property lists which cell-centered arrays to read.
+        </Documentation>
+      </StringVectorProperty>
+
+    </SourceProxy>
+    <!-- End of DataMine  Drill Hole Reader -->
+
+    <SourceProxy name="DataMinePerimeterReader"
+                class="vtkDataMinePerimeterReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+      name="FileName"
+      command="GetFileName"
+      information_only="1">
+        <SimpleStringInformationHelper/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="CellArrayInfo"
+         information_only="1">
+        <ArraySelectionInformationHelper attribute_name="Cell"/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="CellArrayStatus"
+         command="SetCellArrayStatus"
+         number_of_elements="0"
+         repeat_command="1"
+         number_of_elements_per_command="2"
+         element_types="2 0"
+         information_property="CellArrayInfo"
+         label="Properties">
+        <ArraySelectionDomain name="array_list">
+          <RequiredProperties>
+            <Property name="CellArrayInfo" function="ArrayList"/>
+          </RequiredProperties>
+        </ArraySelectionDomain>
+        <Documentation>
+          This property lists which cell-centered arrays to read.
+        </Documentation>
+      </StringVectorProperty>
+
+    </SourceProxy>
+    <!-- End of DataMine Perim Reader -->
+
+    <SourceProxy name="DataMinePointReader"
+                class="vtkDataMinePointReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+      name="FileName"
+      command="GetFileName"
+      information_only="1">
+        <SimpleStringInformationHelper/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="CellArrayInfo"
+         information_only="1">
+        <ArraySelectionInformationHelper attribute_name="Cell"/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="CellArrayStatus"
+         command="SetCellArrayStatus"
+         number_of_elements="0"
+         repeat_command="1"
+         number_of_elements_per_command="2"
+         element_types="2 0"
+         information_property="CellArrayInfo"
+         label="Properties">
+        <ArraySelectionDomain name="array_list">
+          <RequiredProperties>
+            <Property name="CellArrayInfo" function="ArrayList"/>
+          </RequiredProperties>
+        </ArraySelectionDomain>
+        <Documentation>
+          This property lists which cell-centered arrays to read.
+        </Documentation>
+      </StringVectorProperty>
+
+    </SourceProxy>
+    <!-- End of DataMine Point Reader -->
+
+    <SourceProxy name="DataMineDummyReader"
+                class="vtkDataMineDummyReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+      name="FileName"
+      command="GetFileName"
+      information_only="1">
+        <SimpleStringInformationHelper/>
+      </StringVectorProperty>
+
+    </SourceProxy>
+    <!-- End of DataMine Dummy Reader -->
+
+
+    <SourceProxy name="DrillHoleReader"
+               class="vtkDrillHoleReader">
+      <OutputPort name="Drill Curves" index="0" />
+      <OutputPort name="Assay" index="1" />
+      <OutputPort name="Lithology" index="2" />
+
+      <StringVectorProperty
+        name="DrillHolesInfo"
+        information_only="1"
+        default = "1">
+        <ArraySelectionInformationHelper attribute_name="DrillHole"/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="DrillHoles"
+         command="SetDrillHoleArrayStatus"
+         number_of_elements="0"
+         repeat_command="1"
+         number_of_elements_per_command="2"
+         element_types="2 0"
+         information_property="DrillHolesInfo"
+         label="Properties">
+        <ArraySelectionDomain name="array_list">
+          <RequiredProperties>
+            <Property name="DrillHolesInfo" function="ArrayList"/>
+          </RequiredProperties>
+        </ArraySelectionDomain>
+        <Documentation>
+          This property lists which cell-centered arrays to read.
+        </Documentation>
+      </StringVectorProperty>
+
+
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="CreatePointProp"
+        command="SetCreatePointProp"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+           name="KeepCellProp"
+           command="SetKeepCellProp"
+           number_of_elements="1"
+           default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
+    </SourceProxy>
+    <!-- End of DrillholeReader -->
+
+    <SourceProxy name="DXFReader" class="vtkDXFReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+      <IntVectorProperty
+        name="Display Points"
+        command="SetDrawPoints"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      <IntVectorProperty
+         name="Display Frozen /Invisible Layers"
+         command="SetDrawHidden"
+         number_of_elements="1"
+         default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      <IntVectorProperty
+         name="Auto-Scale Objects"
+         command="SetAutoScale"
+         number_of_elements="1"
+         default_values="1">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+    </SourceProxy>
+    <!-- End of DXFReader -->
+    
+    <SourceProxy name="Ellipsoid" class="vtkEllipsoid" label="Ellipsoid">
+      <DoubleVectorProperty
+         name="Translate"
+         command="SetTranslate"
+         number_of_elements="3"
+         default_values="0 0 0" >
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+         name="Rotate About"
+         command="SetRotate"
+         number_of_elements="3"
+         default_values="0 0 0" >
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+         name="Scale"
+         command="SetScale"
+         number_of_elements="3"
+         default_values="1 1 1" >
+      </DoubleVectorProperty>
+    </SourceProxy>
+    <SourceProxy name="Elliptic" class="vtkElliptic" label="Elliptic">
+      <DoubleVectorProperty
+         name="Translate"
+         command="SetTranslate"
+         number_of_elements="3"
+         default_values="0 0 0" >
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+         name="Rotate About"
+         command="SetRotate"
+         number_of_elements="3"
+         default_values="0 0 0" >
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+         name="Scale"
+         command="SetScale"
+         number_of_elements="2"
+         default_values="1 1" >
+      </DoubleVectorProperty>
+    </SourceProxy>
+
+
+    <SourceProxy name="SOTEPSReader"
+                class="vtkEPSReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="Date"
+        command="SetDate"
+        number_of_elements="1"
+        default_values="2008-01-01T00:00:00">
+      </StringVectorProperty>
+
+    </SourceProxy>
+
+    <FileSeriesReaderProxy name="FDEMReader"
+                            class="vtkFileSeriesReader"
+                            label="FEM/DEM Binary Files"
+                            file_name_method="SetFileName">
+
+      <SubProxy>
+        <Proxy name="Reader" proxygroup="internal_sources" proxyname="FDEMReader"/>
+        <ExposedProperties>
+          <Property name="Fills" />
+          <Property name="Points" />
+          <Property name="Cracks" />
+          <Property name="Joints" />
+        </ExposedProperties>
+      </SubProxy>
+
+      <StringVectorProperty
+        name="FileNames"
+          clean_command="RemoveAllFileNames"
+          command="AddFileName"
+          animateable="0"
+          number_of_elements="0"
+          repeat_command="1">
+        <FileListDomain name="files"/>
+        <Documentation>
+          The list of files to be read by the reader. If more than 1 file is specified, the reader will switch to file series mode in which it will pretend that it can support time and provide 1 file per time step.
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty
+                           name="TimestepValues"
+                           repeatable="1"
+                           information_only="1">
+        <TimeStepsInformationHelper/>
+        <Documentation>
+          Available timestep values.
+        </Documentation>
+      </DoubleVectorProperty>
+    </FileSeriesReaderProxy>
+
+    <SourceProxy name="GocadReader"
+            class="vtkGocadReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty
+       name="RGB"
+       command="GetRGB"
+       number_of_elements="3"
+       default_values="1 1 1"
+       information_only="1" >
+      <SimpleDoubleInformationHelper/>
+      </DoubleVectorProperty>
+      
+    </SourceProxy>
+
+    <SourceProxy name="Map3dBlock"
+                class="vtkMap3dBlockReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+    </SourceProxy>
+	
+	<SourceProxy name="PointSetReader"
+                class="vtkPointSetReader">
+
+      <StringVectorProperty name="Arrays"
+		  command="SetArrays"
+		  repeat_command="1"
+		  number_of_elements_per_command="2"
+		  element_types="2 0"
+		  immediate_update="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="Separator"
+       command="SetSeparator"
+       number_of_elements="1"
+       value=",">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="NoDataValue"
+       command="SetNoDataValue"
+       number_of_elements="1"
+       value="99999">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="x1"
+       command="Setx1"
+       number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="y1"
+       command="Sety1"
+       number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="z1"
+       command="Setz1"
+       number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+    </SourceProxy>
+ 
+
+    <SourceProxy name="SGeMSReader"
+                class="vtkSGeMSReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+    </SourceProxy>
+
+    <SourceProxy name="ShapeFileReader"
+                class="vtkShapeFileReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+    </SourceProxy>
+    
+
+    <SourceProxy name="SOTResult" class="vtkSOTResult">
+      <OutputPort name="Data" index="0" />
+      <OutputPort name="Reference Circles" index="1"/>
+      <OutputPort name="Axes" index="2" />
+
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="Headers"
+        command="GetHeaders"
+        information_only="1">
+        <SimpleStringInformationHelper/>
+      </StringVectorProperty>
+
+			<StringVectorProperty
+			 name ="ArraySelection"
+			 command="SetArraySelection"
+			 repeat_command="1"
+			 number_of_elements_per_command="2"
+			 element_types="2 0"
+			 immediate_update="1">			
+			 <Documentation>
+			 This property lists which cell-centered arrays to read.
+			 </Documentation>
+      </StringVectorProperty>			
+			
+      <IntVectorProperty
+        name ="ApplyPressed"
+        command="GetApplyPressed"
+        number_of_elements="1"
+        information_only="1"
+        default_values="0">
+        <SimpleIntInformationHelper/>
+      </IntVectorProperty>
+			
+      <StringVectorProperty
+        name="StringHeaders"
+        command="GetStringHeaders"
+        information_only="1">
+        <SimpleStringInformationHelper/>
+      </StringVectorProperty> 
+
+      <DoubleVectorProperty
+            name="referenceCirclesSize"
+            command="SetReferenceCirclesSize"
+            number_of_elements="1"
+            default_values="1">
+        <IntRangeDomain name="range" min="0.0" />
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+       name="CircleThickness"
+       command="SetCircleThickness"
+       number_of_elements="1"
+       default_values="0.01">
+        <IntRangeDomain name="range" min="0.0" />
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+           name="AxisThickness"
+           command="SetAxisThickness"
+           number_of_elements="1"
+           default_values="0.01">
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+            name="distanceBetween"
+            command="SetDistanceBetween"
+            number_of_elements="1"
+            default_values="4">
+      </DoubleVectorProperty>
+      
+      <StringVectorProperty
+        name="radiusVariable"
+        command="SetRadiusVariable"
+        number_of_elements="1">
+      </StringVectorProperty>
+      
+      <IntVectorProperty         
+        name="reverseRadius" 
+        command="SetReverseRadius" 
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="distanceVariable"
+        command="SetDistanceVariable"
+        number_of_elements="1">
+      </StringVectorProperty>
+      
+      <IntVectorProperty         
+        name="reverseDistance" 
+        command="SetReverseDistance" 
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="angleVariable"
+        command="SetAngleVariable"
+        number_of_elements="1">
+      </StringVectorProperty>
+      
+      <StringVectorProperty
+        name="thVariable"
+        command="SetThVariable"
+        number_of_elements="1">
+      </StringVectorProperty>
+      
+      <IntVectorProperty         
+        name="reverseAngle" 
+        command="SetReverseAngle" 
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <IntVectorProperty         
+        name="alignCircles" 
+        command="SetAlignCircles" 
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="numberOfGrids"
+        command="SetnumberOfGrids"
+        number_of_elements="1"
+        default_values="5">
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="numberOfCircles"
+        command="SetnumberOfCircles"
+        number_of_elements="1"
+        default_values="3">
+      </IntVectorProperty>
+	  	  
+	  <DoubleVectorProperty         
+        name="ArtificialMinMineLife" 
+        command="SetArtificialMinMineLife" 
+        number_of_elements="1"
+        default_values="0.0">
+      </DoubleVectorProperty>	
+	  
+	  <DoubleVectorProperty         
+        name="ArtificialMaxMineLife" 
+        command="SetArtificialMaxMineLife" 
+        number_of_elements="1"
+        default_values="0.0">
+      </DoubleVectorProperty>	
+	  
+	  <DoubleVectorProperty         
+        name="ArtificialMinNPV" 
+        command="SetArtificialMinNPV" 
+        number_of_elements="1"
+        default_values="0.0">
+      </DoubleVectorProperty>
+
+    <DoubleVectorProperty
+        name="ArtificialMaxNPV" 
+        command="SetArtificialMaxNPV" 
+        number_of_elements="1"
+        default_values="0.0">
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+        name="planeDistanceVariable"
+        command="SetPlaneDistanceVariable"
+        number_of_elements="1"
+        default_values="0.0">
+      </DoubleVectorProperty>
+      
+      <IntVectorProperty         
+        name="enableClip" 
+        command="SetEnableClip" 
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <DoubleVectorProperty
+        name="DistMin"
+        command="GetDistMin"
+        information_only="1">
+        <SimpleDoubleInformationHelper/>
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+        name="DistMax"
+        command="GetDistMax"
+        information_only="1">
+        <SimpleDoubleInformationHelper/>
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+        name="bTransXVariable"
+        command="SetBTransXVariable"
+        number_of_elements="1"
+        default_values="0.0">
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+        name="bTransYVariable"
+        command="SetBTransYVariable"
+        number_of_elements="1"
+        default_values="0.0">
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+        name="bTransZVariable"
+        command="SetBTransZVariable"
+        number_of_elements="1"
+        default_values="0.0">
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+        name="bScaleXVariable"
+        command="SetBScaleXVariable"
+        number_of_elements="1"
+        default_values="1.0">
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+        name="bScaleYVariable"
+        command="SetBScaleYVariable"
+        number_of_elements="1"
+        default_values="1.0">
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+        name="bScaleZVariable"
+        command="SetBScaleZVariable"
+        number_of_elements="1"
+        default_values="1.0">
+      </DoubleVectorProperty>
+     
+      <ProxyProperty name="CutFunction" command="SetCutFunction"
+         label="Slice Type">
+        <ProxyGroupDomain name="groups">
+          <Group name="implicit_functions"/>
+        </ProxyGroupDomain>
+        <ProxyListDomain name="proxy_list">
+          <Proxy group="implicit_functions" name="Box" />
+        </ProxyListDomain>
+        <Documentation>
+          This property sets the parameters of the slice function.
+        </Documentation>
+      </ProxyProperty>    
+
+    </SourceProxy>
+
+    <SourceProxy name="TriReader"
+            class="vtkTriReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+      <IntVectorProperty
+         name="HeaderExists"
+         command="SetHeaderExists"
+         number_of_elements="1"
+         default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+    </SourceProxy>
+	
+	  <!-- Begin GXFReader -->  
+    <SourceProxy name="GXFReader" class="vtkGXFReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>    
+  </SourceProxy>
+  <!-- End GXFReader -->
+        
+  </ProxyGroup>
+</ServerManagerConfiguration>

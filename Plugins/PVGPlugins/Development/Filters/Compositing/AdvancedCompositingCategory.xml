@@ -1,0 +1,6 @@
+<ParaViewFilters>
+ <Category name="Mirarco">
+  <Filter name="Advanced Compositing"/>
+  <Filter name="DUMMY_FILTER"/>
+ </Category>
+</ParaViewFilters>

@@ -1,0 +1,32 @@
+<ParaViewReaders>
+	
+	<Reader name="PDataMineBlockModelReader"
+    extensions="pdm pDM pDm"
+    file_description="Datamine Block Model Files(Partitionned)">
+  </Reader>		
+	<Reader name="PDataMineDrillHoleReader"
+    extensions="pdm pDM pDm"
+    file_description="Datamine Drill Hole Files(Partitionned)">
+  </Reader>
+	
+	<Reader name="PDataMinePerimeterReader"
+    extensions="pdm pDM pDm"
+    file_description="DataMine Perimeter Files(Partitionned)">
+  </Reader>
+	
+	<Reader name="PDataMineWireFrameReader"
+    extensions="pdm pDM pDm"
+    file_description="DataMine Wire Frame Files(Partitionned)">
+  </Reader>
+	
+	<Reader name="PDataMinePointReader"
+    extensions="pdm pDM pDm"
+    file_description="DataMine Point Files(Partitionned)">
+  </Reader>
+	
+	<Reader name="PDataMineDummyReader"
+    extensions="pdm pDM pDm"
+    file_description="DataMine Dummy Files(Partitionned)">
+  </Reader>   
+	
+</ParaViewReaders>

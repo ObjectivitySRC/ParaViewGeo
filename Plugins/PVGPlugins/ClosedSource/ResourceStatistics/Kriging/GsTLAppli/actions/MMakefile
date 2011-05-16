@@ -1,0 +1,11 @@
+#CONFIG -= qt
+
+INCLUDEPATH += $$PYTHON_INCLUDE
+LIBS += -L$$PYTHON_LIB -l$$PYTHON_SO
+
+
+win32 {
+  DEFINES += ACTIONS_EXPORTS
+  LIBS += -lGsTLAppli_utils -lGsTLAppli_appli
+  LIBS += -lGsTLAppli_grid
+}

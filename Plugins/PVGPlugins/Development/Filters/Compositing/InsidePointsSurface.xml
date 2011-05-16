@@ -1,0 +1,68 @@
+<ServerManagerConfiguration>
+       <ProxyGroup name="filters">
+          <SourceProxy name="Inside Points Wireframe" class="vtkInsidePointsSurface">
+           <InputProperty
+            name="Input"
+            command="SetInputConnection">
+               <ProxyGroupDomain name="groups">
+                 <Group name="sources"/>
+                 <Group name="filters"/>
+               </ProxyGroupDomain>
+               <DataTypeDomain name="input_type">
+                 <DataType value="vtkPolyData"/>
+               </DataTypeDomain>
+          </InputProperty>
+                            
+      <IntVectorProperty
+        name="Nx"
+        command="SetNx"
+        number_of_elements="1"
+        default_values="10.0">
+        <IntRangeDomain name="range" min="1" />
+        <Documentation>
+         Nx is Number of Cells in X Axe
+        </Documentation>
+      </IntVectorProperty>
+            
+      <IntVectorProperty
+          name="Ny"
+          command="SetNy"
+          number_of_elements="1"
+          default_values="10.0">
+          <IntRangeDomain name="range" min="1" />
+          <Documentation>
+            Nx is Number of Cells in X Axe
+          </Documentation>
+       </IntVectorProperty>  
+            
+       <IntVectorProperty
+          name="Nz"
+          command="SetNz"
+          number_of_elements="1"
+          default_values="10.0">
+          <IntRangeDomain name="range" min="1" />
+          <Documentation>
+            Nz is Number of Cells in Z Axe
+          </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+       name="Type Points"
+       command="SetTypeOfPoints"
+       number_of_elements="1"
+       default_values="0" >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Inside Points"/>
+          <Entry value="1" text="Outside Points"/>
+        </EnumerationDomain>
+        <Documentation>
+          Inside Points show you the points of the grid inside the defined wireframe
+          Outside Points show you the points of the grid outside the defined wireframe
+        </Documentation>
+      </IntVectorProperty>
+      
+            
+	    </SourceProxy>
+       </ProxyGroup>
+  
+</ServerManagerConfiguration>

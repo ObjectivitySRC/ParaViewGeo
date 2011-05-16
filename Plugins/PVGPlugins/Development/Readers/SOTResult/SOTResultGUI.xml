@@ -1,0 +1,6 @@
+<ParaViewReaders>
+  <Reader name="SOTResult"
+    extensions="csv CSV"
+    file_description="SOT Result Files">
+  </Reader>
+</ParaViewReaders>

@@ -1,0 +1,6 @@
+<ParaViewReaders>
+  <Reader name="ShapeFileReader"
+    extensions="shp"
+    file_description="ESRI Shape File">
+  </Reader>
+</ParaViewReaders>

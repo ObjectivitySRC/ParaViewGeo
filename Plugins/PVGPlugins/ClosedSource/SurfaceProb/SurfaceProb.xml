@@ -1,0 +1,114 @@
+<ServerManagerConfiguration>
+  <!-- Begin SurfaceProb -->
+  <ProxyGroup name="filters">
+    <SourceProxy name="SurfaceProb" class="vtkSurfaceProb">
+
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+      </InputProperty>
+
+      <IntVectorProperty
+        name="Generate Planar Surface"
+        command="SetGeneratedPlane"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool" />
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="Non-Planar Strike Distance Mode"
+        command="SetDistanceMode"
+        number_of_elements="1"
+        default_values="0">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="From Tops of Projection Lines"/>
+          <Entry value="1" text="At Depth Between Projection Lines"/>
+        </EnumerationDomain>
+      </IntVectorProperty>
+        
+      <DoubleVectorProperty
+        name="Observation Point"
+        command="SetObsXYZ"
+        number_of_elements="3"
+        default_values="250.0 250.0 0.0">
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="Dip"
+        command="SetDip"
+        number_of_elements="1"
+        default_values="-90.0">
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="Strike"
+        command="SetStrike"
+        number_of_elements="1"
+        default_values="0.0">
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="Dip Direction"
+        command="SetDipDirection"
+        number_of_elements="1"
+        default_values="-90.0">
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="Max Down Surface"
+        command="SetMaxDownSurface"
+        number_of_elements="1"
+        default_values="510.0">
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+        name="Max Across Surface"
+        command="SetMaxAcrossSurface"
+        number_of_elements="1"
+        default_values="510.0">
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+        name="Dip Error"
+        command="SetDipError"
+        number_of_elements="1"
+        default_values="2.0">
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+        name="Strike Error"
+        command="SetStrikeError"
+        number_of_elements="1"
+        default_values="15.0">
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="Grid Spacing"
+        command="SetGridSpacing"
+        number_of_elements="3"
+        default_values="5.0 5.0 5.0">
+      </DoubleVectorProperty>
+      <IntVectorProperty
+        name="Grid Cells"
+        command="SetGridCells"
+        number_of_elements="3"
+        default_values="100 100 100">
+      </IntVectorProperty>
+      <DoubleVectorProperty
+        name="Grid Origin"
+        command="SetGridOrigin"
+        number_of_elements="3"
+        default_values="0.0 0.0 -500.0">
+      </DoubleVectorProperty>
+     
+      
+    </SourceProxy>
+  </ProxyGroup>
+  <!-- End SurfaceProb -->
+</ServerManagerConfiguration>

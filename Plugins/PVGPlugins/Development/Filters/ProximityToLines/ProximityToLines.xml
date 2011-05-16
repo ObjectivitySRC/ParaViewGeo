@@ -1,0 +1,41 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="Proximity To Lines" class="vtkProximityToLines">
+
+      <!-- the lines -->
+      <InputProperty name="Source" label="cosmic background radiation" command="SetSourceConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+        <Documentation>
+          Something
+        </Documentation>
+      </InputProperty>
+	  
+      <InputProperty name="Input" label="hallelugleeahhh" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+        <Documentation>
+          Something
+        </Documentation>
+      </InputProperty>      
+
+      <IntVectorProperty
+        name="NClosestLines"
+        command="SetNClosestLines"
+        number_of_elements="1"
+        default_values="1">
+      </IntVectorProperty>      
+
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

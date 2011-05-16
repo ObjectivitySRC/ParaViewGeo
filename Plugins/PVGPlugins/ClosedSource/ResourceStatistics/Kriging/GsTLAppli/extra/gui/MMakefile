@@ -1,0 +1,8 @@
+TARGET = GsTLAppli_extragui
+LIBS += -lGsTLAppli_utils -lGsTLAppli_appli
+LIBS += -lGsTLAppli_gui
+LIBS += -L$$GSTLAPPLI_HOME/plugins/designer -lGsTLwidgets
+
+win32 {
+  DEFINES += EXTRAGUI_EXPORTS
+}

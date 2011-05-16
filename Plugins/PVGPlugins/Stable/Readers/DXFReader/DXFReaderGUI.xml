@@ -1,0 +1,6 @@
+<ParaViewReaders>
+  <Reader name="DXFReader"
+    extensions="dxf DXF"
+    file_description="DXF files">
+  </Reader>
+</ParaViewReaders>

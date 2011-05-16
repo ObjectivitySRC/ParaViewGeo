@@ -1,0 +1,6 @@
+<ParaViewWriters>
+  <Writer name="Map3dWriter"
+    extensions="inp"
+    file_description="Map3d ASCII Files">
+  </Writer>
+</ParaViewWriters>

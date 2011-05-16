@@ -1,0 +1,768 @@
+Index: SFSM.xml
+===================================================================
+--- SFSM.xml	(revision 4576)
++++ SFSM.xml	(working copy)
+@@ -1391,6 +1391,22 @@
+         </InputArrayDomain>
+       </InputProperty>
+ 
++
++      <StringVectorProperty
++      name="manualCommand"
++      command="SetmanualCommand"
++      number_of_elements="1">
++      </StringVectorProperty>
++
++      <IntVectorProperty name="useManualCommand"
++       command="SetuseManualCommand"
++       number_of_elements="1"
++       animateable="1"
++       default_values="0">
++        <BooleanDomain name="bool"/>
++      </IntVectorProperty>
++      
++      
+       <IntVectorProperty
+         name="tetgenCommand"
+         command="SettetgenCommand"
+Index: tetgen/pqTetgen.cxx
+===================================================================
+--- tetgen/pqTetgen.cxx	(revision 4576)
++++ tetgen/pqTetgen.cxx	(working copy)
+@@ -21,6 +21,8 @@
+ pqTetgen::pqTetgen(pqProxy* pxy, QWidget* p) :
+   pqLoadedFormObjectPanel(":/StableFilters/tetgen/pqTetgen.ui", pxy, p)
+   {
++		this->findChild<QLineEdit*>("manualCommand")->setDisabled(true);
++
+ 	  this->RadiusEdgeRatio = this->findChild<QDoubleSpinBox*>("RadiusEdgeRatio");
+ 	  this->MaxTetrahedronVolume = this->findChild<QDoubleSpinBox*>("MaxTetrahedronVolume");
+ 	  this->tetgenCommand = this->findChild<QComboBox*>("tetgenCommand");
+Index: tetgen/pqTetgen.ui
+===================================================================
+--- tetgen/pqTetgen.ui	(revision 4576)
++++ tetgen/pqTetgen.ui	(working copy)
+@@ -6,7 +6,7 @@
+     <x>0</x>
+     <y>0</y>
+     <width>486</width>
+-    <height>1367</height>
++    <height>1413</height>
+    </rect>
+   </property>
+   <property name="windowTitle" >
+@@ -30,7 +30,7 @@
+        <property name="orientation" >
+         <enum>Qt::Horizontal</enum>
+        </property>
+-       <property name="sizeHint" >
++       <property name="sizeHint" stdset="0" >
+         <size>
+          <width>40</width>
+          <height>20</height>
+@@ -45,7 +45,7 @@
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+-     <property name="sizeHint" >
++     <property name="sizeHint" stdset="0" >
+       <size>
+        <width>468</width>
+        <height>20</height>
+@@ -54,6 +54,27 @@
+     </spacer>
+    </item>
+    <item>
++    <layout class="QGridLayout" name="gridLayout" >
++     <item row="0" column="0" colspan="2" >
++      <widget class="QCheckBox" name="useManualCommand" >
++       <property name="text" >
++        <string>Enter tetgen command manually</string>
++       </property>
++      </widget>
++     </item>
++     <item row="1" column="0" >
++      <widget class="QLabel" name="label_27" >
++       <property name="text" >
++        <string>Tetgen command</string>
++       </property>
++      </widget>
++     </item>
++     <item row="1" column="1" >
++      <widget class="QLineEdit" name="manualCommand" />
++     </item>
++    </layout>
++   </item>
++   <item>
+     <layout class="QGridLayout" >
+      <item row="0" column="0" colspan="2" >
+       <widget class="QComboBox" name="tetgenCommand" >
+@@ -146,7 +167,7 @@
+        <property name="orientation" >
+         <enum>Qt::Horizontal</enum>
+        </property>
+-       <property name="sizeHint" >
++       <property name="sizeHint" stdset="0" >
+         <size>
+          <width>40</width>
+          <height>20</height>
+@@ -161,7 +182,7 @@
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+-     <property name="sizeHint" >
++     <property name="sizeHint" stdset="0" >
+       <size>
+        <width>468</width>
+        <height>20</height>
+@@ -202,7 +223,7 @@
+          <property name="orientation" >
+           <enum>Qt::Horizontal</enum>
+          </property>
+-         <property name="sizeHint" >
++         <property name="sizeHint" stdset="0" >
+           <size>
+            <width>40</width>
+            <height>20</height>
+@@ -233,7 +254,7 @@
+          <property name="orientation" >
+           <enum>Qt::Horizontal</enum>
+          </property>
+-         <property name="sizeHint" >
++         <property name="sizeHint" stdset="0" >
+           <size>
+            <width>40</width>
+            <height>20</height>
+@@ -250,7 +271,7 @@
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+-     <property name="sizeHint" >
++     <property name="sizeHint" stdset="0" >
+       <size>
+        <width>468</width>
+        <height>20</height>
+@@ -277,7 +298,7 @@
+          <property name="orientation" >
+           <enum>Qt::Horizontal</enum>
+          </property>
+-         <property name="sizeHint" >
++         <property name="sizeHint" stdset="0" >
+           <size>
+            <width>40</width>
+            <height>20</height>
+@@ -328,7 +349,7 @@
+        <property name="orientation" >
+         <enum>Qt::Horizontal</enum>
+        </property>
+-       <property name="sizeHint" >
++       <property name="sizeHint" stdset="0" >
+         <size>
+          <width>40</width>
+          <height>20</height>
+@@ -341,7 +362,7 @@
+        <property name="orientation" >
+         <enum>Qt::Horizontal</enum>
+        </property>
+-       <property name="sizeHint" >
++       <property name="sizeHint" stdset="0" >
+         <size>
+          <width>40</width>
+          <height>20</height>
+@@ -362,7 +383,7 @@
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+-           <property name="sizeHint" >
++           <property name="sizeHint" stdset="0" >
+             <size>
+              <width>40</width>
+              <height>20</height>
+@@ -375,7 +396,7 @@
+            <property name="orientation" >
+             <enum>Qt::Vertical</enum>
+            </property>
+-           <property name="sizeHint" >
++           <property name="sizeHint" stdset="0" >
+             <size>
+              <width>20</width>
+              <height>40</height>
+@@ -602,7 +623,7 @@
+                <property name="orientation" >
+                 <enum>Qt::Horizontal</enum>
+                </property>
+-               <property name="sizeHint" >
++               <property name="sizeHint" stdset="0" >
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+@@ -615,7 +636,7 @@
+                <property name="orientation" >
+                 <enum>Qt::Horizontal</enum>
+                </property>
+-               <property name="sizeHint" >
++               <property name="sizeHint" stdset="0" >
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+@@ -660,7 +681,7 @@
+            <property name="orientation" >
+             <enum>Qt::Vertical</enum>
+            </property>
+-           <property name="sizeHint" >
++           <property name="sizeHint" stdset="0" >
+             <size>
+              <width>20</width>
+              <height>40</height>
+@@ -673,7 +694,7 @@
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+-           <property name="sizeHint" >
++           <property name="sizeHint" stdset="0" >
+             <size>
+              <width>40</width>
+              <height>20</height>
+@@ -698,7 +719,7 @@
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+-           <property name="sizeHint" >
++           <property name="sizeHint" stdset="0" >
+             <size>
+              <width>40</width>
+              <height>20</height>
+@@ -711,7 +732,7 @@
+            <property name="orientation" >
+             <enum>Qt::Vertical</enum>
+            </property>
+-           <property name="sizeHint" >
++           <property name="sizeHint" stdset="0" >
+             <size>
+              <width>20</width>
+              <height>40</height>
+@@ -728,7 +749,7 @@
+                <property name="orientation" >
+                 <enum>Qt::Horizontal</enum>
+                </property>
+-               <property name="sizeHint" >
++               <property name="sizeHint" stdset="0" >
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+@@ -955,7 +976,7 @@
+                <property name="orientation" >
+                 <enum>Qt::Horizontal</enum>
+                </property>
+-               <property name="sizeHint" >
++               <property name="sizeHint" stdset="0" >
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+@@ -1000,7 +1021,7 @@
+            <property name="orientation" >
+             <enum>Qt::Vertical</enum>
+            </property>
+-           <property name="sizeHint" >
++           <property name="sizeHint" stdset="0" >
+             <size>
+              <width>20</width>
+              <height>40</height>
+@@ -1013,7 +1034,7 @@
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+-           <property name="sizeHint" >
++           <property name="sizeHint" stdset="0" >
+             <size>
+              <width>40</width>
+              <height>20</height>
+@@ -1090,7 +1111,7 @@
+              <property name="orientation" >
+               <enum>Qt::Horizontal</enum>
+              </property>
+-             <property name="sizeHint" >
++             <property name="sizeHint" stdset="0" >
+               <size>
+                <width>40</width>
+                <height>20</height>
+@@ -1133,7 +1154,7 @@
+            <property name="orientation" >
+             <enum>Qt::Vertical</enum>
+            </property>
+-           <property name="sizeHint" >
++           <property name="sizeHint" stdset="0" >
+             <size>
+              <width>20</width>
+              <height>40</height>
+@@ -1146,7 +1167,7 @@
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+-           <property name="sizeHint" >
++           <property name="sizeHint" stdset="0" >
+             <size>
+              <width>40</width>
+              <height>20</height>
+@@ -1159,7 +1180,7 @@
+            <property name="orientation" >
+             <enum>Qt::Vertical</enum>
+            </property>
+-           <property name="sizeHint" >
++           <property name="sizeHint" stdset="0" >
+             <size>
+              <width>20</width>
+              <height>40</height>
+@@ -1178,7 +1199,7 @@
+      <property name="orientation" >
+       <enum>Qt::Vertical</enum>
+      </property>
+-     <property name="sizeHint" >
++     <property name="sizeHint" stdset="0" >
+       <size>
+        <width>468</width>
+        <height>16</height>
+@@ -1189,5 +1210,118 @@
+   </layout>
+  </widget>
+  <resources/>
+- <connections/>
++ <connections>
++  <connection>
++   <sender>useManualCommand</sender>
++   <signal>toggled(bool)</signal>
++   <receiver>manualCommand</receiver>
++   <slot>setEnabled(bool)</slot>
++   <hints>
++    <hint type="sourcelabel" >
++     <x>47</x>
++     <y>104</y>
++    </hint>
++    <hint type="destinationlabel" >
++     <x>126</x>
++     <y>131</y>
++    </hint>
++   </hints>
++  </connection>
++  <connection>
++   <sender>useManualCommand</sender>
++   <signal>toggled(bool)</signal>
++   <receiver>tetgenCommand</receiver>
++   <slot>setDisabled(bool)</slot>
++   <hints>
++    <hint type="sourcelabel" >
++     <x>25</x>
++     <y>104</y>
++    </hint>
++    <hint type="destinationlabel" >
++     <x>48</x>
++     <y>153</y>
++    </hint>
++   </hints>
++  </connection>
++  <connection>
++   <sender>useManualCommand</sender>
++   <signal>toggled(bool)</signal>
++   <receiver>RadiusEdgeRatio</receiver>
++   <slot>setDisabled(bool)</slot>
++   <hints>
++    <hint type="sourcelabel" >
++     <x>236</x>
++     <y>110</y>
++    </hint>
++    <hint type="destinationlabel" >
++     <x>236</x>
++     <y>180</y>
++    </hint>
++   </hints>
++  </connection>
++  <connection>
++   <sender>useManualCommand</sender>
++   <signal>toggled(bool)</signal>
++   <receiver>MaxTetrahedronVolume</receiver>
++   <slot>setDisabled(bool)</slot>
++   <hints>
++    <hint type="sourcelabel" >
++     <x>54</x>
++     <y>110</y>
++    </hint>
++    <hint type="destinationlabel" >
++     <x>193</x>
++     <y>212</y>
++    </hint>
++   </hints>
++  </connection>
++  <connection>
++   <sender>useManualCommand</sender>
++   <signal>toggled(bool)</signal>
++   <receiver>WithRegions</receiver>
++   <slot>setDisabled(bool)</slot>
++   <hints>
++    <hint type="sourcelabel" >
++     <x>349</x>
++     <y>110</y>
++    </hint>
++    <hint type="destinationlabel" >
++     <x>97</x>
++     <y>260</y>
++    </hint>
++   </hints>
++  </connection>
++  <connection>
++   <sender>useManualCommand</sender>
++   <signal>toggled(bool)</signal>
++   <receiver>WithPredefinedRegions</receiver>
++   <slot>setDisabled(bool)</slot>
++   <hints>
++    <hint type="sourcelabel" >
++     <x>96</x>
++     <y>106</y>
++    </hint>
++    <hint type="destinationlabel" >
++     <x>229</x>
++     <y>263</y>
++    </hint>
++   </hints>
++  </connection>
++  <connection>
++   <sender>useManualCommand</sender>
++   <signal>toggled(bool)</signal>
++   <receiver>RegionArray</receiver>
++   <slot>setDisabled(bool)</slot>
++   <hints>
++    <hint type="sourcelabel" >
++     <x>19</x>
++     <y>100</y>
++    </hint>
++    <hint type="destinationlabel" >
++     <x>165</x>
++     <y>298</y>
++    </hint>
++   </hints>
++  </connection>
++ </connections>
+ </ui>
+Index: tetgen/Tetgen.xml
+===================================================================
+--- tetgen/Tetgen.xml	(revision 4576)
++++ tetgen/Tetgen.xml	(working copy)
+@@ -7,19 +7,36 @@
+         <ProxyGroupDomain name="groups">
+           <Group name="sources"/>
+           <Group name="filters"/>
+-        </ProxyGroupDomain>        
++        </ProxyGroupDomain>
+         <DataTypeDomain name="input_type">
+           <DataType value="vtkPolyData"/>
+         </DataTypeDomain>
+ 
+-        <InputArrayDomain name="input_array1">
++        <InputArrayDomain name="input_array1"
++                          optional="1">
+           <RequiredProperties>
+             <Property name="SelectInputScalars"
+                       function="FieldDataSelection"/>
+-          </RequiredProperties>          
++          </RequiredProperties>
+         </InputArrayDomain>
+       </InputProperty>
+ 
++
++      <StringVectorProperty
++      name="manualCommand"
++      command="SetmanualCommand"
++      number_of_elements="1">
++      </StringVectorProperty>
++
++      <IntVectorProperty name="useManualCommand"
++       command="SetuseManualCommand"
++       number_of_elements="1"
++       animateable="1"
++       default_values="0">
++        <BooleanDomain name="bool"/>
++      </IntVectorProperty>
++
++
+       <IntVectorProperty
+         name="tetgenCommand"
+         command="SettetgenCommand"
+@@ -34,7 +51,7 @@
+           <Entry value="5" text="Quality mesh and volume constraints" />
+         </EnumerationDomain>
+       </IntVectorProperty>
+-      
++
+       <DoubleVectorProperty
+             name="RadiusEdgeRatio"
+             command="SetRadiusEdgeRatio"
+@@ -86,7 +103,7 @@
+           no tetrahedra is generated whose volume is larger
+           than that number
+         </Documentation>
+-      </DoubleVectorProperty>      
++      </DoubleVectorProperty>
+ 
+       <IntVectorProperty name="WithRegions"
+        command="SetWithRegions"
+@@ -111,7 +128,7 @@
+        default_values="0">
+         <BooleanDomain name="bool"/>
+       </IntVectorProperty>
+-      
++
+       <DoubleVectorProperty
+             name="deltaX"
+             command="SetdeltaX"
+@@ -140,7 +157,7 @@
+        animateable="1"
+        default_values="0">
+         <BooleanDomain name="bool"/>
+-      </IntVectorProperty>            
++      </IntVectorProperty>
+ 
+       <IntVectorProperty name="WithBBX2"
+        command="SetWithBBX2"
+@@ -172,12 +189,12 @@
+         <IntRangeDomain name="range" min="101" />
+       </DoubleVectorProperty>
+ 
+-        <StringVectorProperty
+-				name="RegionArray"
+-				command="SetRegionArray"
+-				number_of_elements="1"
+-				animateable="0"
+-      	label="Region Array">
++      <StringVectorProperty
++      name="RegionArray"
++      command="SetRegionArray"
++      number_of_elements="1"
++      animateable="0"
++      label="Region Array">
+         <ArrayListDomain name="array_list"
+ 												 attribute_type="Scalars"
+ 												input_domain_name="input_array1">
+@@ -287,7 +304,7 @@
+             default_values="0">
+         <SimpleIntInformationHelper/>
+       </IntVectorProperty>
+-      
++
+     </SourceProxy>
+   </ProxyGroup>
+ </ServerManagerConfiguration>
+\ No newline at end of file
+Index: tetgen/vtkTetgen.cxx
+===================================================================
+--- tetgen/vtkTetgen.cxx	(revision 4576)
++++ tetgen/vtkTetgen.cxx	(working copy)
+@@ -148,6 +148,8 @@
+ 
+ 
+ 	this->RegionArray = NULL;
++	this->manualCommand = NULL;
++	this->useManualCommand = 0;
+ 	
+ }
+ 
+@@ -617,58 +619,69 @@
+ // -v Prints the version information.
+ // -h Help: A brief instruction for using TetGen.
+ 
+-	switch(tetgenCommand)
++	char *command2 = NULL;
++	if(!this->useManualCommand)
+ 	{
+-	case 1:
+-		command = "p" ;
+-		if(WithPredefinedRegions)
+-			command = "pA";
+-		break;
+-	case 2:
+-		command = "pY" ;
+-		if(WithPredefinedRegions)
+-			command = "pA";
+-		break;
+-	case 3:
+-		command = "pq" + q ;
+-		if(WithPredefinedRegions)
+-			command = "pqA";
+-		break;
+-	case 4:
+-		command = "pa" + v;
+-		if(WithPredefinedRegions)
+-			command = "paA";
+-		break;
+-	case 5:
+-		command = "pq" + q + "a" + v;
+-		if(WithPredefinedRegions)
+-			command = "pq" + q + "aA";
+-		break;
+-	default:
+-		vtkErrorMacro(" please select a tetrahedralization mode");
+-		delete this->Internal;
+-		input->Delete();
+-		delete[] npts;
+-		BlkNum->Delete();
+-		return 1;
+-	}
++		switch(tetgenCommand)
++		{
++		case 1:
++			command = "p" ;
++			if(WithPredefinedRegions)
++				command = "pA";
++			break;
++		case 2:
++			command = "pY" ;
++			if(WithPredefinedRegions)
++				command = "pA";
++			break;
++		case 3:
++			command = "pq" + q ;
++			if(WithPredefinedRegions)
++				command = "pqA";
++			break;
++		case 4:
++			command = "pa" + v;
++			if(WithPredefinedRegions)
++				command = "paA";
++			break;
++		case 5:
++			command = "pq" + q + "a" + v;
++			if(WithPredefinedRegions)
++				command = "pq" + q + "aA";
++			break;
++		default:
++			vtkErrorMacro(" please select a tetrahedralization mode");
++			delete this->Internal;
++			input->Delete();
++			delete[] npts;
++			BlkNum->Delete();
++			return 1;
++		}
+ 
+-	if(WithRegions)
+-	{
+-		command = command +"AA";
++		if(WithRegions)
++		{
++			command = command +"AA";
++		}
++		
++		command2 = new char[command.size()];
++
++		for(unsigned int i = 0; i<command.size(); i++)
++			command2[i]=command[i];
+ 	}
+-	char *command2;
+-	command2 = new char[command.size()];
+ 
+-	for(unsigned int i = 0; i<command.size(); i++)
+-		command2[i]=command[i];
+-
+ // command2 define the switch used to excecute tetgen 
+ 
+   try
+     {
+-	  tetrahedralize(command2, &this->Internal->in, &this->Internal->out);
+-	  }
++			if(this->useManualCommand)
++			{
++				tetrahedralize(this->manualCommand, &this->Internal->in, &this->Internal->out);
++			}
++			if(!this->useManualCommand)
++			{
++				tetrahedralize(command2, &this->Internal->in, &this->Internal->out);
++			}
++		}
+ 	catch ( ... )
+ 	  {
+ 	  vtkErrorMacro(" You need to try a different option, tetgen crashed " );
+@@ -790,7 +803,8 @@
+ 		output->GetCellData()->AddArray(BlkNum);
+ 
+ 
+-	delete[] command2;
++	if(command2)
++		delete[] command2;
+ 
+ 	input->Delete();
+ 	delete[] npts;
+Index: tetgen/vtkTetgen.h
+===================================================================
+--- tetgen/vtkTetgen.h	(revision 4576)
++++ tetgen/vtkTetgen.h	(working copy)
+@@ -1,25 +1,25 @@
+ /*
+-   ParaView is a free software; you can redistribute it and/or modify it
+-   under the terms of the ParaView license version 1.2. 
+-
+-   See License_v1.2.txt for the full ParaView license.
+-   A copy of this license can be obtained by contacting
+-   Kitware Inc.
+-   28 Corporate Drive
+-   Clifton Park, NY 12065
+-   USA
+-
+-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+-``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR
+-CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+-EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+-PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+-NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++   ParaView is a free software; you can redistribute it and/or modify it
++   under the terms of the ParaView license version 1.2. 
++
++   See License_v1.2.txt for the full ParaView license.
++   A copy of this license can be obtained by contacting
++   Kitware Inc.
++   28 Corporate Drive
++   Clifton Park, NY 12065
++   USA
++
++THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
++A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR
++CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
++EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
++PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
++PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
++LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
++NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+ 
+ 
+@@ -51,6 +51,12 @@
+   vtkTypeRevisionMacro(vtkTetgen,vtkUnstructuredGridAlgorithm);
+   void PrintSelf(ostream& os, vtkIndent indent);
+ 
++	vtkSetStringMacro(manualCommand);
++	vtkGetStringMacro(manualCommand);
++
++	vtkSetMacro(useManualCommand,int);
++	vtkGetMacro(useManualCommand,int);
++
+ 	vtkSetMacro(tetgenCommand, int);  // vtkSetMacro is used to get a input value of a parameter from the filter Menu
+ 
+ 	vtkSetMacro(RadiusEdgeRatio, double);
+@@ -171,11 +177,12 @@
+ 	int PointMerging;
+ 
+ 
++	char* manualCommand;
++	int useManualCommand;
+ 
+ 
+ 
+ 
+-
+ private:
+ 	vtkCellArray *inCells;	// real input cells
+ 	vtkCellArray *Cells;    // cells after cleaning and triangulation

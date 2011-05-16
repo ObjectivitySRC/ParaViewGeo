@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/DrillHole" >
+        <file>pqDrillHoleReader.ui</file>
+        <file>pqDrillHole16.PNG</file>
+    </qresource>
+</RCC>

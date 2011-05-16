@@ -1,0 +1,6 @@
+<RCC>
+	<qresource prefix="/ParaViewResources">
+		<file>GocadVoxetWriterGUI.xml</file>
+	</qresource>
+</RCC>
+

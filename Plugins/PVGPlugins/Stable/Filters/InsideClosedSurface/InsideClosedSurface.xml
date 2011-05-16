@@ -1,0 +1,27 @@
+<ServerManagerConfiguration>
+       <ProxyGroup name="filters">
+          <SourceProxy name="InsideClosedSurface" class="vtkInsideClosedSurface">
+            <InputProperty
+              name="Source"
+              command="SetSourceConnection" >
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources"/>
+                    <Group name="filters"/>
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                      <DataType value="vtkPolySet"/>          
+                </DataTypeDomain>
+            </InputProperty>
+            <InputProperty name="Input" 
+			   command="SetInputConnection">
+                    <ProxyGroupDomain name="groups">
+                        <Group name="sources"/>
+                        <Group name="filters"/>
+                    </ProxyGroupDomain>
+                    <DataTypeDomain name="input_type">
+                           <DataType value="vtkDataSet"/>
+                    </DataTypeDomain>
+            </InputProperty>
+	    </SourceProxy>
+       </ProxyGroup>
+</ServerManagerConfiguration>

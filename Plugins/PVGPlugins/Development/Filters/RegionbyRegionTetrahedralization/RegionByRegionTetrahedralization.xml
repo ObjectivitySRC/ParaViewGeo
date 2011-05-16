@@ -1,0 +1,50 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="Region by Region Tetrahedralization" class="vtkRegionByRegionTetrahedralization">
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>        
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+
+        <InputArrayDomain name="input_array1">
+          <RequiredProperties>
+            <Property name="SelectInputScalars"
+                      function="FieldDataSelection"/>
+          </RequiredProperties>
+        </InputArrayDomain>
+      </InputProperty>
+
+      <StringVectorProperty
+      name="RegionArray"
+      command="SetRegionArray"
+      number_of_elements="1"
+      animateable="0"
+      label="Region Array">
+        <ArrayListDomain name="array_list"
+												 attribute_type="Scalars"
+												input_domain_name="input_array1">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          This property indicates the name of the segment id array.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="VolumesArray"
+         command="GetVolumesArray"
+         information_only="1">
+        <SimpleStringInformationHelper/>
+      </StringVectorProperty>
+      
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

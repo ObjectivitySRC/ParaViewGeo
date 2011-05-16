@@ -1,0 +1,6 @@
+<ParaViewReaders>
+  <Reader name="PointSetReader"
+    extensions="psf"
+    file_description="Point Set">
+  </Reader>
+</ParaViewReaders>

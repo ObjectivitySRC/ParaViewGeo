@@ -1,0 +1,6 @@
+<RCC>
+	<qresource prefix="/ParaViewResources">
+		<file>PDMReaderGUI.xml</file>
+	</qresource>
+</RCC>
+

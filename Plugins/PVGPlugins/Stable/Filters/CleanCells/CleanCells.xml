@@ -1,0 +1,108 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="Clean Cells" class="vtkCleanCells">
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>        
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+      </InputProperty>
+
+      <IntVectorProperty
+          name="PieceInvariant"
+          command="SetPieceInvariant"
+          number_of_elements="1"
+          default_values="1" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this property is set to 1, the whole data set will be processed at once so that cleaning the data set always produces the same results. If it is set to 0, the data set can be processed one piece at a time, so it is not necessary for the entire data set to fit into memory; however the results are not guaranteed to be the same as they would be if the Piece invariant option was on. Setting this option to 0 may produce seams in the output dataset when ParaView is run in parallel.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+         name="Tolerance"
+         command="SetTolerance"
+         number_of_elements="1"
+         animateable="1"
+         default_values="0.0" >
+        <DoubleRangeDomain name="range" min="0" max="1" />
+        <Documentation>
+          If merging nearby points (see PointMerging property) and not using absolute tolerance (see ToleranceIsAbsolute property), this property specifies the tolerance for performing merging as a fraction of the length of the diagonal of the bounding box of the input data set.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+         name="AbsoluteTolerance"
+         command="SetAbsoluteTolerance"
+         number_of_elements="1"
+         default_values="0" >
+        <DoubleRangeDomain name="range" min="0"/>
+        <Documentation>
+          If merging nearby points (see PointMerging property) and using absolute tolerance (see ToleranceIsAbsolute property), this property specifies the tolerance for performing merging in the spatial units of the input data set.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+         name="ToleranceIsAbsolute"
+         command="SetToleranceIsAbsolute"
+         number_of_elements="1"
+         default_values="0" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          This property determines whether to use absolute or relative (a percentage of the bounding box) tolerance when performing point merging.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="ConvertLinesToPoints"
+         command="SetConvertLinesToPoints"
+         number_of_elements="1"
+         default_values="0" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this property is set to 1, degenerate lines (a "line" whose endpoints are at the same spatial location) will be converted to points.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="ConvertPolysToLines"
+         command="SetConvertPolysToLines"
+         number_of_elements="1"
+         default_values="0" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this property is set to 1, degenerate polygons (a "polygon" with only two distinct point coordinates) will be converted to lines.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="ConvertStripsToPolys"
+         command="SetConvertStripsToPolys"
+         number_of_elements="1"
+         default_values="1" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this property is set to 1, degenerate triangle strips (a triangle "strip" containing only one triangle) will be converted to triangles.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="PointMerging"
+         command="SetPointMerging"
+         number_of_elements="1"
+         default_values="1" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this property is set to 1, then points will be merged if they are within the specified Tolerance or AbsoluteTolerance (see the Tolerance and AbsoluteTolerance propertys), depending on the value of the ToleranceIsAbsolute property. (See the ToleranceIsAbsolute property.) If this property is set to 0, points will not be merged.
+        </Documentation>
+      </IntVectorProperty>
+
+
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

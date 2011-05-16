@@ -1,0 +1,25 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">	 
+    <SourceProxy name="Annotate Volume" class="vtkAnnotation">
+      <InputProperty name="Input"
+		    command="SetInputConnection">
+	<ProxyGroupDomain name="groups">
+	  <Group name="sources"/>
+	  <Group name="filters"/>
+	</ProxyGroupDomain>
+	<DataTypeDomain name="input_type">
+	  <DataType value="vtkDataSet"/>
+	</DataTypeDomain>
+      </InputProperty>      
+      <StringVectorProperty
+        name="Format"
+        command="SetFormat"
+        number_of_elements="1"
+        default_values="Volume for object">     
+      </StringVectorProperty>
+     <Hints>
+       <Visibility replace_input="2" />
+     </Hints>
+   </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

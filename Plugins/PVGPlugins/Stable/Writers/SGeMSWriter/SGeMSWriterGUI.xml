@@ -1,0 +1,6 @@
+<ParaViewWriters>
+  <Writer name="vtkSGeMSWriter"
+    extensions="sgm"
+    file_description="SGeMS Files">
+  </Writer>
+</ParaViewWriters>

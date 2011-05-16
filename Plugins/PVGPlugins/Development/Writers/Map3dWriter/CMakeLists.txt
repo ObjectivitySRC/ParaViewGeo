@@ -1,0 +1,10 @@
+PROJECT(Map3dWriter)
+FIND_PACKAGE(ParaView REQUIRED)
+INCLUDE(${PARAVIEW_USE_FILE})
+
+ADD_PARAVIEW_PLUGIN(Map3dWriterClientPlugin "1.0"
+	GUI_RESOURCES Map3dWriter.qrc)
+
+ADD_PARAVIEW_PLUGIN(Map3dWriterServerManagerPlugin "1.0"
+	SERVER_MANAGER_XML Map3dWriter.xml
+	SERVER_MANAGER_SOURCES vtkMap3dWriter.cxx)

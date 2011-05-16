@@ -1,0 +1,395 @@
+commit 9d83ccabd1b1222916994c587bd6f9fa16f67552
+Author: Utkarsh Ayachit <utkarsh.ayachit@kitware.com>
+Date:   Sun Mar 15 16:24:29 2009 +0000
+
+    ENH: Added resetBounds(double bounds[6]) API to reset bounds explicitly.
+
+diff --git a/Qt/Components/pq3DWidget.cxx b/Qt/Components/pq3DWidget.cxx
+index 28c980b..2bdd7ee 100644
+--- a/Qt/Components/pq3DWidget.cxx
++++ b/Qt/Components/pq3DWidget.cxx
+@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ #include "pq3DWidget.h"
+ 
+ // ParaView Server Manager includes.
++#include "vtkBoundingBox.h"
+ #include "vtkEventQtSlotConnect.h"
+ #include "vtkMemberFunctionCommand.h"
+ #include "vtkPVDataInformation.h"
+@@ -498,26 +499,35 @@ void pq3DWidget::hideWidget()
+ //-----------------------------------------------------------------------------
+ int pq3DWidget::getReferenceInputBounds(double bounds[6]) const
+ {
+-  if (!this->getReferenceProxy())
++  vtkSMProxy* refProxy = this->getReferenceProxy();
++  if (!refProxy)
+     {
+     return 0;
+     }
+   
+   vtkSMSourceProxy* input = NULL;
+   vtkSMInputProperty* ivp = vtkSMInputProperty::SafeDownCast(
+-    this->getReferenceProxy()->GetProperty("Input"));
++    refProxy->GetProperty("Input"));
+   int output_port = 0;
+-  if(ivp && ivp->GetNumberOfProxies())
++  if (ivp && ivp->GetNumberOfProxies())
+     {
+     vtkSMProxy* pxy = ivp->GetProxy(0);
+     input = vtkSMSourceProxy::SafeDownCast(pxy);
+     output_port =ivp->GetOutputPortForConnection(0);
+     }
++  else
++    {
++    // reference proxy has no input. This generally happens when the widget is
++    // controlling properties of a source. In that case, if the source has been
++    // "created", simply use the source's bounds.
++    input = vtkSMSourceProxy::SafeDownCast(refProxy);
++    }
+ 
+   if(input)
+     {
+     input->GetDataInformation(output_port)->GetBounds(bounds);
+-    return 1;
++    return (bounds[1] >= bounds[0] && bounds[3] >= bounds[2] && bounds[5] >=
++      bounds[4]) ? 1 : 0;
+     }
+   return 0;
+ }
+@@ -567,3 +577,16 @@ void pq3DWidget::updatePickShortcut()
+     }
+ }
+ 
++//-----------------------------------------------------------------------------
++void pq3DWidget::resetBounds()
++{
++  vtkSMNewWidgetRepresentationProxy* widget = this->getWidgetProxy();
++  double input_bounds[6];
++  if (!widget || !this->getReferenceInputBounds(input_bounds))
++    {
++    return;
++    }
++  this->resetBounds(input_bounds);
++  this->setModified();
++  this->render();
++}
+diff --git a/Qt/Components/pq3DWidget.h b/Qt/Components/pq3DWidget.h
+index e944b16..a019abb 100644
+--- a/Qt/Components/pq3DWidget.h
++++ b/Qt/Components/pq3DWidget.h
+@@ -88,6 +88,11 @@ public:
+   /// Returns the current render view.
+   pqRenderView* renderView() const;
+ 
++  /// Reset the bounds to the specified bounds.
++  /// This typically calls PlaceWidget on the underlying 3D Widget 
++  /// with reference proxy bounds.
++  virtual void resetBounds(double bounds[6])=0;
++
+ signals:
+   /// Notifies observers that widget visibility has changed
+   void widgetVisibilityChanged(bool);
+@@ -138,7 +143,10 @@ public slots:
+   /// This should be explicitly called after the panel is created
+   /// and the widget is initialized i.e. the reference proxy, controlled proxy
+   /// and hints have been set.
+-  virtual void resetBounds() =0;
++  /// Default implementation uses the getReferenceInputBounds() to get the
++  /// bounds and then calls resetBounds(double bounds[]). Subclasses generally
++  /// need to override this resetBounds(double*) method.
++  virtual void resetBounds();
+ 
+ protected slots:
+   /// Called to request a render.
+diff --git a/Qt/Components/pqBoxWidget.cxx b/Qt/Components/pqBoxWidget.cxx
+index 1a803c3..0ca4bc7 100644
+--- a/Qt/Components/pqBoxWidget.cxx
++++ b/Qt/Components/pqBoxWidget.cxx
+@@ -162,20 +162,11 @@ void pqBoxWidget::select()
+ }
+ 
+ //-----------------------------------------------------------------------------
+-void pqBoxWidget::resetBounds()
++void pqBoxWidget::resetBounds(double input_bounds[6])
+ {
+   vtkSMNewWidgetRepresentationProxy* widget = this->getWidgetProxy();
+-  double input_bounds[6];
+-  if (!widget || !this->getReferenceInputBounds(input_bounds))
+-    {
+-    return;
+-    }
+-
+   vtkSMPropertyHelper(widget, "PlaceWidget").Set(input_bounds, 6);
+   widget->UpdateVTKObjects();
+-
+-  this->setModified();
+-  this->render();
+ }
+ 
+ //-----------------------------------------------------------------------------
+diff --git a/Qt/Components/pqBoxWidget.h b/Qt/Components/pqBoxWidget.h
+index 6bc83aa..e2577eb 100644
+--- a/Qt/Components/pqBoxWidget.h
++++ b/Qt/Components/pqBoxWidget.h
+@@ -51,7 +51,9 @@ public:
+   /// This should be explicitly called after the panel is created
+   /// and the widget is initialized i.e. the reference proxy, controlled proxy
+   /// and hints have been set.
+-  virtual void resetBounds();
++  virtual void resetBounds(double bounds[6]);
++  virtual void resetBounds()
++    { this->Superclass::resetBounds(); }
+ 
+   /// accept the changes. Overridden to hide handles.
+   virtual void accept();
+diff --git a/Qt/Components/pqHandleWidget.cxx b/Qt/Components/pqHandleWidget.cxx
+index 3a6eaba..b1a07c2 100644
+--- a/Qt/Components/pqHandleWidget.cxx
++++ b/Qt/Components/pqHandleWidget.cxx
+@@ -93,7 +93,7 @@ pqHandleWidget::pqHandleWidget(vtkSMProxy* _smproxy, vtkSMProxy* pxy, QWidget* p
+     this, SLOT(onWidgetVisibilityChanged(bool)));
+ 
+   QObject::connect(this->Implementation->UI->useCenterBounds,
+-    SIGNAL(clicked()), this, SLOT(onResetBounds()));
++    SIGNAL(clicked()), this, SLOT(resetBounds()));
+ 
+   QObject::connect(&this->Implementation->Links, SIGNAL(qtWidgetChanged()),
+     this, SLOT(setModified()));
+@@ -184,33 +184,21 @@ void pqHandleWidget::onWidgetVisibilityChanged(bool visible)
+ }
+ 
+ //-----------------------------------------------------------------------------
+-void pqHandleWidget::resetBounds()
++void pqHandleWidget::resetBounds(double input_bounds[6])
+ {
+   vtkSMNewWidgetRepresentationProxy* widget = this->getWidgetProxy();
+-  double input_bounds[6];
+-  if(widget && this->getReferenceInputBounds(input_bounds))
++  double input_origin[3];
++  input_origin[0] = (input_bounds[0] + input_bounds[1]) / 2.0;
++  input_origin[1] = (input_bounds[2] + input_bounds[3]) / 2.0;
++  input_origin[2] = (input_bounds[4] + input_bounds[5]) / 2.0;
++
++  if(vtkSMDoubleVectorProperty* const widget_position =
++    vtkSMDoubleVectorProperty::SafeDownCast(
++      widget->GetProperty("WorldPosition")))
+     {
+-    double input_origin[3];
+-    input_origin[0] = (input_bounds[0] + input_bounds[1]) / 2.0;
+-    input_origin[1] = (input_bounds[2] + input_bounds[3]) / 2.0;
+-    input_origin[2] = (input_bounds[4] + input_bounds[5]) / 2.0;
+-
+-    if(vtkSMDoubleVectorProperty* const widget_position =
+-      vtkSMDoubleVectorProperty::SafeDownCast(
+-        widget->GetProperty("WorldPosition")))
+-      {
+-      widget_position->SetElements(input_origin);
+-      widget->UpdateVTKObjects();
+-      }
+-    this->setModified();
++    widget_position->SetElements(input_origin);
++    widget->UpdateVTKObjects();
+     }
+ }
+ 
+-//-----------------------------------------------------------------------------
+-void pqHandleWidget::onResetBounds()
+-{
+-  this->resetBounds();
+-  this->render();
+-
+-}
+ 
+diff --git a/Qt/Components/pqHandleWidget.h b/Qt/Components/pqHandleWidget.h
+index d194eac..6969f0c 100644
+--- a/Qt/Components/pqHandleWidget.h
++++ b/Qt/Components/pqHandleWidget.h
+@@ -54,12 +54,11 @@ public:
+   /// This should be explicitly called after the panel is created
+   /// and the widget is initialized i.e. the reference proxy, controlled proxy
+   /// and hints have been set.
+-  virtual void resetBounds();
++  virtual void resetBounds()
++    { this->Superclass::resetBounds(); }
++  virtual void resetBounds(double bounds[6]);
+ 
+ private slots:
+-  /// Called to reset the 3D widget bounds to the reference proxy bounds
+-  void onResetBounds();
+-
+   /// Called when the user changes widget visibility
+   void onWidgetVisibilityChanged(bool visible);
+ 
+diff --git a/Qt/Components/pqImplicitPlaneWidget.cxx b/Qt/Components/pqImplicitPlaneWidget.cxx
+index f772f5d..557f037 100644
+--- a/Qt/Components/pqImplicitPlaneWidget.cxx
++++ b/Qt/Components/pqImplicitPlaneWidget.cxx
+@@ -332,15 +332,9 @@ void pqImplicitPlaneWidget::select()
+ }
+ 
+ //-----------------------------------------------------------------------------
+-void pqImplicitPlaneWidget::resetBounds()
++void pqImplicitPlaneWidget::resetBounds(double input_bounds[6])
+ {
+   vtkSMNewWidgetRepresentationProxy* widget = this->getWidgetProxy();
+-  double input_bounds[6];
+-  if (!widget || !this->getReferenceInputBounds(input_bounds))
+-    {
+-    return;
+-    }
+-
+   vtkBoundingBox box(input_bounds);
+ 
+   double input_origin[3];
+diff --git a/Qt/Components/pqImplicitPlaneWidget.h b/Qt/Components/pqImplicitPlaneWidget.h
+index 4dfb505..f91c161 100644
+--- a/Qt/Components/pqImplicitPlaneWidget.h
++++ b/Qt/Components/pqImplicitPlaneWidget.h
+@@ -55,7 +55,9 @@ public:
+ 
+ public slots:
+   /// Resets the bounds of the 3D widget to the reference proxy bounds.
+-  virtual void resetBounds();
++  virtual void resetBounds()
++    { this->Superclass::resetBounds(); }
++  virtual void resetBounds(double bounds[6]);
+ 
+   /// accept the changes
+   void accept();
+diff --git a/Qt/Components/pqLineWidget.cxx b/Qt/Components/pqLineWidget.cxx
+index e7c65fc..d62e5b1 100644
+--- a/Qt/Components/pqLineWidget.cxx
++++ b/Qt/Components/pqLineWidget.cxx
+@@ -339,15 +339,9 @@ void pqLineWidget::createWidget(pqServer* server, const QString& xmlname)
+ }
+ 
+ //-----------------------------------------------------------------------------
+-void pqLineWidget::resetBounds()
++void pqLineWidget::resetBounds(double bounds[6])
+ {
+   vtkSMNewWidgetRepresentationProxy* widget = this->getWidgetProxy();
+-  double bounds[6];
+-  if (!widget || !this->getReferenceInputBounds(bounds))
+-    {
+-    return;
+-    }
+-
+   if(vtkSMDoubleVectorProperty* const place_widget =
+     vtkSMDoubleVectorProperty::SafeDownCast(
+       widget->GetProperty("PlaceWidget")))
+diff --git a/Qt/Components/pqLineWidget.h b/Qt/Components/pqLineWidget.h
+index eff66dd..456c981 100644
+--- a/Qt/Components/pqLineWidget.h
++++ b/Qt/Components/pqLineWidget.h
+@@ -56,7 +56,9 @@ public:
+   /// This should be explicitly called after the panel is created
+   /// and the widget is initialized i.e. the reference proxy, controlled proxy
+   /// and hints have been set.
+-  virtual void resetBounds();
++  virtual void resetBounds()
++    { this->Superclass::resetBounds(); }
++  virtual void resetBounds(double bounds[6]);
+ 
+   void setControlledProperties(vtkSMProperty* point1, vtkSMProperty* point2);
+ 
+diff --git a/Qt/Components/pqPointSourceWidget.cxx b/Qt/Components/pqPointSourceWidget.cxx
+index 90602ec..6919b09 100644
+--- a/Qt/Components/pqPointSourceWidget.cxx
++++ b/Qt/Components/pqPointSourceWidget.cxx
+@@ -92,25 +92,21 @@ pqPointSourceWidget::~pqPointSourceWidget()
+ }
+ 
+ //-----------------------------------------------------------------------------
+-void pqPointSourceWidget::resetBounds()
++void pqPointSourceWidget::resetBounds(double input_bounds[6])
+ {
+-  this->Superclass::resetBounds();
++  this->Superclass::resetBounds(input_bounds);
+ 
+   vtkSMNewWidgetRepresentationProxy* widget = this->getWidgetProxy();
+-  double input_bounds[6];
+-  if(widget && this->getReferenceInputBounds(input_bounds))
++  double min_diameter = input_bounds[1]-input_bounds[0];
++  min_diameter = qMin(min_diameter, input_bounds[3]-input_bounds[2]);
++  min_diameter = qMin(min_diameter, input_bounds[5]-input_bounds[4]);
++  vtkSMDoubleVectorProperty* dvp = vtkSMDoubleVectorProperty::SafeDownCast(
++    widget->GetProperty("Radius"));
++  if (dvp)
+     {
+-    double min_diameter = input_bounds[1]-input_bounds[0];
+-    min_diameter = qMin(min_diameter, input_bounds[3]-input_bounds[2]);
+-    min_diameter = qMin(min_diameter, input_bounds[5]-input_bounds[4]);
+-    vtkSMDoubleVectorProperty* dvp = vtkSMDoubleVectorProperty::SafeDownCast(
+-      widget->GetProperty("Radius"));
+-    if (dvp)
+-      {
+-      dvp->SetElement(0, min_diameter * 0.1);
+-      }
+-    widget->UpdateVTKObjects();
++    dvp->SetElement(0, min_diameter * 0.1);
+     }
++  widget->UpdateVTKObjects();
+ }
+ 
+ //-----------------------------------------------------------------------------
+diff --git a/Qt/Components/pqPointSourceWidget.h b/Qt/Components/pqPointSourceWidget.h
+index eeb7814..648ec83 100644
+--- a/Qt/Components/pqPointSourceWidget.h
++++ b/Qt/Components/pqPointSourceWidget.h
+@@ -57,7 +57,9 @@ public:
+   /// This should be explicitly called after the panel is created
+   /// and the widget is initialized i.e. the reference proxy, controlled proxy
+   /// and hints have been set.
+-  virtual void resetBounds();
++  virtual void resetBounds(double bounds[6]);
++  virtual void resetBounds()
++    { this->Superclass::resetBounds(); }
+ 
+ protected:
+   /// Subclasses can override this method to map properties to
+diff --git a/Qt/Components/pqSphereWidget.cxx b/Qt/Components/pqSphereWidget.cxx
+index e4e0a02..1c01995 100644
+--- a/Qt/Components/pqSphereWidget.cxx
++++ b/Qt/Components/pqSphereWidget.cxx
+@@ -149,15 +149,9 @@ void pqSphereWidget::onWidgetVisibilityChanged(bool visible)
+ }
+ 
+ //-----------------------------------------------------------------------------
+-void pqSphereWidget::resetBounds()
++void pqSphereWidget::resetBounds(double input_bounds[6])
+ {
+   vtkSMNewWidgetRepresentationProxy* widget = this->getWidgetProxy();
+-  double input_bounds[6];
+-  if (!widget || !this->getReferenceInputBounds(input_bounds))
+-    {
+-    return;
+-    }
+-
+ 
+   vtkBoundingBox box;
+   box.SetBounds(input_bounds);
+@@ -168,9 +162,6 @@ void pqSphereWidget::resetBounds()
+   vtkSMPropertyHelper(widget, "Center").Set(center, 3);
+   vtkSMPropertyHelper(widget, "Radius").Set(box.GetMaxLength()/2.0);
+   widget->UpdateVTKObjects();
+-
+-  this->setModified();
+-  this->render();
+ }
+ 
+ //-----------------------------------------------------------------------------
+diff --git a/Qt/Components/pqSphereWidget.h b/Qt/Components/pqSphereWidget.h
+index f0fefa2..98e0a41 100644
+--- a/Qt/Components/pqSphereWidget.h
++++ b/Qt/Components/pqSphereWidget.h
+@@ -49,7 +49,9 @@ public:
+   /// This should be explicitly called after the panel is created
+   /// and the widget is initialized i.e. the reference proxy, controlled proxy
+   /// and hints have been set.
+-  virtual void resetBounds();
++  virtual void resetBounds()
++    { this->Superclass::resetBounds(); }
++  virtual void resetBounds(double bounds[6]);
+ 
+   /// accept the changes. Overridden to hide handles.
+   virtual void accept();

@@ -1,0 +1,6 @@
+<ParaViewReaders>
+  <Reader name="DOTReader"
+    extensions="dot"
+    file_description="DOT File">
+  </Reader>
+</ParaViewReaders>

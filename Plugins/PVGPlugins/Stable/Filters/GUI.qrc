@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/StableFilters" >
+      <file>ApplySchedule/pqApplySchedule.ui</file>
+      <file>BoundingBox/pqBoundingBox.ui</file>
+      <file>ComputeVolumes/pqComputeVolumes.ui</file>
+      <file>ConvertPointsToBlocks/pqConvertPointsToBlocks.ui</file>
+      <file>RegexThreshold/pqRegexThreshold.ui</file>
+      <file>SumBillboard/SumBillboard.ui</file>
+      <file>tetgen/pqTetgen.ui</file>
+      <file>TimeThreshold/pqTimeThreshold.ui</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,7 @@
+HEADERS = 
+SOURCES = test_selectors.cpp
+TARGET = test_selectors
+LIBS += -lqui 
+#LIBS += -L/usr/lib/qt3-gcc2.96/plugins/designer -lGsTLwidgets
+#LIBS += -lGsTLAppli_qtplugins -lGsTLAppli_grid -lGsTLAppli_math
+

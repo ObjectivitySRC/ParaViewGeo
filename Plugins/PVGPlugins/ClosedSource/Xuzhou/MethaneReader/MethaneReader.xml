@@ -1,0 +1,14 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="sources">
+    <SourceProxy name="MethaneReader" class="vtkMethaneReader">
+      <OutputPort name="MethaneLevel" index="0" />
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+    </SourceProxy>
+    <!-- End of Methane Reader -->
+  </ProxyGroup>
+</ServerManagerConfiguration>

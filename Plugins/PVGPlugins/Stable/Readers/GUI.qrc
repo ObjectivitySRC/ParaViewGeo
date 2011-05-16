@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/StableReaders" >
+        <file>DataMineReader/pqDMWireFrameReader.ui</file>
+        <file>DrillHoleReader/pqDrillHoleReader.ui</file>
+		<file>PointSetReader/pqPointSetReader.ui</file>
+        <file>EPSReader/pqEPSReader.ui</file>
+        <file>SOTResult/pqSOTResult.ui</file>
+    </qresource>
+</RCC>

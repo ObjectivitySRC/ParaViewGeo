@@ -1,0 +1,6 @@
+<ParaViewWriters>
+  <Writer name="GocadVoxetWriter"
+    extensions="vo"
+    file_description="Gocad ASCII Files">
+  </Writer>
+</ParaViewWriters>

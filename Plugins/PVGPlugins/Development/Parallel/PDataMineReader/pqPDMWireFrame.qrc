@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/CustomWidget" >
+        <file>pqPDMWireFrameReader.ui</file>
+    </qresource>
+</RCC>

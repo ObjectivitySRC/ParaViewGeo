@@ -1,0 +1,6 @@
+<ParaViewWriters>
+  <Writer name="GocadWriter"
+    extensions="ts pl vs"
+    file_description="Gocad ASCII Files">
+  </Writer>
+</ParaViewWriters>

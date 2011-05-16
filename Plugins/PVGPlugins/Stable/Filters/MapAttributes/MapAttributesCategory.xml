@@ -1,0 +1,10 @@
+<ParaViewFilters>
+ <Category name="Mirarco">
+  <Filter name="Map Attributes"/>
+  <Filter name="DUMMY_FILTER"/>
+ </Category>
+  <Category name="Hazard Mapping">
+    <Filter name="Map Attributes From Grid"/>
+    <Filter name="DUMMY_FILTER"/>
+  </Category>
+</ParaViewFilters>

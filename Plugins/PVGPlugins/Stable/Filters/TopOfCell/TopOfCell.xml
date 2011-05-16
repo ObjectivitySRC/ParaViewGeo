@@ -1,0 +1,37 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="Top Of Cell" class="vtkTopOfCell">
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>        
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+      </InputProperty>
+
+           
+      <IntVectorProperty
+        name="TopOfCellType"
+        command="SetTopOfCellType"
+        number_of_elements="1"
+        default_values="0" >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Xmax"/>
+          <Entry value="1" text="Xmin"/>
+          <Entry value="2" text="Ymax" />
+          <Entry value="3" text="Ymin" />
+          <Entry value="4" text="Zmax" />
+          <Entry value="5" text="Zmin" />
+          
+       </EnumerationDomain>
+       
+      </IntVectorProperty>
+  
+    </SourceProxy>
+
+  </ProxyGroup>
+</ServerManagerConfiguration>

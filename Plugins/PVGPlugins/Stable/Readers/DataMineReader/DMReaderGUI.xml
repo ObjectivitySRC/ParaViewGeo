@@ -1,0 +1,26 @@
+<ParaViewReaders>
+  <Reader name="DataMineWireFrameReader"
+    extensions="dm DM Dm"
+    file_description="DataMine Wire Frame Files">
+  </Reader>
+    <Reader name="DataMineBlockModelReader"
+    extensions="dm DM Dm"
+    file_description="DataMine Block Model Files">
+  </Reader>
+  <Reader name="DataMineDrillHoleReader"
+    extensions="dm DM Dm"
+    file_description="DataMine Drill Hole Files">
+  </Reader>
+  <Reader name="DataMinePerimeterReader"
+    extensions="dm DM Dm"
+    file_description="DataMine Point Files">
+  </Reader>
+  <Reader name="DataMinePointReader"
+    extensions="dm DM Dm"
+    file_description="DataMine Point Files">
+  </Reader>
+  <Reader name="DataMineDummyReader"
+    extensions="dm DM Dm"
+    file_description="DataMine Dummy Files">
+  </Reader>    
+</ParaViewReaders>

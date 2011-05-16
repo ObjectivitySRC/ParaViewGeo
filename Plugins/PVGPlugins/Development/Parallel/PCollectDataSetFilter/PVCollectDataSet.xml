@@ -1,0 +1,29 @@
+<ServerManagerConfiguration>
+       <ProxyGroup name="filters">
+          <SourceProxy name="Collect DataSet" class="vtkPVCollectDataSet"
+                       multiprocess_support="multiple_processes">
+
+            <InputProperty name="Input" command="SetInputConnection">
+              <ProxyGroupDomain name="groups">
+                <Group name="sources"/>
+                <Group name="filters"/>
+              </ProxyGroupDomain>
+              <DataTypeDomain name="input_type">
+                <DataType value="vtkDataSet"/>
+              </DataTypeDomain>              
+            </InputProperty>
+
+            <IntVectorProperty
+              name="PassThrough"
+              command="SetPassThrough"
+              number_of_elements="1"
+              default_values="0">
+              <BooleanDomain name="bool"/>
+              <Documentation>
+                This property specifies the option to copy or collect the PolyData
+              </Documentation>
+            </IntVectorProperty>
+            
+        </SourceProxy>
+      </ProxyGroup>  
+</ServerManagerConfiguration>

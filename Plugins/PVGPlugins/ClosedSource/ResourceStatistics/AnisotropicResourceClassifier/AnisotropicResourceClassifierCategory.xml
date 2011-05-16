@@ -1,0 +1,6 @@
+<ParaViewFilters>
+ <Category name="Geology and Statistics">
+   <Filter name="Anisotropic Resource Classifier"/>
+   <Filter name="DUMMY_FILTER"/>
+ </Category>
+</ParaViewFilters>

@@ -1,0 +1,11 @@
+PROJECT(TopOfCell)
+FIND_PACKAGE(ParaView REQUIRED)
+INCLUDE(${PARAVIEW_USE_FILE})
+
+ADD_PARAVIEW_PLUGIN(TopOfCellMPlugin "1.0"
+			SERVER_MANAGER_XML TopOfCell.xml
+			SERVER_MANAGER_SOURCES vtkTopOfCell.cxx)
+
+ADD_PARAVIEW_PLUGIN(TopOfCellGUIPlugin "1.0"
+                        GUI_RESOURCE_FILES TopOfCellCategory.xml)
+

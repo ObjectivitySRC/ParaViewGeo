@@ -1,0 +1,46 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+ <SourceProxy name="PolyStruct" class="vtkPolyStruct"
+     label="Polygon To Grid">
+     <Documentation
+        long_help="This filter generates a bounding box representation of the input."
+        short_help="Generates a bounding box.">
+The Outline filter generates an axis-aligned bounding box for the input dataset. This filter operates on any type of dataset and produces polygonal output.
+     </Documentation>
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+           <ProxyGroupDomain name="groups">
+             <Group name="sources"/>
+             <Group name="filters"/>
+           </ProxyGroupDomain>
+           <DataTypeDomain name="input_type">
+             <DataType value="vtkPolyData"/>
+           </DataTypeDomain> 
+      </InputProperty>
+      <IntVectorProperty
+      name="XCubes"
+      command="SetXCubes"
+      number_of_elements="1"
+      default_values="10.0">
+      <IntRangeDomain name="range" min="2" /> 
+      </IntVectorProperty>
+      <IntVectorProperty
+      name="YCubes"
+      command="SetYCubes"
+      number_of_elements="1"
+      default_values="10.0">
+      <IntRangeDomain name="range" min="2" /> 
+      </IntVectorProperty>	
+      <IntVectorProperty
+      name="ZCubes"
+      command="SetZCubes"
+      number_of_elements="1"
+      default_values="10.0">
+      <IntRangeDomain name="range" min="2" /> 
+      </IntVectorProperty>
+    </SourceProxy>
+      
+   </ProxyGroup>
+
+</ServerManagerConfiguration>

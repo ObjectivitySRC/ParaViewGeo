@@ -1,0 +1,74 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="sources">
+
+    <SourceProxy name="LineNetworkReader"
+                class="vtkLineNetworkReader">
+
+      <StringVectorProperty
+         name="Arrays"
+         command="SetArrays"
+         repeat_command="1"
+         number_of_elements_per_command="2"
+         element_types="2 0"
+         immediate_update="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="ArrowProp"
+       command="SetArrowProp"
+       number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="x1"
+       command="Setx1"
+       number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="y1"
+       command="Sety1"
+       number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="z1"
+       command="Setz1"
+       number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="x2"
+       command="Setx2"
+       number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="y2"
+       command="Sety2"
+       number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="z2"
+       command="Setz2"
+       number_of_elements="1">
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty
+         name="ScaleArrowSize"
+         command="SetScaleArrowSize"
+         number_of_elements="1"
+         default_values="1" >
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+        name="withTunnels"
+        command="SetwithTunnels"
+        number_of_elements="1"
+        default_values="0" >
+      </IntVectorProperty>
+
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

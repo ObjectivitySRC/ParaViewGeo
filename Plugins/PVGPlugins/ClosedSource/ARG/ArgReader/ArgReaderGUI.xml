@@ -1,0 +1,6 @@
+<ParaViewReaders>
+  <Reader name="ArgReader"
+    extensions="arg Arg ARG"
+    file_description="Arg meta file">
+  </Reader>  
+</ParaViewReaders>

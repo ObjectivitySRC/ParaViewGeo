@@ -1,0 +1,56 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+ <SourceProxy name="Equal Area Prop Filter" class="vtkEqualAreaPropFilter"
+     label="Equal Area Prop Filter">          
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+           <ProxyGroupDomain name="groups">
+             <Group name="sources"/>
+             <Group name="filters"/>
+           </ProxyGroupDomain>
+           <DataTypeDomain name="input_type">
+             <DataType value="vtkPointSet"/>
+           </DataTypeDomain>
+           <InputArrayDomain name="input_array" number_of_components="1">
+             <RequiredProperties>
+                <Property name="SelectInputScalars" 
+                          function="FieldDataSelection"/>
+             </RequiredProperties>
+          </InputArrayDomain>
+      </InputProperty>
+     
+      <StringVectorProperty 
+        name="SelectInputScalars" 
+        command="SetInputArrayToProcess"
+        number_of_elements="5"
+        element_types="0 0 0 0 2"
+        label="Scalars">
+           <ArrayListDomain name="array_list" 
+                            attribute_type="Scalars">
+             <RequiredProperties>
+                <Property name="Input" function="Input"/>
+             </RequiredProperties>
+           </ArrayListDomain>
+           <FieldDataDomain name="field_list">
+             <RequiredProperties>
+                <Property name="Input" function="Input"/>
+             </RequiredProperties>
+           </FieldDataDomain>
+           <Documentation>
+             The value of this property contains the name of the scalar array from which to set EAPnn property.
+           </Documentation>
+     </StringVectorProperty> 
+
+      <IntVectorProperty 
+      name="Number of Bins"
+      command="SetBins"
+      number_of_elements="1"
+      default_values="20">      
+      </IntVectorProperty>
+      
+    </SourceProxy>
+      
+   </ProxyGroup>
+
+</ServerManagerConfiguration>

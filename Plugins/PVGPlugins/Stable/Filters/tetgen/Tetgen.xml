@@ -1,0 +1,293 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="Volumique Tetrahedralization" class="vtkTetgen">
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>        
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+
+        <InputArrayDomain name="input_array1">
+          <RequiredProperties>
+            <Property name="SelectInputScalars"
+                      function="FieldDataSelection"/>
+          </RequiredProperties>          
+        </InputArrayDomain>
+      </InputProperty>
+
+      <IntVectorProperty
+        name="tetgenCommand"
+        command="SettetgenCommand"
+        number_of_elements="1"
+        default_values="0" >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Select a Tetrahedralization Command"/>
+          <Entry value="1" text="Constrained Delaunay tetrahedralization(CDT)"/>
+          <Entry value="2" text="CDT without adding points " />
+          <Entry value="3" text="Quality mesh generation"/>
+          <Entry value="4" text="Imposes volume constraints" />
+          <Entry value="5" text="Quality mesh and volume constraints" />
+        </EnumerationDomain>
+      </IntVectorProperty>
+      
+      <DoubleVectorProperty
+            name="RadiusEdgeRatio"
+            command="SetRadiusEdgeRatio"
+            number_of_elements="1"
+            default_values="2.0">
+        <DoubleRangeDomain name="range" min="0.61" />
+        <Documentation>
+          A tetrahedron t has a
+          unique circumsphere. Let R = R(t) be that radius and L = L(t) the length
+          of the shortest edge. The radius-edge ratio Q = Q(t) of the tetrahedron is:
+          Q = R/L.
+          This ratio is minimized by the regular tetrahedron (in which case the lengths
+          of the six edges are equal, and the circumcenter is the barycenter), that is:
+          Q >= 0.612
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+            name="MaxTetrahedronVolume"
+            command="SetMaxTetrahedronVolume"
+            number_of_elements="1"
+            default_values="1000000">
+        <IntRangeDomain name="range" min="0.0" />
+        <Documentation>
+          no tetrahedra is generated whose volume is larger
+          than that number
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+            name="MaxTetrahedronVolumeInBox"
+            command="SetMaxTetrahedronVolumeInBox"
+            number_of_elements="1"
+            default_values="1000000">
+        <IntRangeDomain name="range" min="0.0" />
+        <Documentation>
+          no tetrahedra is generated whose volume is larger
+          than that number
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+            name="MaxTetrahedronVolumeInBox2"
+            command="SetMaxTetrahedronVolumeInBox2"
+            number_of_elements="1"
+            default_values="1000000">
+        <IntRangeDomain name="range" min="0.0" />
+        <Documentation>
+          no tetrahedra is generated whose volume is larger
+          than that number
+        </Documentation>
+      </DoubleVectorProperty>      
+
+      <IntVectorProperty name="WithRegions"
+       command="SetWithRegions"
+       number_of_elements="1"
+       animateable="1"
+       default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="WithPredefinedRegions"
+       command="SetWithPredefinedRegions"
+       number_of_elements="1"
+       animateable="1"
+       default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="WithBoundingBox"
+       command="SetWithBoundingBox"
+       number_of_elements="1"
+       animateable="1"
+       default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+      
+      <DoubleVectorProperty
+            name="deltaX"
+            command="SetdeltaX"
+            number_of_elements="1"
+            default_values="150">
+        <IntRangeDomain name="range" min="101" />
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+            name="deltaY"
+            command="SetdeltaY"
+            number_of_elements="1"
+            default_values="150">
+        <IntRangeDomain name="range" min="101" />
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+            name="deltaZ"
+            command="SetdeltaZ"
+            number_of_elements="1"
+            default_values="150">
+        <IntRangeDomain name="range" min="101" />
+      </DoubleVectorProperty>
+
+      <IntVectorProperty name="WithBBX1"
+       command="SetWithBBX1"
+       number_of_elements="1"
+       animateable="1"
+       default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>            
+
+      <IntVectorProperty name="WithBBX2"
+       command="SetWithBBX2"
+       number_of_elements="1"
+       animateable="1"
+       default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+            name="deltaX2"
+            command="SetdeltaX2"
+            number_of_elements="1"
+            default_values="200">
+        <IntRangeDomain name="range" min="101" />
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+            name="deltaY2"
+            command="SetdeltaY2"
+            number_of_elements="1"
+            default_values="200">
+        <IntRangeDomain name="range" min="101" />
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+            name="deltaZ2"
+            command="SetdeltaZ2"
+            number_of_elements="1"
+            default_values="200">
+        <IntRangeDomain name="range" min="101" />
+      </DoubleVectorProperty>
+
+        <StringVectorProperty
+				name="RegionArray"
+				command="SetRegionArray"
+				number_of_elements="1"
+				animateable="0"
+      	label="Region Array">
+        <ArrayListDomain name="array_list"
+												 attribute_type="Scalars"
+												input_domain_name="input_array1">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          This property indicates the name of the segment id array.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+         name="PieceInvariant"
+         command="SetPieceInvariant"
+         number_of_elements="1"
+         default_values="1" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this property is set to 1, the whole data set will be processed at once so that cleaning the data set always produces the same results. If it is set to 0, the data set can be processed one piece at a time, so it is not necessary for the entire data set to fit into memory; however the results are not guaranteed to be the same as they would be if the Piece invariant option was on. Setting this option to 0 may produce seams in the output dataset when ParaView is run in parallel.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+         name="Tolerance"
+         command="SetTolerance"
+         number_of_elements="1"
+         animateable="1"
+         default_values="0.0" >
+        <DoubleRangeDomain name="range" min="0" max="1" />
+        <Documentation>
+          If merging nearby points (see PointMerging property) and not using absolute tolerance (see ToleranceIsAbsolute property), this property specifies the tolerance for performing merging as a fraction of the length of the diagonal of the bounding box of the input data set.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+         name="AbsoluteTolerance"
+         command="SetAbsoluteTolerance"
+         number_of_elements="1"
+         default_values="0" >
+        <DoubleRangeDomain name="range" min="0"/>
+        <Documentation>
+          If merging nearby points (see PointMerging property) and using absolute tolerance (see ToleranceIsAbsolute property), this property specifies the tolerance for performing merging in the spatial units of the input data set.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+         name="ToleranceIsAbsolute"
+         command="SetToleranceIsAbsolute"
+         number_of_elements="1"
+         default_values="0" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          This property determines whether to use absolute or relative (a percentage of the bounding box) tolerance when performing point merging.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="ConvertLinesToPoints"
+         command="SetConvertLinesToPoints"
+         number_of_elements="1"
+         default_values="0" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this property is set to 1, degenerate lines (a "line" whose endpoints are at the same spatial location) will be converted to points.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="ConvertPolysToLines"
+         command="SetConvertPolysToLines"
+         number_of_elements="1"
+         default_values="0" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this property is set to 1, degenerate polygons (a "polygon" with only two distinct point coordinates) will be converted to lines.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="ConvertStripsToPolys"
+         command="SetConvertStripsToPolys"
+         number_of_elements="1"
+         default_values="1" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this property is set to 1, degenerate triangle strips (a triangle "strip" containing only one triangle) will be converted to triangles.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="PointMerging"
+         command="SetPointMerging"
+         number_of_elements="1"
+         default_values="1" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this property is set to 1, then points will be merged if they are within the specified Tolerance or AbsoluteTolerance (see the Tolerance and AbsoluteTolerance propertys), depending on the value of the ToleranceIsAbsolute property. (See the ToleranceIsAbsolute property.) If this property is set to 0, points will not be merged.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+            name="numberOfTetrahedronInfo"
+            command="GetnumberOfTetrahedron"
+            number_of_elements="1"
+            information_only="1"
+            default_values="0">
+        <SimpleIntInformationHelper/>
+      </IntVectorProperty>
+      
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

@@ -1,0 +1,3 @@
+LIBS += -lqui
+LIBS += -lGsTLAppli_grid -lGsTLAppli_appli -lGsTLAppli_utils
+LIBS += -lGsTLAppli_gui -lGsTLAppli_extragui

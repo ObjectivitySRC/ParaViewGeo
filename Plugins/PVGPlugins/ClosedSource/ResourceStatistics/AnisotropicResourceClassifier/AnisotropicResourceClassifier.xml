@@ -1,0 +1,79 @@
+<ServerManagerConfiguration>
+  <!-- Begin AnisotropicResourceClassifier -->
+  <ProxyGroup name="filters">
+    <SourceProxy name="Anisotropic Resource Classifier" class="vtkAnisotropicResourceClassifier">
+
+      <InputProperty
+        name="Input"
+        command="SetInputConnection"> 
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+      </InputProperty>
+
+      <InputProperty
+        name="Source"
+        command="SetSourceConnection" >
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+      </InputProperty>
+
+      <DoubleVectorProperty
+        name="Magnitude"
+        command="SetMagnitude"
+        number_of_elements="3"
+        default_values="1.0 1.0 1.0">
+        <DoubleRangeDomain name="range" min="1.0"/>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="Angle X"
+        command="SetAngleX"
+        number_of_elements="1"
+        default_values="0.0">
+        <DoubleRangeDomain name="range" min="0.0" max="360.0"/>
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+        name="Angle Y"
+        command="SetAngleY"
+        number_of_elements="1"
+        default_values="0.0">
+        <DoubleRangeDomain name="range" min="0.0" max="360.0"/>
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+        name="Angle Z"
+        command="SetAngleZ"
+        number_of_elements="1"
+        default_values="0.0">
+        <DoubleRangeDomain name="range" min="0.0" max="360.0"/>
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+        name="Indicated Factor"
+        command="SetFactorIndicated"
+        number_of_elements="1"
+        default_values="2.0">
+        <DoubleRangeDomain name="range" min="1.0"/>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="Inferred Factor"
+        command="SetFactorInferred"
+        number_of_elements="1"
+        default_values="6.0">
+        <DoubleRangeDomain name="range" min="1.0"/>
+      </DoubleVectorProperty>
+
+    </SourceProxy>
+  </ProxyGroup>
+  <!-- End AnisotropicResourceClassifier -->
+</ServerManagerConfiguration>

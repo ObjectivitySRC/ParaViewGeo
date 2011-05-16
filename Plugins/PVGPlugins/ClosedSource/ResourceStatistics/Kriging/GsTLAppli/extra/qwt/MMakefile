@@ -1,0 +1,5 @@
+TARGET = qwt
+
+win32 {
+  DEFINES += QWT_DLL QWT_MAKEDLL
+}

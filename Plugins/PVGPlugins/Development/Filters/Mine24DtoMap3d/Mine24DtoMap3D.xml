@@ -1,0 +1,325 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="Mine24D to Map3D" class="vtkMine24DtoMap3D">
+      
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>        
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>       
+        </DataTypeDomain>        
+        <InputArrayDomain name="input_array_1" number_of_components="1">
+          <RequiredProperties>
+            <Property name="SelectInputScalars"
+                      function="FieldDataSelection"/>
+          </RequiredProperties>
+        </InputArrayDomain>
+
+        <InputArrayDomain name="input_array_2" number_of_components="1">
+          <RequiredProperties>
+            <Property name="SelectInputScalars"
+                      function="FieldDataSelection"/>
+          </RequiredProperties>
+        </InputArrayDomain>
+      </InputProperty>
+
+      <StringVectorProperty
+				name="SegmentID"
+				command="SetSegmentID"
+				number_of_elements="1"
+				animateable="0"
+      	label="Segment ID">
+        <ArrayListDomain name="array_list"
+												 attribute_type="Scalars"
+												input_domain_name="input_array_1">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          This property indicates the name of the segment id array.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+				name="SegmentColor"
+				command="SetSegmentColor"
+				number_of_elements="1"
+				animateable="0"
+      	label="Segment Color">
+        <ArrayListDomain name="array_list"
+												 attribute_type="Scalars"
+												input_domain_name="input_array_2">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          This property indicates the name of the segment color array.
+        </Documentation>
+      </StringVectorProperty>
+
+      <!--StringVectorProperty
+         name="SelectInputScalars"
+         command="SetInputArrayToProcess"
+         number_of_elements="5"
+         element_types="0 0 0 0 2"
+         label="Scalars">
+        <ArrayListDomain name="array_list"
+                         attribute_type="Scalars"
+                         input_domain_name="input_array_2">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+        <FieldDataDomain name="field_list">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </FieldDataDomain>
+        <Documentation>
+          The value of this property contains the name of the scalar array from which to perform thresholding.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="SelectInputScalars_2"
+         command="SetInputArrayToProcess"
+         number_of_elements="5"
+         element_types="0 0 0 0 2"
+         label="Scalars2">
+        <ArrayListDomain name="array_list_2"
+                         attribute_type="Scalars"
+                         input_domain_name="input_array_2">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+        <FieldDataDomain name="field_list_2">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </FieldDataDomain>
+        <Documentation>
+          The value of this property contains the name of the scalar array from which to perform thresholding.
+        </Documentation>
+      </StringVectorProperty>-->
+      
+
+      <IntVectorProperty name="Simplification"
+       command="SetSimplification"
+       number_of_elements="1"
+       animateable="1"
+       default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          this method is used to simplify simple stopes. for each stopes, this method
+          will find the 8 vertices of the top and bottom faces and link them togother.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="SimplifyMesh"
+       command="SetSimplifyMesh"
+       number_of_elements="1"
+       animateable="1"
+       default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          
+        </Documentation>
+      </IntVectorProperty>      
+
+      <IntVectorProperty name="Approximation"
+       command="SetApproximation"
+       number_of_elements="1"
+       animateable="1"
+       default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          This methode is used for stopes having a complex geometry. This methode
+          may not work correctly on very small stopes. To build the approximated stopes in paraview,
+          this methode approximate stopes faces with an oriented bounding rectangle.
+          The speed of this methode depend on the parameter Aproximation precision. if Aproximation precision is small, the result
+          is better but the algorithm will be longer.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="Conversion"
+       command="SetConversion"
+       number_of_elements="1"
+       animateable="1"
+       default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          This method will convert all cells and points to map3d format.
+          The output in map3d will be identical to the Mine24d input.
+        </Documentation>
+      </IntVectorProperty>
+      
+      <DoubleVectorProperty name="AngleTolerance"
+       command="SetAngleTolerance"
+       number_of_elements="1"
+       default_values="30">
+        <Documentation>
+         This variable is required for "Simplification" option
+         This variable define what Angle tolerance will be used to
+         detect plans perpendicular to Z. We need the plans 
+         perpendicular to Z to find the top and bottom faces
+         of a segment.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty name="AngleStep"
+       command="SetAngleStep"
+       number_of_elements="1"
+       default_values="5">
+        <Documentation>
+          This variable is used with approximation option:
+          This will set the precision of the oriented bounding
+          rectangle of faces.
+          For excelent approximation: 0 to 2.5 
+          Very good approximation: 2.5 to 5 
+          good approximation: 5 to ...(depend on data)
+             If you reduce this variable, you will have a better result but
+          the algorithm will be longer. 
+        </Documentation>
+      </DoubleVectorProperty>      
+
+      <IntVectorProperty name="WithActivity"
+       command="SetWithActivity"
+       number_of_elements="1"
+       animateable="1"
+       default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this option if you want to add Activities to the output
+          you must have an activity file corresponding to the input.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+          name ="ActivityFile"
+          command="SetActivityFile"
+          number_of_elements ="1"
+          default_values="C:\">
+      </StringVectorProperty>      
+      
+      <IntVectorProperty name="ActivityStep"
+       command="SetActivityStep"
+       number_of_elements="1"
+       animateable="1"
+       default_values="30">
+        <Documentation>
+          This variable is used to form Mining Blocks.
+          Each Block will have a period equal to this variable
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="dateFormat"
+       command="SetdateFormat"
+       number_of_elements="1"
+       default_values="0">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Select date format"/>
+          <Entry value="1" text="YYYY-MM-DD"/>
+          <Entry value="2" text="MM/DD/YYYY"/>
+        </EnumerationDomain>        
+      </IntVectorProperty>
+
+
+      <IntVectorProperty
+         name="PieceInvariant"
+         command="SetPieceInvariant"
+         number_of_elements="1"
+         default_values="1" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this property is set to 1, the whole data set will be processed at once so that cleaning the data set always produces the same results. If it is set to 0, the data set can be processed one piece at a time, so it is not necessary for the entire data set to fit into memory; however the results are not guaranteed to be the same as they would be if the Piece invariant option was on. Setting this option to 0 may produce seams in the output dataset when ParaView is run in parallel.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+         name="Tolerance"
+         command="SetTolerance"
+         number_of_elements="1"
+         animateable="1"
+         default_values="0.0" >
+        <DoubleRangeDomain name="range" min="0" max="1" />
+        <Documentation>
+          If merging nearby points (see PointMerging property) and not using absolute tolerance (see ToleranceIsAbsolute property), this property specifies the tolerance for performing merging as a fraction of the length of the diagonal of the bounding box of the input data set.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+         name="AbsoluteTolerance"
+         command="SetAbsoluteTolerance"
+         number_of_elements="1"
+         default_values="0" >
+        <DoubleRangeDomain name="range" min="0"/>
+        <Documentation>
+          If merging nearby points (see PointMerging property) and using absolute tolerance (see ToleranceIsAbsolute property), this property specifies the tolerance for performing merging in the spatial units of the input data set.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+         name="ToleranceIsAbsolute"
+         command="SetToleranceIsAbsolute"
+         number_of_elements="1"
+         default_values="0" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          This property determines whether to use absolute or relative (a percentage of the bounding box) tolerance when performing point merging.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="ConvertLinesToPoints"
+         command="SetConvertLinesToPoints"
+         number_of_elements="1"
+         default_values="0" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this property is set to 1, degenerate lines (a "line" whose endpoints are at the same spatial location) will be converted to points.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="ConvertPolysToLines"
+         command="SetConvertPolysToLines"
+         number_of_elements="1"
+         default_values="0" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this property is set to 1, degenerate polygons (a "polygon" with only two distinct point coordinates) will be converted to lines.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="ConvertStripsToPolys"
+         command="SetConvertStripsToPolys"
+         number_of_elements="1"
+         default_values="1" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this property is set to 1, degenerate triangle strips (a triangle "strip" containing only one triangle) will be converted to triangles.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="PointMerging"
+         command="SetPointMerging"
+         number_of_elements="1"
+         default_values="1" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this property is set to 1, then points will be merged if they are within the specified Tolerance or AbsoluteTolerance (see the Tolerance and AbsoluteTolerance propertys), depending on the value of the ToleranceIsAbsolute property. (See the ToleranceIsAbsolute property.) If this property is set to 0, points will not be merged.
+        </Documentation>
+      </IntVectorProperty>
+
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

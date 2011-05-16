@@ -1,0 +1,90 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="internal_sources">
+    <SourceProxy name="FDEMReader"
+             class="vtkFDEMReader">
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="Fills"
+        command="SetFill"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="Points"
+        command="SetPoint"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="Cracks"
+        command="SetCrack"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="Joints"
+        command="SetJoint"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
+    </SourceProxy>
+  </ProxyGroup>
+  
+  <ProxyGroup name="sources">
+    <FileSeriesReaderProxy name="FDEMReader"
+                           class="vtkFileSeriesReader"
+                           label="FEM/DEM Binary Files"
+                           file_name_method="SetFileName">
+
+      <SubProxy>
+        <Proxy name="Reader" proxygroup="internal_sources" proxyname="FDEMReader"/>
+        <ExposedProperties>
+          <Property name="Fills" />
+          <Property name="Points" />
+          <Property name="Cracks" />
+          <Property name="Joints" />
+          </ExposedProperties>          
+      </SubProxy>
+
+      <StringVectorProperty
+        name="FileNames"
+          clean_command="RemoveAllFileNames"
+          command="AddFileName"
+          animateable="0"
+          number_of_elements="0"
+          repeat_command="1">
+        <FileListDomain name="files"/>
+        <Documentation>
+          The list of files to be read by the reader. If more than 1 file is specified, the reader will switch to file series mode in which it will pretend that it can support time and provide 1 file per time step.
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty
+                           name="TimestepValues"
+                           repeatable="1"
+                           information_only="1">
+        <TimeStepsInformationHelper/>
+        <Documentation>
+          Available timestep values.
+        </Documentation>
+      </DoubleVectorProperty>      
+    </FileSeriesReaderProxy>
+  </ProxyGroup>
+
+
+</ServerManagerConfiguration>
+

@@ -1,0 +1,6 @@
+<ParaViewReaders>
+  <Reader name="BlockModelReader"
+    extensions="csv"
+    file_description="Structured Points CSV">
+  </Reader>
+</ParaViewReaders>

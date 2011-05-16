@@ -1,0 +1,7 @@
+MOC_DIR = .moc
+
+win32 {
+  DEFINES += FILTERS_EXPORTS
+  LIBS += -lGsTLAppli_utils -lGsTLAppli_math
+  LIBS += -lGsTLAppli_grid -lGsTLAppli_appli
+}

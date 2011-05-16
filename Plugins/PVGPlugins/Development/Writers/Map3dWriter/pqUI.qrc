@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/CustomWidget" >
+        <file>pqMap3dWriter.ui</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,118 @@
+<ServerManagerConfiguration>
+  <!-- Begin BlockNormalization -->
+  <ProxyGroup name="filters">
+    <SourceProxy name="Block Model Normalization" class="vtkBlockNormalization">
+
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+		
+		<InputArrayDomain name="input_array" number_of_components="1">
+        <RequiredProperties>
+          <Property name="SelectInputScalars"
+              function="FieldDataSelection"/>
+        </RequiredProperties>
+		</InputArrayDomain>		
+	  </InputProperty>
+	  
+	  <StringVectorProperty
+        name="XINC"
+        command="SetXINC"
+	      number_of_elements="1"
+	      animateable="0"
+	      label="XINC">
+        <ArrayListDomain name="array_list"
+             attribute_type="Scalars"
+			 input_domain_name="input_array">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+		<Documentation>
+          This property indicates the name of X block dimension array
+        </Documentation>
+      </StringVectorProperty>
+	  
+	  <StringVectorProperty
+        name="YINC"
+        command="SetYINC"
+	      number_of_elements="1"
+	      animateable="0"
+	      label="YINC">
+        <ArrayListDomain name="array_list"
+             attribute_type="Scalars"
+			 input_domain_name="input_array">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+		<Documentation>
+          This property indicates the name of Y block dimension array
+        </Documentation>
+      </StringVectorProperty>
+	  
+	 <StringVectorProperty
+        name="ZINC"
+        command="SetZINC"
+	      number_of_elements="1"
+	      animateable="0"
+	      label="ZINC">
+        <ArrayListDomain name="array_list"
+             attribute_type="Scalars"
+			 input_domain_name="input_array">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+		<Documentation>
+          This property indicates the name of Z block dimension array
+        </Documentation>
+      </StringVectorProperty>
+	  	 
+      <DoubleVectorProperty
+        name="NormalSizeCX"
+        command="SetNormalSizeCX"
+        number_of_elements="1"
+        animateable="1"
+        default_values="5" >
+        <DoubleRangeDomain name="range" />
+        <Documentation>
+          The dimension Size by X Direction for the block normalization
+        </Documentation>
+      </DoubleVectorProperty>
+	  
+	  <DoubleVectorProperty
+        name="NormalSizeCY"
+        command="SetNormalSizeCY"
+        number_of_elements="1"
+        animateable="1"
+        default_values="5" >
+        <DoubleRangeDomain name="range" />
+        <Documentation>
+          The dimension Size by Y Direction for the block normalization
+        </Documentation>
+      </DoubleVectorProperty>
+	  
+	  <DoubleVectorProperty
+        name="NormalSizeCZ"
+        command="SetNormalSizeCZ"
+        number_of_elements="1"
+        animateable="1"
+        default_values="5" >
+        <DoubleRangeDomain name="range" />
+        <Documentation>
+          The dimension Size by Z Direction for the block normalization
+        </Documentation>
+      </DoubleVectorProperty>	   
+
+    </SourceProxy>
+  </ProxyGroup>
+  <!-- End BlockNormalization -->
+</ServerManagerConfiguration>

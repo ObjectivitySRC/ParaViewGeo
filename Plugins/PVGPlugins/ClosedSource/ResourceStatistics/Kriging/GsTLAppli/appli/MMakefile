@@ -1,0 +1,6 @@
+CONFIG -= qt
+
+win32 {
+  DEFINES += APPLI_EXPORTS
+  LIBS += -lGsTLAppli_utils
+}

@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/CustomWidget" >
+        <file>pqApplySchedule.ui</file>
+    </qresource>
+</RCC>

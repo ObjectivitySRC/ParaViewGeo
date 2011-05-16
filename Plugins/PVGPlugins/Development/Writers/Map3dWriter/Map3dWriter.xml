@@ -1,0 +1,148 @@
+<ServerManagerConfiguration>
+<ProxyGroup name="writers">
+<WriterProxy name="Map3dWriter" class="vtkMap3dWriter" base_proxygroup="writers">
+
+  <!--Documentation short_help="defines the interface for Gocad Polygonal Data writer.">This defines the interface for Gocad Polygonal Data writer.</Documentation>--> 
+  
+  <InputProperty
+    name="Input"
+    command="SetInputConnection">
+    <ProxyGroupDomain name="groups">
+      <Group name="sources"/>
+      <Group name="filters"/>
+    </ProxyGroupDomain>
+    <DataTypeDomain name="input_type">
+      <DataType value="vtkPolyData"/>
+    </DataTypeDomain>
+    <InputArrayDomain name="input_array_1">
+    </InputArrayDomain>
+
+    <InputArrayDomain name="input_array_2">
+    </InputArrayDomain>
+  </InputProperty>
+
+  <StringVectorProperty
+    name="SegmentID"
+    command="SetSegmentID"
+    number_of_elements="1"
+    animateable="0"
+    label="Segment ID">
+    <ArrayListDomain name="array_list"
+                     attribute_type="Scalars"
+                    input_domain_name="input_array_1">
+      <RequiredProperties>
+        <Property name="Input" function="Input"/>
+      </RequiredProperties>
+    </ArrayListDomain>
+    <Documentation>
+      This property indicates the name of the block number array.
+    </Documentation>
+  </StringVectorProperty>
+  
+
+  <!--StringVectorProperty
+  name="SegmentID"
+  command="SetSegmentID"
+  number_of_elements="1"
+  label="Segment ID">
+    <Documentation>
+      This property indicates the name of the block number array.
+    </Documentation>
+  </StringVectorProperty-->
+
+  <StringVectorProperty 
+        name="FileName" 
+        command="SetFileName"
+        number_of_elements="1">
+       <Documentation>
+        The name of the file to be written.
+        </Documentation>
+      </StringVectorProperty>
+
+  <IntVectorProperty name ="Type"
+   command="SetType"
+    number_of_elements="1"
+    default_values="1">
+    <IntRangeDomain name="range" min="0.0"/>
+    <Documentation>
+      Type specifies which type of boundary element to use:
+      * Type=1 (Fictitious Force): For three-dimensional features such as excavations,
+      alternate material zones, back-filled stopes etc...
+      * Type=2 (Displacement Discontinuity) type elements should be used for tabular
+      mining excavations, fractures and fault planes.
+    </Documentation>
+  </IntVectorProperty>
+
+  <DoubleVectorProperty name="Thickness"
+   command ="SetThickness"
+   number_of_elements ="1"
+   default_values ="0">
+    <IntRangeDomain name="range" min="0.0"/>
+    <Documentation>
+      Thickness   This parameter is only used for type 2 (displacement discontinuity)
+      elements, where it is used to specify the apparent thickness of the in-filling
+      material (i.e. fault gouge, seam width, mining width or pillar height).
+      Normal displacement (closure) of this feature when in-filled will be limited
+      to this thickness. Also, the normal displacement (closure) and shear displacement (ride)
+      are divided by the Thickness to determine the strain occurring in the in-filling material.
+      This parameter should be specified in the same units that are used to specify the coordinate
+      positions (i.e. metres or feet).
+    </Documentation>
+  </DoubleVectorProperty>
+
+  <DoubleVectorProperty name="Width"
+    command = "SetWidth"
+    number_of_elements ="1"                    
+    default_values="0">
+    <IntRangeDomain name="range" min="0.0"/>
+    <Documentation>
+      Specifies the maximum width permitted.
+    </Documentation>
+  </DoubleVectorProperty>
+                        
+  
+  <IntVectorProperty name="WithActivities"
+   command="SetWithActivities"
+   number_of_elements="1"
+   animateable="1"
+   default_values="0">
+    <BooleanDomain name="bool"/>
+  </IntVectorProperty>
+
+  <StringVectorProperty
+    name="MiningBlk"
+    command="SetMiningBlk"
+    number_of_elements="1"
+    animateable="0"
+    label="Mining Block">
+    <ArrayListDomain name="array_list"
+                     attribute_type="Scalars"
+                    input_domain_name="input_array_2">
+      <RequiredProperties>
+        <Property name="Input" function="Input"/>
+      </RequiredProperties>
+    </ArrayListDomain>
+    <Documentation>
+      This property indicates the name of the Mining Block array.
+    </Documentation>
+  </StringVectorProperty>
+
+  <!--StringVectorProperty
+    name="MiningBlk"
+    command="SetMiningBlk"
+    number_of_elements="1"
+    label="Mining Block">
+    <Documentation>
+      This property indicates the name of the Mining Block array.
+    </Documentation>
+  </StringVectorProperty-->
+
+
+  <Hints>
+      <Property name="Input" show="0" /> 
+      <Property name="FileName" show="0" /> 
+      </Hints>
+
+  </WriterProxy>
+</ProxyGroup>
+  </ServerManagerConfiguration>

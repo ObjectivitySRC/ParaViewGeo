@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/CustomWidget" >
+        <file>pqEPSReader.ui</file>
+    </qresource>
+</RCC>

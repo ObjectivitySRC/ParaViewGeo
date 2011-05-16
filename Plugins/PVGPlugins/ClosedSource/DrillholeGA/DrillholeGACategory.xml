@@ -1,0 +1,6 @@
+<ParaViewFilters>
+ <Category name="Geostatistics">
+  <Filter name="DrillholeGA"/>
+  <Filter name="DUMMY_FILTER"/>
+ </Category>
+</ParaViewFilters>

@@ -1,0 +1,79 @@
+<ui version="4.0" >
+ <class>Form</class>
+ <widget class="QWidget" name="Form" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>406</width>
+    <height>351</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" >
+   <property name="margin" >
+    <number>9</number>
+   </property>
+   <property name="spacing" >
+    <number>6</number>
+   </property>
+   <item row="9" column="0" colspan="2" >
+    <spacer>
+     <property name="orientation" >
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" >
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="1" >
+    <widget class="QLineEdit" name="Regex" />
+   </item>
+   <item rowspan="5" row="2" column="0" colspan="2" >
+    <widget class="QCheckBox" name="AllScalars" >
+     <property name="text" >
+      <string>All Scalars</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" >
+    <widget class="QLabel" name="label" >
+     <property name="text" >
+      <string>Regular Expression</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" >
+    <widget class="QComboBox" name="SelectInputScalars" />
+   </item>
+   <item row="0" column="0" >
+    <widget class="QLabel" name="label_2" >
+     <property name="text" >
+      <string>Scalars</string>
+     </property>
+    </widget>
+   </item>
+   <item rowspan="2" row="7" column="0" colspan="2" >
+    <widget class="QLabel" name="label_3" >
+     <property name="lineWidth" >
+      <number>2</number>
+     </property>
+     <property name="text" >
+      <string>Regular Expression Syntax:&lt;br>^ Matches at beginning of a line&lt;br>$ Matches at end of a line&lt;br>. Matches any single character&lt;br>[ ] Matches any character(s) inside the brackets&lt;br>[^ ] Matches any character(s) not inside the brackets&lt;br>- Matches any character in range on either side of a dash&lt;br>* Matches preceding pattern zero or more times&lt;br>+ Matches preceding pattern one or more times&lt;br>? Matches preceding pattern zero or once only&lt;br>() Saves a matched expression and uses it in a  later match&lt;br></string>
+     </property>
+     <property name="wordWrap" >
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

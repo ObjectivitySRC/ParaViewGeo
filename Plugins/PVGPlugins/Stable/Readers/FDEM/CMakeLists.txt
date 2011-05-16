@@ -1,0 +1,14 @@
+PROJECT(FDEMReader)
+FIND_PACKAGE(ParaView REQUIRED)
+INCLUDE(${PARAVIEW_USE_FILE})
+
+ADD_PARAVIEW_PLUGIN(FDEMReaderClientPlugin "1.0"
+	GUI_RESOURCES FDEMReader.qrc)
+
+ADD_PARAVIEW_PLUGIN(FDEMReaderSMPlugin "1.0"
+	SERVER_MANAGER_XML FDEMReader.xml
+	SERVER_MANAGER_SOURCES vtkFDEMReader.cxx
+	SOURCES FDEMStorage.cxx FDEMFill.cxx FDEMPoint.cxx FDEMCrackJoint.cxx TriangleProperties.cxx )
+
+
+

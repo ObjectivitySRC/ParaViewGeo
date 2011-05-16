@@ -1,0 +1,204 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="Advanced Holes Refinement" class="vtkDrillHolesAdvancedRefinement">
+      <InputProperty
+         name="Input"
+         command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+      </InputProperty>
+
+      <IntVectorProperty
+           name="Type Of Interpolation"
+           command="SetTypeOfInterpolation"
+           number_of_elements="1"
+           default_values="0" >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Linear"/>
+          <Entry value="1" text="Polylinear"/>
+        </EnumerationDomain>
+        <Documentation>
+          0 to refine just the drillHoles lines
+          1 to create a tube contour to each drillHole and refine it
+        </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+            name="Type Of Refinement"
+            command="SetTypeOfRefinement"
+            number_of_elements="1"
+            default_values="0" >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Lines"/>
+          <Entry value="1" text="Tube Contour"/>
+        </EnumerationDomain>
+        <Documentation>
+          0 to refine just the drillHoles lines
+          1 to create a tube contour to each drillHole and refine it
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+      name="Dimensions"
+      command="SetDimensions"
+      number_of_elements="1"
+      default_values="10.0">
+        <IntRangeDomain name="range" min="2" />
+      </IntVectorProperty>
+
+      <IntVectorProperty
+      name="MaximumLevel"
+      command="SetMaximumLevel"
+      number_of_elements="1"
+      default_values="5.0">
+        <IntRangeDomain name="range" min="1" max="11" />
+        <Documentation>
+          This property specifies the maximun refinement level for the grid.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="MinimumLevel"
+        command="SetMinimumLevel"
+        number_of_elements="1"
+        default_values="1" >
+        <IntRangeDomain name="range" min="1" max="10" />
+        <Documentation>
+          This property specifies the minimum refinement level for the grid.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="Make Bounds"
+        command="SetMakeBounds"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          This property specifies the option to make an bounding box or not on the drillHoles
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+         name="OriginCx"
+         command="SetOriginCx"
+         number_of_elements="1"
+         default_values="-1.75" >
+        <DoubleRangeDomain name="range"/>
+        <Documentation>
+          This property specifies the origin of bonding box to the drillholes
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="OriginCy"
+        command="SetOriginCy"
+        number_of_elements="1"
+        default_values="-1.25" >
+        <DoubleRangeDomain name="range"/>
+        <Documentation>
+          This property specifies the origin of bonding box to the drillholes
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="OriginCz"
+        command="SetOriginCz"
+        number_of_elements="1"
+        default_values="0.0" >
+        <DoubleRangeDomain name="range"/>
+        <Documentation>
+          This property specifies the origin of bonding box to the drillholes
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="SizeCx"
+        command="SetSizeCx"
+        number_of_elements="1"
+        default_values="2.5" >
+        <DoubleRangeDomain name="range"/>
+        <Documentation>
+          The three values of this property indicate the length of the output in each of the three dimensions
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="SizeCy"
+        command="SetSizeCy"
+        number_of_elements="1"
+        default_values="2.5" >
+        <DoubleRangeDomain name="range"/>
+        <Documentation>
+          The three values of this property indicate the length of the output in each of the three dimensions
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="SizeCz"
+        command="SetSizeCz"
+        number_of_elements="1"
+        default_values="2.0" >
+        <DoubleRangeDomain name="range"/>
+        <Documentation>
+          The three values of this property indicate the length of the output in each of the three dimensions
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+        name="NumberOfSides"
+        command="SetNumberOfSides"
+        number_of_elements="1"
+        animateable="1"
+        default_values="4"
+        label="Number of Sides">
+        <IntRangeDomain name="range" min="3"/>
+        <Documentation>
+          The value of this property indicates the number of faces around the circumference of the tube.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="Capping"
+        command="SetCapping"
+        number_of_elements="1"
+        default_values="1" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If this property is set to 1, endcaps will be drawn on the tube. Otherwise the ends of the tube will be open.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+         name="Radius"
+         command="SetRadius"
+         number_of_elements="1"
+         default_values="1.0" >
+        <BoundsDomain name="bounds" mode="scaled_extent" scale_factor="0.01">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </BoundsDomain>
+        <Documentation> 
+          The value of this property sets the radius of the tube. If the radius is varying (VaryRadius property), then this value is the minimum radius.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+         name="Distance"
+         command="SetDistance"
+         number_of_elements="1"
+         default_values="5" >
+         <Documentation>
+          The value distace of the drillHoles
+         </Documentation>
+      </DoubleVectorProperty>
+
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

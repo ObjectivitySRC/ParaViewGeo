@@ -1,0 +1,224 @@
+<ServerManagerConfiguration>
+  <!-- Begin Kriging -->
+  <ProxyGroup name="filters">
+	<SourceProxy name="Kriging" class="vtkKriging" label="Kriging">
+
+	<Documentation
+		long_help="Performs Kriging with a pointset and assays."
+		short_help="Performs Kriging with a pointset and assays.">
+	</Documentation>
+	
+	  <InputProperty name="Source" command="SetSourceConnection">
+		<ProxyGroupDomain name="groups">
+		  <Group name="sources"/>
+		  <Group name="filters"/>
+		</ProxyGroupDomain>
+		<DataTypeDomain name="input_type">
+		  <DataType value="vtkDataSet"/>
+		</DataTypeDomain>
+		<Documentation>
+			Something
+		</Documentation>
+	  </InputProperty>
+
+    <InputProperty name="Input" command="SetInputConnection">
+      <ProxyGroupDomain name="groups">
+        <Group name="sources"/>
+        <Group name="filters"/>
+      </ProxyGroupDomain>
+      <DataTypeDomain name="input_type">
+        <DataType value="vtkDataSet"/>
+      </DataTypeDomain>
+      <InputArrayDomain name="input_array" number_of_components="1">
+        <RequiredProperties>
+          <Property name="SelectInputScalars" function="FieldDataSelection"/>
+        </RequiredProperties>
+      </InputArrayDomain>
+      <Documentation>
+        Something
+      </Documentation>
+    </InputProperty>
+    <StringVectorProperty
+        name="SelectInputScalars"
+        command="SetInputArrayToProcess"
+        number_of_elements="5"
+        element_types="0 0 0 0 2"
+        label="Scalars">
+      <ArrayListDomain name="array_list" attribute_type="Scalars">
+        <RequiredProperties>
+          <Property name="Input" function="Input"/>
+        </RequiredProperties>
+      </ArrayListDomain>
+      <FieldDataDomain name="field_list">
+        <RequiredProperties>
+          <Property name="Input" function="Input"/>
+        </RequiredProperties>
+      </FieldDataDomain>
+      <Documentation>
+        The value of this property contains the name of the scalar array from which to perform an operation on.
+      </Documentation>
+    </StringVectorProperty>
+
+
+
+    <IntVectorProperty
+      name="MinNeigh"
+      command="SetMinNeigh"
+      number_of_elements="1"
+      default_values="2">
+      <Documentation>
+        Set the minimum number of neighbours that must be found in the search ellipsoid to calculate a grade estimate and variance at each location in the pointset.
+      </Documentation>
+      <IntRangeDomain name="Range" min="1" />
+    </IntVectorProperty>
+
+    <IntVectorProperty
+      name="MaxNeigh"
+      command="SetMaxNeigh"
+      number_of_elements="1"
+      default_values="12">
+      <Documentation>
+        Set the maximum number of neighbours that can be used in the search ellipsoid to calculate a grade estimate and variance at each location in the pointset.
+      </Documentation>
+      <IntRangeDomain name="Range" min="1" />
+    </IntVectorProperty>
+    
+    <DoubleVectorProperty 
+      name="Ranges"
+	    command="SetRanges"
+      number_of_elements="3"
+      default_values="140.0 105.0 35.0">
+      <DoubleRangeDomain name="Range" min="0.0" />
+      <Documentation>
+        Set the magnitudes of the Kriging search ellipsoid. Primary, Secondary, then Tertiary.
+      </Documentation>
+    </DoubleVectorProperty>
+    
+	<DoubleVectorProperty 
+      name="Angles"
+      command="SetAngles"
+      number_of_elements="3"
+      default_values="350.0 270.0 0.0">
+      <DoubleRangeDomain name="Range" min="0.0" max="360.0"/>
+      <Documentation>
+        Set the angles of the Kriging search ellipsoid. Azimuth, Dip, then Rake.
+      </Documentation>
+    </DoubleVectorProperty>
+
+    <DoubleVectorProperty
+      name="Nugget"
+      command="SetNugget"
+      number_of_elements="1"
+      default_values="0.2571">
+      <DoubleRangeDomain name="Range" min="0.0" />
+      <Documentation>
+        Set the nugget effect of the variogram. If Nugget is 0, then you must define at least one variagram structure!
+      </Documentation>
+    </DoubleVectorProperty>
+
+    <IntVectorProperty
+      name="StructCount"
+      command="SetStructCount"
+      number_of_elements="1"
+      default_values="1">
+      <Documentation>
+        Set the number of variogram structures (up to 3) you wish to use. If Nugget is 0, then you must define at least one variagram structure!
+      </Documentation>
+	  <EnumerationDomain name="enum">
+		<Entry value="1" text="1" />
+		<Entry value="2" text="2" />
+		<Entry value="3" text="3" />
+	  </EnumerationDomain>
+    </IntVectorProperty>
+	
+
+    <DoubleVectorProperty
+      name="Contribution"
+      command="SetContribution"
+      number_of_elements="3"
+      default_values="0.3447 0.0 0.0">
+      <DoubleRangeDomain name="Range" min="0.0" />
+      <Documentation>
+        Set the contribution value for each structure (1-10)
+      </Documentation>
+    </DoubleVectorProperty>
+    <DoubleVectorProperty
+      name="R1"
+      command="SetR1"
+      number_of_elements="3"
+      default_values="140.0 0.0 0.0">
+      <DoubleRangeDomain name="Range" min="0.0" />
+      <Documentation>
+        Set the Primary Magnitude for each structure (1-10)
+      </Documentation>
+    </DoubleVectorProperty>
+    <DoubleVectorProperty
+      name="R2"
+      command="SetR2"
+      number_of_elements="3"
+      default_values="105.0 0.0 0.0">
+      <DoubleRangeDomain name="Range" min="0.0" />
+      <Documentation>
+        Set the Secondary Magnitude for each structure (1-10)
+      </Documentation>
+    </DoubleVectorProperty>
+    <DoubleVectorProperty
+      name="R3"
+      command="SetR3"
+      number_of_elements="3"
+      default_values="35.0 0.0 0.0">
+      <DoubleRangeDomain name="Range" min="0.0" />
+      <Documentation>
+        Set the Tertiary Magnitude for each structure (1-10)
+      </Documentation>
+    </DoubleVectorProperty>
+    <DoubleVectorProperty
+      name="A1"
+      command="SetA1"
+      number_of_elements="3"
+      default_values="350.0 0.0 0.0">
+      <DoubleRangeDomain name="Range" min="0.0" max="360.0"/>
+      <Documentation>
+        Set the Azimuth for each structure (1-10)
+      </Documentation>
+    </DoubleVectorProperty>
+    <DoubleVectorProperty
+      name="A2"
+      command="SetA2"
+      number_of_elements="3"
+      default_values="270.0 0.0 0.0">
+      <DoubleRangeDomain name="Range" min="0.0" max="360.0"/>
+      <Documentation>
+        Set the Dip for each structure (1-10)
+      </Documentation>
+    </DoubleVectorProperty>
+    <DoubleVectorProperty
+      name="A3"
+      command="SetA3"
+      number_of_elements="3"
+      default_values="0.0 0.0 0.0">
+      <DoubleRangeDomain name="Range" min="0.0" max="360.0"/>
+      <Documentation>
+        Set the Rake for each structure (1-10)
+      </Documentation>
+    </DoubleVectorProperty>
+    <IntVectorProperty
+      name="StructType"
+      command="SetStructType"
+      number_of_elements="3"
+      default_values="0 0 0">
+      <Documentation>
+        Set the Structure Type for each structure (1-10).
+      </Documentation>
+      <EnumerationDomain name="enum">
+        <Entry value="0" text="Spherical" />
+        <Entry value="1" text="Gaussian" />
+        <Entry value="2" text="Exponential" />
+      </EnumerationDomain>
+    </IntVectorProperty>
+	  
+    
+    </SourceProxy>
+  </ProxyGroup>
+  <!-- End Kriging -->
+</ServerManagerConfiguration>

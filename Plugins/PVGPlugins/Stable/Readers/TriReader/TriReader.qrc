@@ -1,0 +1,6 @@
+<RCC>
+	<qresource prefix="/ParaViewResources">
+		<file>TriReaderGUI.xml</file>
+	</qresource>
+</RCC>
+

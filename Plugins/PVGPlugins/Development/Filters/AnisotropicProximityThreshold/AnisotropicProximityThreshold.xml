@@ -1,0 +1,80 @@
+<ServerManagerConfiguration>
+  <!-- Begin AnisotropicProximityThreshold -->
+  <ProxyGroup name="filters">
+    <SourceProxy name="Anisotropic Proximity Threshold" 
+                 class="vtkAnisotropicProximityThreshold">
+
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+      </InputProperty>
+      
+      <InputProperty
+        name="Source"
+        command="SetSourceConnection" >
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+      </InputProperty>
+
+      <DoubleVectorProperty
+        name="Magnitude"
+        command="SetMagnitude"
+        number_of_elements="3"
+        default_values="1.0 1.0 1.0">
+        <DoubleRangeDomain name="range" min="1.0"/>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="Angle X"
+        command="SetAngleX"
+        number_of_elements="1"
+        default_values="0.0">
+        <DoubleRangeDomain name="range" min="0.0" max="360.0"/>
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+        name="Angle Y"
+        command="SetAngleY"
+        number_of_elements="1"
+        default_values="0.0">
+        <DoubleRangeDomain name="range" min="0.0" max="360.0"/>
+      </DoubleVectorProperty>
+      <DoubleVectorProperty
+        name="Angle Z"
+        command="SetAngleZ"
+        number_of_elements="1"
+        default_values="0.0">
+        <DoubleRangeDomain name="range" min="0.0" max="360.0"/>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+        name="All Scalars"
+        command="SetAllScalars"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool" />
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="Invert"
+        command="SetInvert"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool" />
+      </IntVectorProperty>
+      
+    </SourceProxy>
+  </ProxyGroup>
+  <!-- End AnisotropicProximityThreshold -->
+</ServerManagerConfiguration>

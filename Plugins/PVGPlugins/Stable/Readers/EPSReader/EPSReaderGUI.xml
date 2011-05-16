@@ -1,0 +1,6 @@
+<ParaViewReaders>
+  <Reader name="SOTEPSReader"
+    extensions="setr"
+    file_description="SOT EPS Triangle File">
+  </Reader>
+</ParaViewReaders>

@@ -1,0 +1,32 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="Add Points" class="vtkPolyLineAddPoints">
+    <InputProperty
+         name="Input"
+         command="SetInputConnection">
+           <ProxyGroupDomain name="groups">
+             <Group name="sources"/>
+             <Group name="filters"/>
+           </ProxyGroupDomain>
+           <DataTypeDomain name="input_type">
+             <DataType value="vtkPolyData"/>
+           </DataTypeDomain>
+           <Documentation>
+             This property specifies the input dataset to the PolyLineAddPoints filter.
+           </Documentation>
+      </InputProperty>
+      
+      <IntVectorProperty
+        name="Multiply Factor"
+        command="SetAddFactor"
+        number_of_elements="1"
+        animateable="1"
+        default_values="2" >
+       <IntRangeDomain name="range" min="2" max="10" />
+       <Documentation>
+         Factor to multiply the number of points by
+       </Documentation>
+     </IntVectorProperty>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

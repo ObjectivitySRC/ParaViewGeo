@@ -1,0 +1,6 @@
+<ParaViewWriters>
+  <Writer name="AbriToSotWriter"
+    extensions="act"
+    file_description="act Files">
+  </Writer>
+</ParaViewWriters>

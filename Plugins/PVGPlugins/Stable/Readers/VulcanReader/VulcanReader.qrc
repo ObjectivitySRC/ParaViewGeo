@@ -1,0 +1,6 @@
+<RCC>
+	<qresource prefix="/ParaViewResources">
+		<file>VulcanReaderGUI.xml</file>
+	</qresource>
+</RCC>
+

@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/CustomWidget" >
+        <file>pqDrillHolesLinesRefinement.ui</file>
+    </qresource>
+</RCC>

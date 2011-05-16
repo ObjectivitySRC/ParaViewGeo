@@ -1,0 +1,6 @@
+<RCC>
+	<qresource prefix="/ParaViewResources">
+		<file>SplineReaderGUI.xml</file>
+	</qresource>
+</RCC>
+

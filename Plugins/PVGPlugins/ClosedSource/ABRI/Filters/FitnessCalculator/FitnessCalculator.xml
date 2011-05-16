@@ -1,0 +1,152 @@
+<ServerManagerConfiguration>
+  <!-- Begin FitnessCalculator -->
+  <ProxyGroup name="filters">
+    <SourceProxy name="Fitness Calculator" class="vtkFitnessCalculator">
+
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPolyData"/>
+        </DataTypeDomain>
+        
+        <InputArrayDomain name="input_array_1" number_of_components="1">
+          <RequiredProperties>
+            <Property name="SelectInputScalars"
+                      function="FieldDataSelection"/>
+          </RequiredProperties>
+        </InputArrayDomain>   
+        
+      </InputProperty>
+
+
+      <StringVectorProperty
+				name="geotechProp"
+				command="SetgeotechProp"
+				number_of_elements="1"
+				animateable="0"
+        default_values="0">
+        <ArrayListDomain name="array_list"
+												 attribute_type="Scalars"
+												input_domain_name="input_array_1">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          This property indicates the name of the Fitness Property array.
+        </Documentation>
+      </StringVectorProperty>
+
+
+      <StringVectorProperty
+				name="densityInput"
+				command="SetdensityInput"
+				number_of_elements="1"
+				animateable="0"
+        default_values="0">
+        <ArrayListDomain name="array_list"
+												 attribute_type="Scalars"
+												input_domain_name="input_array_1">
+          <RequiredProperties>
+            <Property name="Input" function="Input"/>
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          This property indicates the name of the Density Property array.
+        </Documentation>
+      </StringVectorProperty>
+      
+      
+      <DoubleVectorProperty
+        name="BlockSizeX"
+        command="SetBlockSizeX"
+        number_of_elements="1"
+        default_values="5" >
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="BlockSizeY"
+        command="SetBlockSizeY"
+        number_of_elements="1"
+        default_values="5" >
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+        name="BlockSizeZ"
+        command="SetBlockSizeZ"
+        number_of_elements="1"
+        default_values="5" >
+      </DoubleVectorProperty>
+	  
+	  <IntVectorProperty
+       name="RegularBlock"
+       command="SetRegularBlock"
+       number_of_elements="1"
+       default_values="0" >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Specify if the block model have a regular sizes
+        </Documentation>
+       </IntVectorProperty>
+	   
+      <StringVectorProperty
+      name="pythonPath"
+      command="SetpythonPath"
+      number_of_elements="1"
+	    default_values = "">
+      </StringVectorProperty>
+
+      <StringVectorProperty
+      name="requestData"
+      command="SetrequestData"
+      number_of_elements="1">
+      </StringVectorProperty>
+
+	  <StringVectorProperty
+	  name = "helperFile"
+	  command="SethelperFile"
+	  number_of_elements="1"
+	  default_values="">
+	  </StringVectorProperty>
+
+
+      <IntVectorProperty
+        name="AccessPosition"
+        command="SetAccessPosition"
+        number_of_elements="1"
+        default_values="0" >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Zmax"/>
+          <Entry value="1" text="Ymax"/>
+          <Entry value="2" text="Ymin"/>
+          <Entry value="3" text="Xmax"/>
+          <Entry value="4" text="Xmin"/>
+        </EnumerationDomain>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="modified"
+        command="Setmodified"
+        number_of_elements="1"
+        default_values="1">
+      </IntVectorProperty>
+
+
+      <StringVectorProperty
+         name="functions"
+         command="Setfunctions"
+         repeat_command="1"
+         number_of_elements_per_command="1"
+         element_types="2"
+         immediate_update="1">
+      </StringVectorProperty>
+        
+    </SourceProxy>
+  </ProxyGroup>
+  <!-- End FitnessCalculator -->
+</ServerManagerConfiguration>

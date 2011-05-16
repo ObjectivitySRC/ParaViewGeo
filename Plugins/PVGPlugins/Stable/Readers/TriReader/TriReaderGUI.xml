@@ -1,0 +1,6 @@
+<ParaViewReaders>
+  <Reader name="TriReader"
+    extensions="tri TRI"
+    file_description="Gemcom ASCII Files">
+  </Reader>
+</ParaViewReaders>

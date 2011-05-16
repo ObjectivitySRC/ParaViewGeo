@@ -1,0 +1,14 @@
+<ParaViewReaders>
+  <Reader name="VulcanTriReader"
+    extensions="00t"
+    file_description="Vulcan Triangle Files">
+  </Reader>
+  <Reader name="VulcanGridReader"
+  extensions="sfg srg"
+  file_description="Vulcan Grid Files">
+  </Reader>
+  <Reader name="VulcanBlockModelReader"
+  extensions="bmf"
+  file_description="Vulcan Block Model Files">
+  </Reader>
+</ParaViewReaders>
