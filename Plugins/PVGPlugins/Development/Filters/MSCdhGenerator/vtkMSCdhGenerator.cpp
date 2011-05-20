@@ -594,28 +594,43 @@ void vtkMSCdhGenerator::addDrillholeNeighbors(std::set<int>& currentElements,
 	dPoint[0] = startPoint[0];
 	dPoint[1] = startPoint[1];
 	dPoint[2] = startPoint[2];
-	while(len < lenMax)
+
+	for(int i=0; i<points->GetNumberOfPoints(); ++i)
 	{
-		for(int i=0; i < points->GetNumberOfPoints(); ++i)
+		points->GetPoint(i, pt);
+		double closestPoint[3];
+		double t;
+		double p1[] = {startPoint[0], startPoint[1], startPoint[2]}; 
+		double p2[] = {endPoint[0], endPoint[1], endPoint[2]};
+		double d = sqrt(vtkLine::DistanceToLine(pt, p1, p2, t, closestPoint));
+		if(d <= this->DRadius)
 		{
-			points->GetPoint(i, pt);
-			if(
-				( pt[0] <= (dPoint[0]+this->EMajor) && pt[0] >= (dPoint[0]-this->EMajor) ) &&
-				( pt[1] <= (dPoint[1]+this->EMajor) && pt[1] >= (dPoint[1]-this->EMajor) ) &&
-				( pt[2] <= (dPoint[2]+this->EMajor) && pt[2] >= (dPoint[2]-this->EMajor) ) 
-				)
-			{
-				if(this->EvaluateDist2(dPoint, pt) <= 1.0)
-				{
-					currentElements.insert(i);
-				}
-			}
+			currentElements.insert(i);
 		}
-		dPoint[0] += dX;
-		dPoint[1] += dY;
-		dPoint[2] += dZ;
-		len += this->SegmentLength;
 	}
+
+	//while(len < lenMax)
+	//{
+	//	for(int i=0; i < points->GetNumberOfPoints(); ++i)
+	//	{
+	//		points->GetPoint(i, pt);
+	//		if(
+	//			( pt[0] <= (dPoint[0]+this->EMajor) && pt[0] >= (dPoint[0]-this->EMajor) ) &&
+	//			( pt[1] <= (dPoint[1]+this->EMajor) && pt[1] >= (dPoint[1]-this->EMajor) ) &&
+	//			( pt[2] <= (dPoint[2]+this->EMajor) && pt[2] >= (dPoint[2]-this->EMajor) ) 
+	//			)
+	//		{
+	//			if(this->EvaluateDist2(dPoint, pt) <= 1.0)
+	//			{
+	//				currentElements.insert(i);
+	//			}
+	//		}
+	//	}
+	//	dPoint[0] += dX;
+	//	dPoint[1] += dY;
+	//	dPoint[2] += dZ;
+	//	len += this->SegmentLength;
+	//}
 }
 
 
