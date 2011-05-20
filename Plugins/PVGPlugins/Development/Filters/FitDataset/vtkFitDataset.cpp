@@ -18,7 +18,7 @@
 #include "vtkPlane.h"
 #include "vtkLine.h"
 
-#include "vtkCoordinateSystemMapper.h"
+#include "../../../common/vtkCoordinateSystemMapper.h"
 #include "vtkLeastSquareFit.h"
 #include "vtkConvexHull.h"
 

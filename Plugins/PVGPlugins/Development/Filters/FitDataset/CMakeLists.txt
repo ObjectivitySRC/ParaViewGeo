@@ -25,6 +25,7 @@ ADD_PARAVIEW_PLUGIN(FitDatasetSMPlugin "1.0"
 					Inc3dCHull_Face.cpp
 					Inc3dCHull_Edge.cpp
 					Inc3dCHull_Vertex.cpp
+					../../../common/vtkCoordinateSystemMapper.cpp
 				)
 
 ADD_PARAVIEW_PLUGIN(FitDatasetCPlugin "1.0"

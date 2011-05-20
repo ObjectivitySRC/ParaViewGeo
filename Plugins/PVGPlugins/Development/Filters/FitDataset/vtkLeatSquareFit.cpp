@@ -1,6 +1,25 @@
 #include "vtkLeastSquareFit.h"
 #include "vtkMath.h"
 
+//----------------------------------------------------------------------------
+void Centroid(double** points, int n, double* centroid)
+{
+	double xsum = 0.0;
+	double ysum = 0.0;
+	double zsum = 0.0;
+
+	for(int i=0; i<n; i++)
+	{
+		xsum += points[i][0];
+		ysum += points[i][1];
+		zsum += points[i][2];
+	}
+
+	centroid[0] = xsum/n;
+	centroid[1] = ysum/n;
+	centroid[2] = zsum/n;
+}
+
 //--------------------------------------------------------------------------------------
 void vtkLeastSquareFit::fitLine3D(double** points, int n, double V[3], double p[3],
 																	bool computeCentroid /*=true*/)
@@ -14,7 +33,7 @@ void vtkLeastSquareFit::fitLine3D(double** points, int n, double V[3], double p[
 	double dx, dy, dz;
 	
 	if(computeCentroid)
-		vtkMath::Centroid(points, n, p);
+		Centroid(points, n, p);
 
 	for(int i=0; i<n; i++)
 	{
@@ -83,7 +102,7 @@ void vtkLeastSquareFit::fitPlane3D(double** points, int n, double N[3], double p
 	double dx, dy, dz;
 	
 	if(computeCentroid)
-		vtkMath::Centroid(points, n, p);
+		Centroid(points, n, p);
 
 	for(int i=0; i<n; i++)
 	{

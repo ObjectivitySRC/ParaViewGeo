@@ -11,7 +11,7 @@
 #include "vtkStreamingDemandDrivenPipeline.h"
 #include "vtkMath.h"
 
-#include "vtkCoordinateSystemMapper.h"
+#include "../../../common/vtkCoordinateSystemMapper.h"
 
 
 vtkCxxRevisionMacro(vtkOBBtoGrid, "$Revision: 1.0 $");
@@ -49,6 +49,20 @@ int vtkOBBtoGrid::RequestData(vtkInformation *request, vtkInformationVector **in
 		vtkErrorMacro("the grid size must be greater than 0");
 		return 0;
 	}
+
+	int extents[6];
+	extents[0] = 0;
+	extents[1] = this->GridSize[0];
+	extents[2] = 0;
+	extents[3] = this->GridSize[1];
+	extents[4] = 0;
+	extents[5] = this->GridSize[2];
+
+	//set all the information for the output
+	// Set the extents of the space
+	outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), extents, 6);
+
+
 
 	int numberOfPoints = input->GetNumberOfPoints();
 
@@ -185,21 +199,13 @@ int vtkOBBtoGrid::RequestData(vtkInformation *request, vtkInformationVector **in
 
 	cmapper->Delete();
 
-	int extents[6];
-	extents[0] = 0;
-	extents[1] = this->GridSize[0];
-	extents[2] = 0;
-	extents[3] = this->GridSize[1];
-	extents[4] = 0;
-	extents[5] = this->GridSize[2];
 
-	//set all the information for the output
-	// Set the extents of the space
-	outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), extents, 6);
-	//output->SetExtent(extents);
+	output->SetWholeExtent(extents);
+	output->SetExtent(extents);
+	output->SetUpdateExtent(extents);
+	
 	output->SetDimensions(this->GridSize[0]+1, this->GridSize[1]+1, this->GridSize[2]+1);
 	output->SetPoints( outPoints );
-	
 
 	outPoints->Delete();
 

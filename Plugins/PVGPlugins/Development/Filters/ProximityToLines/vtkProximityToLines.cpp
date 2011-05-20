@@ -19,7 +19,7 @@
 #include "vtkExtractGeometry.h"
 #include "vtkImplicitBoolean.h"
 #include "vtkPlanes.h"
-#include "vtkCoordinateSystemMapper.h"
+//#include "vtkCoordinateSystemMapper.h"
 #include "vtkDoubleArray.h"
 #include "vtkUnstructuredGrid.h"
 #include "vtkDataSetSurfaceFilter.h"
