@@ -197,6 +197,19 @@
         default_values="50">
       </DoubleVectorProperty>
 
+      <IntVectorProperty name="UseEllipsoid"
+       command="SetUseEllipsoid"
+       number_of_elements="1"
+       animateable="1"
+       default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this option if you want to use an ellipsoid to find out which blocks
+          are covered by a drillhole. If this option is not checked, a cylindrical clip
+          will be used.
+        </Documentation>
+      </IntVectorProperty>
+      
       <!-- Anisotropy Values -->
       <DoubleVectorProperty
         name="EMajor"

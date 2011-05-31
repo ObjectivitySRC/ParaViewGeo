@@ -100,6 +100,8 @@ public:
   vtkSetStringMacro(BlocksMineralValue);
 	vtkGetStringMacro(BlocksMineralValue);	
 
+	vtkSetMacro(UseEllipsoid, int);
+	vtkGetMacro(UseEllipsoid, int);
 
 protected:
 
@@ -291,6 +293,8 @@ private:
 	int numberOfCollarPoints;
 
 	vtkDataArray* blocksMineralValueArray;
+
+	int UseEllipsoid;
 };
 
 #endif

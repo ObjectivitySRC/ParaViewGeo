@@ -44,6 +44,7 @@ vtkMSCdhGenerator::vtkMSCdhGenerator()
 	this->CollarFile = NULL;
 	this->OutputFile = NULL;
 	this->BlocksMineralValue = NULL;
+	this->UseEllipsoid = 0;
 
   //metric tensor stuff (the ability to measure ellipsoidal distances)
   this->MetricTensor = new double[6]; 
@@ -514,11 +515,11 @@ void vtkMSCdhGenerator::computeBlockModelCenter()
 
 //--------------------------------------------------------------------------------------
 void vtkMSCdhGenerator::generateDrillHole(std::set<int>& currentElements,
-																					const double collarPoint[3],
-																					const double endPoint[3],
-																					double azr, 
-																					double dipr, 
-																					double length)
+										const double collarPoint[3],
+										const double endPoint[3],
+										double azr, 
+										double dipr, 
+										double length)
 {
 	double startPoint[3];
 	if(length == this->DLengthMin)
@@ -571,11 +572,11 @@ void vtkMSCdhGenerator::generateDrillHole(std::set<int>& currentElements,
 
 //--------------------------------------------------------------------------------------
 void vtkMSCdhGenerator::addDrillholeNeighbors(std::set<int>& currentElements,
-																						  const double startPoint[3], 
-																						  const double endPoint[3],
-																							vtkPoints* points,
-																							double azr,
-																							double dipr)
+												const double startPoint[3], 
+												const double endPoint[3],
+												vtkPoints* points,
+												double azr,
+												double dipr)
 {
 	double temp = fabs(this->SegmentLength * cos(dipr));
 	double dX = temp * cos(azr);
@@ -595,44 +596,48 @@ void vtkMSCdhGenerator::addDrillholeNeighbors(std::set<int>& currentElements,
 	dPoint[1] = startPoint[1];
 	dPoint[2] = startPoint[2];
 
-	for(int i=0; i<points->GetNumberOfPoints(); ++i)
+	if(this->UseEllipsoid == 0)
 	{
-		points->GetPoint(i, pt);
-		double closestPoint[3];
-		double t;
-		double p1[] = {startPoint[0], startPoint[1], startPoint[2]}; 
-		double p2[] = {endPoint[0], endPoint[1], endPoint[2]};
-		double d = sqrt(vtkLine::DistanceToLine(pt, p1, p2, t, closestPoint));
-		if(d <= this->DRadius)
+		for(int i=0; i<points->GetNumberOfPoints(); ++i)
 		{
-			currentElements.insert(i);
+			points->GetPoint(i, pt);
+			double closestPoint[3];
+			double t;
+			double p1[] = {startPoint[0], startPoint[1], startPoint[2]}; 
+			double p2[] = {endPoint[0], endPoint[1], endPoint[2]};
+			double d = sqrt(vtkLine::DistanceToLine(pt, p1, p2, t, closestPoint));
+			if(d <= this->DRadius)
+			{
+				currentElements.insert(i);
+			}
 		}
 	}
-
-	//while(len < lenMax)
-	//{
-	//	for(int i=0; i < points->GetNumberOfPoints(); ++i)
-	//	{
-	//		points->GetPoint(i, pt);
-	//		if(
-	//			( pt[0] <= (dPoint[0]+this->EMajor) && pt[0] >= (dPoint[0]-this->EMajor) ) &&
-	//			( pt[1] <= (dPoint[1]+this->EMajor) && pt[1] >= (dPoint[1]-this->EMajor) ) &&
-	//			( pt[2] <= (dPoint[2]+this->EMajor) && pt[2] >= (dPoint[2]-this->EMajor) ) 
-	//			)
-	//		{
-	//			if(this->EvaluateDist2(dPoint, pt) <= 1.0)
-	//			{
-	//				currentElements.insert(i);
-	//			}
-	//		}
-	//	}
-	//	dPoint[0] += dX;
-	//	dPoint[1] += dY;
-	//	dPoint[2] += dZ;
-	//	len += this->SegmentLength;
-	//}
+	else
+	{
+		while(len < lenMax)
+		{
+			for(int i=0; i < points->GetNumberOfPoints(); ++i)
+			{
+				points->GetPoint(i, pt);
+				if(
+					( pt[0] <= (dPoint[0]+this->EMajor) && pt[0] >= (dPoint[0]-this->EMajor) ) &&
+					( pt[1] <= (dPoint[1]+this->EMajor) && pt[1] >= (dPoint[1]-this->EMajor) ) &&
+					( pt[2] <= (dPoint[2]+this->EMajor) && pt[2] >= (dPoint[2]-this->EMajor) ) 
+					)
+				{
+					if(this->EvaluateDist2(dPoint, pt) <= 1.0)
+					{
+						currentElements.insert(i);
+					}
+				}
+			}
+			dPoint[0] += dX;
+			dPoint[1] += dY;
+			dPoint[2] += dZ;
+			len += this->SegmentLength;
+		}
+	}
 }
-
 
 //--------------------------------------------------------------------------------------
 void vtkMSCdhGenerator::writeDrillholeToFile(const std::set<int>& currentElements,
@@ -640,8 +645,8 @@ void vtkMSCdhGenerator::writeDrillholeToFile(const std::set<int>& currentElement
 																						 const double endPoint[3])
 {
 	double length = sqrt( ((endPoint[0]-collarPoint[0])*(endPoint[0]-collarPoint[0]))
-											+ ((endPoint[1]-collarPoint[1])*(endPoint[1]-collarPoint[1]))
-											+ ((endPoint[2]-collarPoint[2])*(endPoint[2]-collarPoint[2])) );
+						+ ((endPoint[1]-collarPoint[1])*(endPoint[1]-collarPoint[1]))
+						+ ((endPoint[2]-collarPoint[2])*(endPoint[2]-collarPoint[2])) );
 
 	this->outputFile << "s " << collarPoint[0] << " " 
 													 << collarPoint[1] << " "
