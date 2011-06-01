@@ -3,7 +3,7 @@
     <SourceProxy name="Proximity To Lines" class="vtkProximityToLines">
 
       <!-- the lines -->
-      <InputProperty name="Source" label="cosmic background radiation" command="SetSourceConnection">
+      <InputProperty name="Source" label="Lines" command="SetSourceConnection">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
           <Group name="filters"/>
@@ -16,7 +16,7 @@
         </Documentation>
       </InputProperty>
 	  
-      <InputProperty name="Input" label="hallelugleeahhh" command="SetInputConnection">
+      <InputProperty name="Input" label="Polygonal Data" command="SetInputConnection">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
           <Group name="filters"/>
