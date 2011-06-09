@@ -17,33 +17,33 @@ class vtkPointLocator;
 class VTK_EXPORT vtkMSCdhGenerator : public vtkPolyDataAlgorithm
 {
 public:
-  static vtkMSCdhGenerator *New();
-  vtkTypeRevisionMacro(vtkMSCdhGenerator,vtkPolyDataAlgorithm);
+	static vtkMSCdhGenerator *New();
+	vtkTypeRevisionMacro(vtkMSCdhGenerator,vtkPolyDataAlgorithm);
 
-  /**
-    This function is needed because we accept an Input and a Source in the filter.
+	/**
+	This function is needed because we accept an Input and a Source in the filter.
 
-    We set the source connection to be port 1. (Input is port 0)
-  */
-  void SetSourceConnection(vtkAlgorithmOutput* algOutput);
+	We set the source connection to be port 1. (Input is port 0)
+	*/
+	void SetSourceConnection(vtkAlgorithmOutput* algOutput);
 
 
-  vtkSetStringMacro(CollarFile);
+	vtkSetStringMacro(CollarFile);
 	vtkSetStringMacro(OutputFile);
 
-  vtkSetMacro(CollarLocation, int);
+	vtkSetMacro(CollarLocation, int);
 	vtkGetMacro(CollarLocation, int);
 
-  vtkSetMacro(DAzimuthMin, double);
+	vtkSetMacro(DAzimuthMin, double);
 	vtkGetMacro(DAzimuthMin, double);
 
-  vtkSetMacro(DAzimuthMax, double);
+	vtkSetMacro(DAzimuthMax, double);
 	vtkGetMacro(DAzimuthMax, double);
 
 	vtkSetMacro(DAzimuthStep, double);
 	vtkGetMacro(DAzimuthStep, double);
 
-  vtkSetMacro(DDipMin, double);
+	vtkSetMacro(DDipMin, double);
 	vtkGetMacro(DDipMin, double);
 
 	vtkSetMacro(DDipMax, double);
@@ -52,7 +52,7 @@ public:
 	vtkSetMacro(DDipStep, double);
 	vtkGetMacro(DDipStep, double);
 
-  vtkSetMacro(DLengthMin, double);
+	vtkSetMacro(DLengthMin, double);
 	vtkGetMacro(DLengthMin, double);
 
 	vtkSetMacro(DLengthMax, double);
@@ -67,26 +67,26 @@ public:
 	vtkSetMacro(DDepthMax, double);
 	vtkGetMacro(DDepthMax, double);
 
-  vtkSetMacro(SegmentLength, double);
+	vtkSetMacro(SegmentLength, double);
 	vtkGetMacro(SegmentLength, double);
 
 	vtkSetMacro(DRadius, double);
 	vtkGetMacro(DRadius, double);
 
 
-  vtkSetMacro(EMajor, double);
-  vtkSetMacro(EMedium, double);
-  vtkSetMacro(EMinor, double);
-  vtkSetMacro(EAzimuth, double);
-  vtkSetMacro(EDip, double);
-  vtkSetMacro(ERake, double);
+	vtkSetMacro(EMajor, double);
+	vtkSetMacro(EMedium, double);
+	vtkSetMacro(EMinor, double);
+	vtkSetMacro(EAzimuth, double);
+	vtkSetMacro(EDip, double);
+	vtkSetMacro(ERake, double);
 
-  vtkGetMacro(EMajor, double);
-  vtkGetMacro(EMedium, double);
-  vtkGetMacro(EMinor, double);
-  vtkGetMacro(EAzimuth, double);
-  vtkGetMacro(EDip, double);
-  vtkGetMacro(ERake, double);
+	vtkGetMacro(EMajor, double);
+	vtkGetMacro(EMedium, double);
+	vtkGetMacro(EMinor, double);
+	vtkGetMacro(EAzimuth, double);
+	vtkGetMacro(EDip, double);
+	vtkGetMacro(ERake, double);
 
 	vtkSetMacro(ComputeRanges, int);
 	vtkGetMacro(ComputeRanges, int);
@@ -97,7 +97,7 @@ public:
 	vtkSetMacro(DrillMovingCost, double);
 	vtkGetMacro(DrillMovingCost, double);
 
-  vtkSetStringMacro(BlocksMineralValue);
+	vtkSetStringMacro(BlocksMineralValue);
 	vtkGetStringMacro(BlocksMineralValue);	
 
 	vtkSetMacro(UseEllipsoid, int);
@@ -105,8 +105,8 @@ public:
 
 protected:
 
-  vtkMSCdhGenerator();
-  ~vtkMSCdhGenerator();
+	vtkMSCdhGenerator();
+	~vtkMSCdhGenerator();
 
 	// here I am using pointer to methods to implement constraints.
 	// to add a new constraint, all you need to do is to create a new 
@@ -115,13 +115,13 @@ protected:
 	// The benefit of using pointers to methods in comparaison with
 	// using pointers to function, which must be static function, 
 	// is that we have access to attributes in the methods implementing constraints.
- //BTX
+	//BTX
 	typedef  bool (vtkMSCdhGenerator::*constraintMF)(const double[3], const double[3]);
 	std::vector<constraintMF> constraints;
 
 
 	bool ReadCollarPoints(std::vector<double*>& collarPoints);
- //ETX
+	//ETX
 
 	//constraints begin ---------------
 	bool depthConstraint(const double startPt[3], const double endPt[3]) ;
@@ -130,58 +130,54 @@ protected:
 
 	void SetMetric();
 	void MakeRotMatrix(double ax, double ay, double az, double *m);
-	double EvaluateDist2( double* P, double* Q);
+	double EvaluateDistSquare( double* P, double* Q);
 	void getAzimuthDipLength(  const double *start_point, 
-														 const double *end_point, 
-														 double *az, 
-														 double *dip, 
-														 double *length);
+		const double *end_point, 
+		double *az, 
+		double *dip, 
+		double *length);
 
-
-	void InitialNeighbors();
-	void SetNeighbor(int row, int col, int is_neighbor);
-	bool IsNeighbor(int row, int col);
-
-	
 	void generateCollarPointDrillholes(const double collarPoint[3]);
-	void generateCollarPointDrillholes2(const double collarPoint[3]);
-
+	void getDipRange(const double collarPoint[3], const double azimuth,
+		double *dipMin, double *dipMax );
+	void getAzimuthRange(const double collarPoint[3], 
+		double *azMin, double *azMax );
 	void computeBlockModelCenter();
 
 	//BTX
 	void generateDrillHoles(std::vector<double*>& collarPoints);
 
 	void generateDrillHole(std::set<int>& currentElements, 
-												 const double collarPoint[3], 
-												 const double endPoint[3],
-												 double azr,
-												 double dipr, 
-												 double length);
+		const double collarPoint[3], 
+		const double endPoint[3],
+		double azr,
+		double dipr, 
+		double length);
 
 	void addDrillholeNeighbors(std::set<int>& currentElements,
-														 const double startPoint[3], 
-														 const double endPoint[3],
-														 vtkPoints* points,
-														 double azr,
-												     double dipr);
+		const double startPoint[3], 
+		const double endPoint[3],
+		vtkPoints* points,
+		double azr,
+		double dipr);
 
 	void writeDrillholeToFile(const std::set<int>& currentElements, 
-														const double collarPoint[3],
-														const double endPoint[3]);
+		const double collarPoint[3],
+		const double endPoint[3]);
 	//ETX
 
-	vtkUnstructuredGrid* cylindricalClip(const double startPoint[3], 
-																			 const double endPoint[3],
-																			 const double X[3],
-																			 const double Y[3],
-																			 const double Z[3],
-																			 double radius, 
-																			 double azR,
-																			 double dipR);
+	//vtkUnstructuredGrid* cylindricalClip(const double startPoint[3], 
+	//																		 const double endPoint[3],
+	//																		 const double X[3],
+	//																		 const double Y[3],
+	//																		 const double Z[3],
+	//																		 double radius, 
+	//																		 double azR,
+	//																		 double dipR);
 
 	unsigned int getNumberOfCollarPoints();
 
-	
+
 	// Description:
 	// given a vector N, this method will find two other 
 	// unit vector perpendicular to N and to each other in order
@@ -191,45 +187,45 @@ protected:
 	// z axis = V
 	// memory for N, U and V must be allocated before calling this 
 	// method
-	void getReference(double N[3], double U[3], double V[3]);
+	//	void getReference(double N[3], double U[3], double V[3]);
 
 
-  virtual int RequestData(vtkInformation *, vtkInformationVector **, 
+	virtual int RequestData(vtkInformation *, vtkInformationVector **, 
 		vtkInformationVector *);
-  virtual int FillInputPortInformation(int port, vtkInformation *info);
+	virtual int FillInputPortInformation(int port, vtkInformation *info);
 
 private:
-  vtkMSCdhGenerator(const vtkMSCdhGenerator&);  // Not implemented.
-  void operator=(const vtkMSCdhGenerator&);  // Not implemented.
+	vtkMSCdhGenerator(const vtkMSCdhGenerator&);  // Not implemented.
+	void operator=(const vtkMSCdhGenerator&);  // Not implemented.
 
-  /**
-    When the input collar points come from the Filter's Source, this is where they are stored.
-  */
+	/**
+	When the input collar points come from the Filter's Source, this is where they are stored.
+	*/
 	vtkPolyData *InputCollarPoints;
 
-  /**
-    The magnitudes (major, medium, minor) of the search ellipsoid.
-  */
-  //double Ranges[3];
+	/**
+	The magnitudes (major, medium, minor) of the search ellipsoid.
+	*/
+	//double Ranges[3];
 
-  /**
-    The Metric Tensor
-  */
-  double* MetricTensor;
+	/**
+	The Metric Tensor
+	*/
+	double* MetricTensor;
 
-  /**
-    Indicates where the input collar points should come from.
+	/**
+	Indicates where the input collar points should come from.
 
-    - 0 = CSV File
-    - 1 = From Filter Source
-  */
-  int CollarLocation;
+	- 0 = CSV File
+	- 1 = From Filter Source
+	*/
+	int CollarLocation;
 
-  /**
-    Path to the CSV file that has collar points. Only matters if <code>CollarLocation</code> is set to 0.
-    \see vtkDrillholeGA::CollarLocation
-  */
-  char *CollarFile;
+	/**
+	Path to the CSV file that has collar points. Only matters if <code>CollarLocation</code> is set to 0.
+	\see vtkDrillholeGA::CollarLocation
+	*/
+	char *CollarFile;
 
 	char* OutputFile;
 
@@ -261,7 +257,7 @@ private:
 	vtkCellArray* outLines;
 
 	//BTX
-	std::map<int, std::vector<int>> neighbors;
+	//	std::map<int, std::vector<int>> neighbors;
 	std::ofstream outputFile;
 	//ETX
 
