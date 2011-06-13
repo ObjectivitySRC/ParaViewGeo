@@ -247,6 +247,8 @@ int vtkMSCdhGenerator::RequestData(vtkInformation *vtkNotUsed(request),
 //--------------------------------------------------------------------------------------
 void vtkMSCdhGenerator::generateDrillHoles(vector<double*>& collarPoints)
 {
+	this->nbTry = 0;
+	this->nbHole = 0;
 	time_t start,end;
 	time (&start);
 
@@ -267,6 +269,7 @@ void vtkMSCdhGenerator::generateDrillHoles(vector<double*>& collarPoints)
 	int min = dif/60;
 	int sec = time%60;
 
+	vtkWarningMacro(" # holes = "<<this->nbHole<<" over # of tried holes = "<<this->nbTry);
 	vtkWarningMacro("The run time is "<<min<<":"<<sec<<" (min:sec)");
 }
 
@@ -295,7 +298,7 @@ void vtkMSCdhGenerator::generateCollarPointDrillholes(const double collarPoint[3
 
 		double dip = dipMin;
 		while(dip <= dipMax)
-		{	
+		{
 			double dipr = dip * rads;
 			double dxyz[3];
 			SPHERICtoCARTESIAN( azr, dipr, this->DLengthStep, dxyz );
@@ -311,6 +314,8 @@ void vtkMSCdhGenerator::generateCollarPointDrillholes(const double collarPoint[3
 			int lCounter = 0;
 			while(length <= this->DLengthMax)
 			{
+				(this->nbTry)++;
+				vtkWarningMacro("Try "<<nbTry<<" Az="<<azimuth<<" Dip="<<dip);
 				double endPoint[3];
 				endPoint[0] = sX + lCounter*dxyz[0];
 				endPoint[1] = sY + lCounter*dxyz[1];
@@ -350,7 +355,6 @@ void vtkMSCdhGenerator::generateCollarPointDrillholes(const double collarPoint[3
 		}
 		azimuth += this->DAzimuthStep;
 	}
-
 }
 
 //--------------------------------------------------------------------------------------
@@ -383,8 +387,6 @@ void vtkMSCdhGenerator::getAzimuthRange(const double collarPoint[3],
 	fit->Update();
 	vtkPolyData* fitOutput = fit->GetOutput();
 
-//	vtkWarningMacro("nPoints " << fitOutput->GetNumberOfPoints());
-
 	// Compute the azimut range to see the whole rectangle
 	double firstCorner[3], secCorner[3], crossproduct;
 	fitOutput->GetPoint(2,firstCorner);
@@ -393,8 +395,9 @@ void vtkMSCdhGenerator::getAzimuthRange(const double collarPoint[3],
 	crossproduct = (firstCorner[0]-collarPoint[0]) * (secCorner[1]-collarPoint[1]) 
 		- (firstCorner[1]-collarPoint[1]) * (secCorner[0]-collarPoint[0]);
 	//vtkWarningMacro( "area " << crossproduct );
-	int orientation = crossproduct;
-	int indexes[4], nbindexes=0;
+	int orientation = crossproduct; // only the sign matters
+	int outmost[4], nboutmost=0; // corners where the loop changes from "seen" by the collar to "unseen"
+	int inside; // any other corner 
 	for( int i=0; i<4; ++i ) // loop on rectangle sides
 	{
 //		vtkWarningMacro("distance " << i << " " << DISTANCE(collarPoint,secCorner ) );
@@ -409,38 +412,43 @@ void vtkMSCdhGenerator::getAzimuthRange(const double collarPoint[3],
 			vtkWarningMacro( "Collar strictly aligned with 2 corners " << crossproduct );
 			continue;
 		}
-//		else
-//				vtkWarningMacro( " " << crossproduct );
 		if ( crossproduct*orientation < 0 ) // sign change
 		{
-			indexes[nbindexes] = i;	
-			++nbindexes;
+			outmost[nboutmost] = i;
+			++nboutmost;
 		}
-		orientation = crossproduct; // only the sign matters
+		else
+			inside = i;
+		orientation = crossproduct;
 	}
-//	vtkWarningMacro("indexes " << indexes[0] << " " << indexes[1] );
+	//	vtkWarningMacro("outmost " << outmost[0] << " " << outmost[1] );
 
-	double tmp1, tmp2;
-	if( nbindexes == 2 )
+	double azCenter, tmp1, tmp2;
+	if( nboutmost == 2 ) // collar outside of the rectangle (or any convex loop)
 	{
-		fitOutput->GetPoint(indexes[0] ,firstCorner);
+		fitOutput->GetPoint( outmost[0] , firstCorner );
 		this->getAzimuthDipLength( collarPoint, firstCorner, azMin, &tmp1, &tmp2 );
-		fitOutput->GetPoint(indexes[1] ,secCorner);
+		fitOutput->GetPoint( outmost[1] , secCorner );
 		this->getAzimuthDipLength( collarPoint, secCorner, azMax, &tmp1, &tmp2 );
+		fitOutput->GetPoint( inside , firstCorner );
+		this->getAzimuthDipLength( collarPoint, firstCorner, &azCenter, &tmp1, &tmp2 );
 	}
 	else
-		// on n a pas traite les cas avec plus de 2 changements de signes. C'est correct tant que la boucle est convexe.
-		if( nbindexes != 0 )
-			vtkWarningMacro("Nb of sign changes must be even " << nbindexes);
-	// La, il faudrait prendre le bon intervalle... pas un au hasard, comme on fait parce que ca fonctionne sur deux cas-tests... 
+		if( nboutmost != 0 ) // must be 0 when collar inside the loop
+			vtkWarningMacro("Nb of sign changes must be even " << nboutmost );
+	// Get the right range : -180 < AzMin < AzCenter < AzMax 
+	// -180 < Az < 180 is assumed from getAzimuthDipLength
+	if( (azCenter - *azMin) * (azCenter - *azMax) > 0 )
+	{
+		tmp1 = *azMax;
+		*azMax = *azMin;
+		*azMin = tmp1;
+	}
 	if( *azMax < *azMin )
 	{
-		//tmp1 = *azMax;
-		//*azMax = *azMin;
-		//*azMin = tmp1;
 		*azMax += 360;
 	}
-	//vtkWarningMacro("Azimuth Range " << *azMin << " " << *azMax << " " << nbindexes);
+	//vtkWarningMacro("Azimuth Range " << *azMin << " " << *azMax << " " << nboutmost );
 }
 //--------------------------------------------------------------------------------------
 void vtkMSCdhGenerator::getDipRange(const double collarPoint[3], const double azimuth,
@@ -598,6 +606,7 @@ void vtkMSCdhGenerator::generateDrillHole(std::set<int>& currentElements,
 	if(currentElements.size() > n )
 	{
 		this->writeDrillholeToFile(currentElements, collarPoint, endPoint);
+		(this->nbHole)++;
 
 		int id1 = this->outPoints->InsertNextPoint(collarPoint);
 		int id2 = this->outPoints->InsertNextPoint(endPoint);

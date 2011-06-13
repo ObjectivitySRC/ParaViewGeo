@@ -291,6 +291,9 @@ private:
 	vtkDataArray* blocksMineralValueArray;
 
 	int UseEllipsoid;
+
+	int nbTry;
+	int nbHole;
 };
 
 #endif
