@@ -284,17 +284,18 @@ void vtkMSCdhGenerator::generateCollarPointDrillholes(const double collarPoint[3
 
 	if(this->ComputeRanges == 1)
 	{
-		this->getAzimuthRange(collarPoint, &azMin, &azMax );
+		this->getAzimuthRangeBrut(collarPoint, &azMin, &azMax );
 	}
+	vtkWarningMacro("Azimuth range = "<<azMin<<" - "<<azMax);
 
 	double azimuth = azMin;
 	while(azimuth <= azMax)
 	{
 		double azr = azimuth * rads;
-		if(this->ComputeRanges == 1)
-		{
-			this->getDipRange(collarPoint, azimuth, &dipMin, &dipMax );
-		}
+		//if(this->ComputeRanges == 1)
+		//{
+		//	this->getDipRange(collarPoint, azimuth, &dipMin, &dipMax );
+		//}
 
 		double dip = dipMin;
 		while(dip <= dipMax)
@@ -315,7 +316,6 @@ void vtkMSCdhGenerator::generateCollarPointDrillholes(const double collarPoint[3
 			while(length <= this->DLengthMax)
 			{
 				(this->nbTry)++;
-				vtkWarningMacro("Try "<<nbTry<<" Az="<<azimuth<<" Dip="<<dip);
 				double endPoint[3];
 				endPoint[0] = sX + lCounter*dxyz[0];
 				endPoint[1] = sY + lCounter*dxyz[1];
@@ -345,8 +345,13 @@ void vtkMSCdhGenerator::generateCollarPointDrillholes(const double collarPoint[3
 				}
 
 				if(constraintsSatisfied)
+				{
 					this->generateDrillHole(currentElements, collarPoint, endPoint, 
 					azr, dipr, length);		
+//					vtkWarningMacro("Try "<<nbTry<<" Az="<<azimuth<<" Dip="<<dip<<" OK");
+				}
+				//else
+				//	vtkWarningMacro("Try "<<nbTry<<" Az="<<azimuth<<" Dip="<<dip);
 
 				length += this->DLengthStep;
 				++lCounter;
@@ -357,6 +362,39 @@ void vtkMSCdhGenerator::generateCollarPointDrillholes(const double collarPoint[3
 	}
 }
 
+//--------------------------------------------------------------------------------------
+void vtkMSCdhGenerator::getAzimuthRangeBrut(const double collarPoint[3], 
+											double *azMin, double *azMax )
+{
+	// all azimuths are relative to the azimuth reference
+	double rads = vtkMath::RadiansFromDegrees( 1. );
+	double azr = this->rAz * rads;
+	double xaxis[3], yaxis[3];
+	SPHERICtoCARTESIAN( azr, 0.0, 1.0, xaxis );
+	yaxis[0]=-xaxis[1];
+	yaxis[1]= xaxis[0];
+
+	double azMinr = 0.;
+	double azMaxr = 0.;
+	double xray, yray, dx, dy, azimuth;
+	double pts[3];
+	vtkPoints* inPoints = this->InputGrid->GetPoints();
+	for(int i=0; i < inPoints->GetNumberOfPoints(); ++i)
+	{
+		inPoints->GetPoint(i, pts);
+		xray = pts[0] - collarPoint[0];
+		yray = pts[1] - collarPoint[1];
+		dx = xray*xaxis[0] + yray*xaxis[1];
+		dy = xray*yaxis[0] + yray*yaxis[1];
+		azimuth = atan2( dy, dx );
+		if( azimuth < azMinr ) 
+			azMinr = azimuth;
+		if( azimuth > azMaxr )
+			azMaxr = azimuth;
+	}
+	*azMin = azMinr / rads;
+	*azMax = azMaxr / rads;
+}
 //--------------------------------------------------------------------------------------
 void vtkMSCdhGenerator::getAzimuthRange(const double collarPoint[3], 
 										double *azMin, double *azMax )
@@ -394,13 +432,11 @@ void vtkMSCdhGenerator::getAzimuthRange(const double collarPoint[3],
 	// 2x area of the oriented triangle
 	crossproduct = (firstCorner[0]-collarPoint[0]) * (secCorner[1]-collarPoint[1]) 
 		- (firstCorner[1]-collarPoint[1]) * (secCorner[0]-collarPoint[0]);
-	//vtkWarningMacro( "area " << crossproduct );
 	int orientation = crossproduct; // only the sign matters
 	int outmost[4], nboutmost=0; // corners where the loop changes from "seen" by the collar to "unseen"
 	int inside; // any other corner 
 	for( int i=0; i<4; ++i ) // loop on rectangle sides
 	{
-//		vtkWarningMacro("distance " << i << " " << DISTANCE(collarPoint,secCorner ) );
 		firstCorner[0] = secCorner[0];
 		firstCorner[1] = secCorner[1];
 		fitOutput->GetPoint(i,secCorner);
@@ -414,14 +450,13 @@ void vtkMSCdhGenerator::getAzimuthRange(const double collarPoint[3],
 		}
 		if ( crossproduct*orientation < 0 ) // sign change
 		{
-			outmost[nboutmost] = i;
+			outmost[nboutmost] = i-1;
 			++nboutmost;
 		}
 		else
-			inside = i;
+			inside = i-1;
 		orientation = crossproduct;
 	}
-	//	vtkWarningMacro("outmost " << outmost[0] << " " << outmost[1] );
 
 	double azCenter, tmp1, tmp2;
 	if( nboutmost == 2 ) // collar outside of the rectangle (or any convex loop)

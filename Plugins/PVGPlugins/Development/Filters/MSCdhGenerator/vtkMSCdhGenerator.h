@@ -142,6 +142,8 @@ protected:
 		double *dipMin, double *dipMax );
 	void getAzimuthRange(const double collarPoint[3], 
 		double *azMin, double *azMax );
+	void getAzimuthRangeBrut(const double collarPoint[3], 
+		double *azMin, double *azMax );
 	void computeBlockModelCenter();
 
 	//BTX
