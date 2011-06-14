@@ -228,6 +228,10 @@ int vtkMSCdhGenerator::RequestData(vtkInformation *vtkNotUsed(request),
 	this->outputFile << "Drill Cost ($/m)  = " << this->CostPerMeter << endl;
 	this->outputFile << "Drill Moving Cost = " << this->DrillMovingCost << endl;
 
+	this->writeBlocksToFile();
+
+	this->outputFile << "d groupId x1 y1 z1 x2 y2 z2 length BlockId|yi ... \n";
+
 	this->outPoints = vtkPoints::New();
 	this->outLines = vtkCellArray::New();
 
@@ -309,7 +313,7 @@ void vtkMSCdhGenerator::generateCollarPointDrillholes(const double collarPoint[3
 			double sY = sxyz[1] + collarPoint[1];
 			double sZ = sxyz[2] + collarPoint[2];
 
-			set<int> currentElements;
+			set<pair<int,double>> currentElements;
 			double length = this->DLengthMin;
 			int lCounter = 0;
 			while(length <= this->DLengthMax)
@@ -503,7 +507,7 @@ void vtkMSCdhGenerator::computeBlockModelCenter()
 }
 
 //--------------------------------------------------------------------------------------
-void vtkMSCdhGenerator::generateDrillHole(std::set<int>& currentElements,
+void vtkMSCdhGenerator::generateDrillHole(set<pair<int,double>>& currentElements,
 										  const double collarPoint[3],
 										  const double endPoint[3],
 										  double azr, 
@@ -545,13 +549,15 @@ void vtkMSCdhGenerator::generateDrillHole(std::set<int>& currentElements,
 	}
 }
 //--------------------------------------------------------------------------------------
-void vtkMSCdhGenerator::addDrillholeNeighbors(std::set<int>& currentElements,
+void vtkMSCdhGenerator::addDrillholeNeighbors(set<pair<int,double>>& currentElements,
 											  const double startPoint[3], 
 											  const double endPoint[3],
 											  vtkPoints* points,
 											  double azr,
 											  double dipr)
 {
+	const int proximityFCT = 1;
+
 	double dxyz[3];
 	SPHERICtoCARTESIAN( azr, dipr, this->SegmentLength, dxyz );
 	double len = 0.0;
@@ -563,6 +569,7 @@ void vtkMSCdhGenerator::addDrillholeNeighbors(std::set<int>& currentElements,
 	dPoint[0] = startPoint[0];
 	dPoint[1] = startPoint[1];
 	dPoint[2] = startPoint[2];
+	pair<int,double> yi;
 
 	if(this->UseEllipsoid == 0)
 	{
@@ -573,11 +580,21 @@ void vtkMSCdhGenerator::addDrillholeNeighbors(std::set<int>& currentElements,
 			double t;
 			double p1[] = {startPoint[0], startPoint[1], startPoint[2]}; 
 			double p2[] = {endPoint[0], endPoint[1], endPoint[2]};
-			//DistanceToLine returns squared distance
+			//DistanceToLine returns the distance squared
 			double d = sqrt(vtkLine::DistanceToLine(pt, p1, p2, t, closestPoint));
-			if(d <= this->DRadius)
+			double dd = d/this->DRadius;
+			if( dd <= 1. )
 			{
-				currentElements.insert(i);
+				switch (proximityFCT)
+				{
+				case 0: yi.second = dd;
+					break;
+				case 1: yi.second = 0.5*(1.+ cos( dd*vtkMath::DoublePi() ));// continous fct
+					break;
+				default: yi.second = 1;
+				}
+				yi.first = i;
+				currentElements.insert(yi);
 			}
 		}
 	}
@@ -596,7 +613,9 @@ void vtkMSCdhGenerator::addDrillholeNeighbors(std::set<int>& currentElements,
 				{
 					if(this->EvaluateDistSquare(dPoint, pt) <= 1.0)
 					{
-						currentElements.insert(i);
+						yi.first = i;
+						yi.second = 1;
+						currentElements.insert(yi);
 					}
 				}
 			}
@@ -609,26 +628,36 @@ void vtkMSCdhGenerator::addDrillholeNeighbors(std::set<int>& currentElements,
 }
 
 //--------------------------------------------------------------------------------------
-void vtkMSCdhGenerator::writeDrillholeToFile(const std::set<int>& currentElements,
+void vtkMSCdhGenerator::writeBlocksToFile()
+{
+	this->outputFile << "Block ";
+	for(int i = 0; i< this->blocksMineralValueArray->GetNumberOfTuples(); ++i)
+		this->outputFile << this->blocksMineralValueArray->GetComponent(i,0)<< " ";
+	this->outputFile << endl;
+}
+//--------------------------------------------------------------------------------------
+void vtkMSCdhGenerator::writeDrillholeToFile(const set<pair<int,double>>& currentElements,
 											 const double collarPoint[3],
 											 const double endPoint[3])
 {
 	double length = DISTANCE( endPoint, collarPoint );
 
-	this->outputFile << "s " << collarPoint[0] << " " 
+	this->outputFile << "d " 
+		<< this->currentCollarPointID
+		<< collarPoint[0] << " " 
 		<< collarPoint[1] << " "
 		<< collarPoint[2] << " "
 		<< endPoint[0] << " "
 		<< endPoint[1] << " "
 		<< endPoint[2] << " "
-		<< length * this->CostPerMeter << " "
-		<< this->currentCollarPointID;
+		<< length << " ";
 
-	for(set<int>::const_iterator it = currentElements.begin(); 
-		it != currentElements.end(); ++it)
+//	this->outputFile.precision(2);
+//	this->outputFile.fixed;
+	for( set<pair<int,double>>::const_iterator it = currentElements.begin(); 
+		it != currentElements.end(); ++it )
 	{
-		this->outputFile << " " << *it << "|" 
-			<< this->blocksMineralValueArray->GetComponent(*it,0);
+		this->outputFile << " " << it->first << "|" << fixed << precision(2) << it->second ;
 	}
 	this->outputFile << endl;
 }
