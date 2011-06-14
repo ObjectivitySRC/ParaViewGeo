@@ -32,7 +32,7 @@
 #include <algorithm>
 #include <time.h>
 
-#include "../FitDataset/vtkFitDataset.h"
+//#include "../FitDataset/vtkFitDataset.h"
 
 using namespace std;
 
@@ -284,18 +284,17 @@ void vtkMSCdhGenerator::generateCollarPointDrillholes(const double collarPoint[3
 
 	if(this->ComputeRanges == 1)
 	{
-		this->getAzimuthRangeBrut(collarPoint, &azMin, &azMax );
+		this->getAzimuthRange(collarPoint, &azMin, &azMax );
 	}
-	vtkWarningMacro("Azimuth range = "<<azMin<<" - "<<azMax);
 
 	double azimuth = azMin;
 	while(azimuth <= azMax)
 	{
 		double azr = azimuth * rads;
-		//if(this->ComputeRanges == 1)
-		//{
-		//	this->getDipRange(collarPoint, azimuth, &dipMin, &dipMax );
-		//}
+		if(this->ComputeRanges == 1)
+		{
+			this->getDipRange(collarPoint, azimuth, &dipMin, &dipMax );
+		}
 
 		double dip = dipMin;
 		while(dip <= dipMax)
@@ -348,11 +347,7 @@ void vtkMSCdhGenerator::generateCollarPointDrillholes(const double collarPoint[3
 				{
 					this->generateDrillHole(currentElements, collarPoint, endPoint, 
 					azr, dipr, length);		
-//					vtkWarningMacro("Try "<<nbTry<<" Az="<<azimuth<<" Dip="<<dip<<" OK");
 				}
-				//else
-				//	vtkWarningMacro("Try "<<nbTry<<" Az="<<azimuth<<" Dip="<<dip);
-
 				length += this->DLengthStep;
 				++lCounter;
 			}
@@ -363,8 +358,8 @@ void vtkMSCdhGenerator::generateCollarPointDrillholes(const double collarPoint[3
 }
 
 //--------------------------------------------------------------------------------------
-void vtkMSCdhGenerator::getAzimuthRangeBrut(const double collarPoint[3], 
-											double *azMin, double *azMax )
+void vtkMSCdhGenerator::getAzimuthRange(const double collarPoint[3], 
+										double *azMin, double *azMax )
 {
 	// all azimuths are relative to the azimuth reference
 	double rads = vtkMath::RadiansFromDegrees( 1. );
@@ -394,96 +389,6 @@ void vtkMSCdhGenerator::getAzimuthRangeBrut(const double collarPoint[3],
 	}
 	*azMin = azMinr / rads;
 	*azMax = azMaxr / rads;
-}
-//--------------------------------------------------------------------------------------
-void vtkMSCdhGenerator::getAzimuthRange(const double collarPoint[3], 
-										double *azMin, double *azMax )
-{
-	// Project all points in xy plane and fit a rectangle
-	vtkPolyData* projectedInput = vtkPolyData::New();
-	vtkPoints* points = vtkPoints::New();
-	vtkCellArray* verts = vtkCellArray::New();
-
-	vtkPoints* inPoints = this->InputGrid->GetPoints();
-	int n = inPoints->GetNumberOfPoints();
-
-	double pts[3];
-	for(int i=0; i<n; ++i)
-	{
-		inPoints->GetPoint(i, pts);
-		pts[2] = 0.0;
-		points->InsertNextPoint(pts);
-		verts->InsertNextCell(1);
-		verts->InsertCellPoint(i);
-	}
-	projectedInput->SetPoints(points);
-	projectedInput->SetVerts(verts);
-
-	vtkFitDataset* fit = vtkFitDataset::New();
-	fit->SetType(1);
-	fit->SetInput(projectedInput);
-	fit->Update();
-	vtkPolyData* fitOutput = fit->GetOutput();
-
-	// Compute the azimut range to see the whole rectangle
-	double firstCorner[3], secCorner[3], crossproduct;
-	fitOutput->GetPoint(2,firstCorner);
-	fitOutput->GetPoint(3,secCorner);
-	// 2x area of the oriented triangle
-	crossproduct = (firstCorner[0]-collarPoint[0]) * (secCorner[1]-collarPoint[1]) 
-		- (firstCorner[1]-collarPoint[1]) * (secCorner[0]-collarPoint[0]);
-	int orientation = crossproduct; // only the sign matters
-	int outmost[4], nboutmost=0; // corners where the loop changes from "seen" by the collar to "unseen"
-	int inside; // any other corner 
-	for( int i=0; i<4; ++i ) // loop on rectangle sides
-	{
-		firstCorner[0] = secCorner[0];
-		firstCorner[1] = secCorner[1];
-		fitOutput->GetPoint(i,secCorner);
-		// 2x area of the oriented triangle
-		crossproduct = (firstCorner[0]-collarPoint[0]) * (secCorner[1]-collarPoint[1]) 
-			- (firstCorner[1]-collarPoint[1]) * (secCorner[0]-collarPoint[0]);
-		if( crossproduct == 0.0 )
-		{
-			vtkWarningMacro( "Collar strictly aligned with 2 corners " << crossproduct );
-			continue;
-		}
-		if ( crossproduct*orientation < 0 ) // sign change
-		{
-			outmost[nboutmost] = i-1;
-			++nboutmost;
-		}
-		else
-			inside = i-1;
-		orientation = crossproduct;
-	}
-
-	double azCenter, tmp1, tmp2;
-	if( nboutmost == 2 ) // collar outside of the rectangle (or any convex loop)
-	{
-		fitOutput->GetPoint( outmost[0] , firstCorner );
-		this->getAzimuthDipLength( collarPoint, firstCorner, azMin, &tmp1, &tmp2 );
-		fitOutput->GetPoint( outmost[1] , secCorner );
-		this->getAzimuthDipLength( collarPoint, secCorner, azMax, &tmp1, &tmp2 );
-		fitOutput->GetPoint( inside , firstCorner );
-		this->getAzimuthDipLength( collarPoint, firstCorner, &azCenter, &tmp1, &tmp2 );
-	}
-	else
-		if( nboutmost != 0 ) // must be 0 when collar inside the loop
-			vtkWarningMacro("Nb of sign changes must be even " << nboutmost );
-	// Get the right range : -180 < AzMin < AzCenter < AzMax 
-	// -180 < Az < 180 is assumed from getAzimuthDipLength
-	if( (azCenter - *azMin) * (azCenter - *azMax) > 0 )
-	{
-		tmp1 = *azMax;
-		*azMax = *azMin;
-		*azMin = tmp1;
-	}
-	if( *azMax < *azMin )
-	{
-		*azMax += 360;
-	}
-	//vtkWarningMacro("Azimuth Range " << *azMin << " " << *azMax << " " << nboutmost );
 }
 //--------------------------------------------------------------------------------------
 void vtkMSCdhGenerator::getDipRange(const double collarPoint[3], const double azimuth,
@@ -622,17 +527,6 @@ void vtkMSCdhGenerator::generateDrillHole(std::set<int>& currentElements,
 		startPoint[2] = collarPoint[2] + dxyz[2];
 	}
 
-	//double N[3], U[3], V[3];
-	//N[0] = endPoint[0] - collarPoint[0];
-	//N[1] = endPoint[1] - collarPoint[1];
-	//N[2] = endPoint[2] - collarPoint[2];
-	//this->getReference(N, U, V);
-
-	//vtkUnstructuredGrid* uGrid = this->cylindricalClip(startPoint, endPoint, N, U, V, 
-	//	this->DRadius, azr, dipr);
-
-	//vtkPoints* clippedPoints = uGrid->GetPoints();
-
 	int n = currentElements.size();
 
 	this->addDrillholeNeighbors(currentElements, startPoint, endPoint, 
@@ -679,7 +573,7 @@ void vtkMSCdhGenerator::addDrillholeNeighbors(std::set<int>& currentElements,
 			double t;
 			double p1[] = {startPoint[0], startPoint[1], startPoint[2]}; 
 			double p2[] = {endPoint[0], endPoint[1], endPoint[2]};
-			//DistanceToLine returns distance squared
+			//DistanceToLine returns squared distance
 			double d = sqrt(vtkLine::DistanceToLine(pt, p1, p2, t, closestPoint));
 			if(d <= this->DRadius)
 			{
@@ -738,146 +632,6 @@ void vtkMSCdhGenerator::writeDrillholeToFile(const std::set<int>& currentElement
 	}
 	this->outputFile << endl;
 }
-
-//--------------------------------------------------------------------------------------
-//void vtkMSCdhGenerator::getReference(double N[3], double U[3], double V[3])
-//{
-//	vtkMath::Normalize(N);
-//	if( fabs(N[2]) > 0.1 )
-//	{
-//		U[0] = 0.0;
-//		U[1] = 1.0;
-//		U[2] = - N[1]/N[2];
-//	}
-//	else if( fabs(N[1]) > 0.1 )
-//	{
-//		U[0] = 1.0;
-//		U[1] = -N[0]/N[1];
-//		U[2] = 0.0;
-//	}
-//	else
-//	{
-//		U[0] = 0.0;
-//		U[1] = 1.0;
-//		U[2] = 0.0;
-//	}
-//
-//	vtkMath::Normalize(U);
-//
-//	vtkMath::Cross(N, U, V);
-//}
-
-//--------------------------------------------------------------------------------------
-//vtkUnstructuredGrid* vtkMSCdhGenerator::cylindricalClip(const double startPoint[3], 
-//																											  const double endPoint[3],
-//																												const double X[3],
-//																												const double Y[3],
-//																												const double Z[3],
-//																											  double radius, 
-//																												double azR,
-//																											  double dipR)
-//{
-//	//vtkCylinder *cyl = vtkCylinder::New(); 
-//	//cyl->SetCenter(startPoint[0],startPoint[1],startPoint[2]); 
-//	//cyl->SetRadius(radius); 
-//
-//	////TODO:
-//	//// the cylindre is currently in y direction.
-//	//// add the necessary transformation to the cylinder.
-//
-//	//vtkTransform* tr = vtkTransform::New();
-//	//tr->Translate(-startPoint[0], -startPoint[1], -startPoint[2]);
-//	//tr->RotateX(dipR);
-//	//tr->RotateZ(azR -90);
-//	//tr->Translate(startPoint[0], startPoint[1], startPoint[2]);
-//	//cyl->SetTransform(tr);
-//
-//	//double xw[3] = {1.0, 0.0, 0.0};
-//	//double yw[3] = {0.0, 1.0, 0.0};
-//	//double zw[3] = {0.0, 0.0, 1.0};
-//	//double cw[3] = {0.0, 0.0, 0.0};
-//
-//	//vtkCoordinateSystemMapper *cMapper = vtkCoordinateSystemMapper::New();
-//	//cMapper->setCoordSystemB(cw, xw, yw, zw);
-//	//cMapper->setCoordSystemA(startPoint,  X, Y, Z);
-//	//cMapper->computeMappingMatrices();
-//
-//	//vtkPoints* clippingPlanesPoints = vtkPoints::New();
-//	//vtkDoubleArray* clippingPlanesNormals = vtkDoubleArray::New();
-//	//clippingPlanesNormals->SetNumberOfComponents(3);
-//
-//	//clippingPlanesPoints->InsertNextPoint(endPoint);
-//	//clippingPlanesNormals->InsertNextTuple(X);
-//
-//	//double v[] = {-X[0], -X[1], -X[2]};
-//	//clippingPlanesPoints->InsertNextPoint(startPoint);
-//	//clippingPlanesNormals->InsertNextTuple(v);	
-//
-//	//double pt[3];
-//	//pt[0] = 0.0;
-//	//pt[1] = radius;
-//	//pt[2] = 0.0;
-//	//double transPt[3];
-//	//cMapper->mapPointA_B(pt, transPt);
-//	//clippingPlanesPoints->InsertNextPoint(transPt);
-//	//clippingPlanesNormals->InsertNextTuple(Y);
-//
-//	//pt[1] = -radius;	
-//	//cMapper->mapPointA_B(pt, transPt);
-//	//
-//	//v[0] = -Y[0];
-//	//v[1] = -Y[1];
-//	//v[2] = -Y[2];
-//	//clippingPlanesPoints->InsertNextPoint(transPt);
-//	//clippingPlanesNormals->InsertNextTuple(v);
-//
-//	////pt[0] = 0.0;
-//	//pt[1] = 0.0;
-//	//pt[2] = radius;	
-//	//cMapper->mapPointA_B(pt, transPt);
-//	//clippingPlanesPoints->InsertNextPoint(transPt);
-//	//clippingPlanesNormals->InsertNextTuple(Z);
-//
-//	//v[0] = -Z[0];
-//	//v[1] = -Z[1];
-//	//v[2] = -Z[2];
-//	//pt[2] = -radius;	
-//	//cMapper->mapPointA_B(pt, transPt);
-//	//clippingPlanesPoints->InsertNextPoint(transPt);
-//	//clippingPlanesNormals->InsertNextTuple(v);
-//
-//	//vtkPlanes* clippingPlanes = vtkPlanes::New();
-//	//clippingPlanes->SetPoints(clippingPlanesPoints);
-//	//clippingPlanes->SetNormals(clippingPlanesNormals);
-//
-//	//vtkImplicitBoolean* implicitBool = vtkImplicitBoolean::New();
-//	//implicitBool->SetOperationTypeToIntersection();
-//	//implicitBool->AddFunction(cyl);
-//	//implicitBool->AddFunction(clippingPlanes);
-//
-//	//vtkExtractGeometry *clipped = vtkExtractGeometry::New(); 
-//	//clipped->SetInput(this->InputGrid); 
-//	//clipped->SetImplicitFunction(implicitBool); 
-//	//clipped->ExtractInsideOn(); 
-//	//clipped->ExtractBoundaryCellsOn();   
-//	//clipped->Update();
-//
-//	//vtkUnstructuredGrid* res = vtkUnstructuredGrid::New();
-//	//res->DeepCopy(clipped->GetOutput());
-//
-//	//cyl->Delete();
-//	//cMapper->Delete();
-//	//clippingPlanesPoints->Delete();
-//	//clippingPlanesNormals->Delete();
-//	//clippingPlanes->Delete();
-//	//implicitBool->Delete();
-//	//clipped->Delete();
-//
-//	//return res;
-//
-//	return 0;
-//}
-
 
 //----------------------------------------------------------------------------
 // GetAzimuthDipLength - gets the drillhole's azimuth, dip, length, from
@@ -1126,68 +880,3 @@ double vtkMSCdhGenerator::EvaluateDistSquare( double* P, double* Q)
 	return ret;
 }
 
-
-////----------------------------------------------------------------------------
-//// InitialNeighbors - calculates the neighbors of the pointset to itself
-////----------------------------------------------------------------------------
-//void vtkMSCdhGenerator::InitialNeighbors()
-//{
-//  //for each point in the input grid, find its neighbours
-//  int npts = this->InputGrid->GetNumberOfPoints();
-//  for (int i = 0; i < npts; ++i)
-//    {
-//    int row = i;
-//    for (int j = 0; j < npts; ++j)
-//      {
-//      int col = j;
-//      double p[3];
-//      double q[3];
-//      this->InputGrid->GetPoint(i, p);
-//      this->InputGrid->GetPoint(j, q);
-//      if (this->EvaluateDistSquare(p,q) <= 1)
-//        {
-//        //the point is inside the ellipsoid, so mark it as a neighbour
-//        this->SetNeighbor(row, col, 1);
-//        }
-//      else
-//        {
-//        //the point is not inside the ellipsoid, so mark it as not neighbor
-//		//nbilal: calling this method in this case doesn't do anything at all
-//			// so why call it ?
-//        this->SetNeighbor(row, col, 0);
-//        }
-//      }
-//    }
-//}
-//
-////----------------------------------------------------------------------------
-//// SetNeighbor - sets whether a point is a neighbor of another point
-////----------------------------------------------------------------------------
-//void vtkMSCdhGenerator::SetNeighbor(int row, int col, int is_neighbor)
-//  {
-//  //You're probably wondering why if it's a vector of neighbours that
-//  //I bother with "is_neighbor" at all. It's because in the past the
-//  //data structure for neighbors was not a map of vectors, and this way
-//  //you can define a new way of storing neighbours that may be more
-//  //efficient which knows what isn't a neighbour
-//  if (is_neighbor)
-//    {
-//    this->neighbors[row].push_back(col);
-//    }
-//  }
-//
-////----------------------------------------------------------------------------
-//// IsNeighbor - tells you whether a point is a neighbor of another point
-////----------------------------------------------------------------------------
-//bool vtkMSCdhGenerator::IsNeighbor(int row, int col)
-//  {
-//  std::vector<int> row_ = this->neighbors[row];
-//  return std::find(row_.begin(), row_.end(), col) != row_.end();
-//  }
-//
-//
-//
-//
-//
-//
-//
