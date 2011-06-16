@@ -142,13 +142,13 @@
         name="DDipMin"
         command="SetDDipMin"
         number_of_elements="1"
-        default_values="0">
+        default_values="-90">
       </DoubleVectorProperty>
       <DoubleVectorProperty
         name="DDipMax"
         command="SetDDipMax"
         number_of_elements="1"
-        default_values="180.0">
+        default_values="90.0">
       </DoubleVectorProperty>
       <DoubleVectorProperty
         name="DDipStep"

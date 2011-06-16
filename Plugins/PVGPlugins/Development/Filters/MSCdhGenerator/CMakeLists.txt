@@ -16,16 +16,7 @@ ADD_PARAVIEW_PLUGIN(GUIMSCdhGenerator "1.0"
 ADD_PARAVIEW_PLUGIN(MSCdhGeneratorMPlugin "1.0"
 			SERVER_MANAGER_XML MSCdhGenerator.xml
 			SERVER_MANAGER_SOURCES vtkMSCdhGenerator.cpp
-			GUI_RESOURCE_FILES MSCdhGeneratorCategory.xml
-				SERVER_SOURCES
-				../FitDataset/vtkFitDataset.cpp 	
-				../FitDataset/vtkConvexHull.cpp
-				../FitDataset/vtkLeatSquareFit.cpp
-				../FitDataset/Inc3dCHull_ConvexHull.cpp
-				../FitDataset/Inc3dCHull_Face.cpp
-				../FitDataset/Inc3dCHull_Edge.cpp
-				../FitDataset/Inc3dCHull_Vertex.cpp
-				../../../common/vtkCoordinateSystemMapper.cpp)
+			GUI_RESOURCE_FILES MSCdhGeneratorCategory.xml)
 
 target_link_libraries(MSCdhGeneratorMPlugin)
 

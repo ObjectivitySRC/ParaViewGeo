@@ -12,8 +12,7 @@
 class vtkUnstructuredGrid;
 class vtkPointLocator;
 
-using std::pair;
-using std::set;
+using std::map;
 
 class VTK_EXPORT vtkMSCdhGenerator : public vtkPolyDataAlgorithm
 {
@@ -148,14 +147,14 @@ protected:
 	//BTX
 	void generateDrillHoles(std::vector<double*>& collarPoints);
 
-	void generateDrillHole(set<pair<int,double>>& currentElements, 
+	void generateDrillHole(map<int,double>& currentElements, 
 		const double collarPoint[3], 
 		const double endPoint[3],
 		double azr,
 		double dipr, 
 		double length);
 
-	void addDrillholeNeighbors(set<pair<int,double>>& currentElements,
+	void addDrillholeNeighbors(map<int,double>& currentElements,
 		const double startPoint[3], 
 		const double endPoint[3],
 		vtkPoints* points,
@@ -164,7 +163,7 @@ protected:
 
 	void writeBlocksToFile();
 
-	void writeDrillholeToFile(const set<pair<int,double>>& currentElements, 
+	void writeDrillholeToFile(const map<int,double>& currentElements, 
 		const double collarPoint[3],
 		const double endPoint[3]);
 	//ETX
@@ -295,6 +294,7 @@ private:
 
 	int UseEllipsoid;
 
+	// only for development
 	int nbTry;
 	int nbHole;
 };
