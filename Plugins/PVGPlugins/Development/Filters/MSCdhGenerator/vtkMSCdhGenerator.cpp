@@ -228,7 +228,7 @@ int vtkMSCdhGenerator::RequestData(vtkInformation *vtkNotUsed(request),
 
 	this->writeBlocksToFile();
 
-	this->outputFile << "d groupId x1 y1 z1 x2 y2 z2 length BlockId|yi ... \n";
+	this->outputFile << "Drillholes : groupId x1 y1 z1 x2 y2 z2 length BlockId|yi ... \n";
 
 	this->outPoints = vtkPoints::New();
 	this->outLines = vtkCellArray::New();
@@ -622,7 +622,7 @@ void vtkMSCdhGenerator::addDrillholeNeighbors(map<int,double>& currentElements,
 //--------------------------------------------------------------------------------------
 void vtkMSCdhGenerator::writeBlocksToFile()
 {
-	this->outputFile << "Block ";
+	this->outputFile << "Blocks =" << endl;
 	for(int i = 0; i< this->blocksMineralValueArray->GetNumberOfTuples(); ++i)
 		this->outputFile << this->blocksMineralValueArray->GetComponent(i,0)<< " ";
 	this->outputFile << endl;
