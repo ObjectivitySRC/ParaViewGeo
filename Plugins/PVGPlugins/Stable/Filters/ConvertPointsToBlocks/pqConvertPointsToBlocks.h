@@ -36,8 +36,7 @@ public:
   virtual void reset();
 
  protected slots:
-  virtual  void UseSizesMenu();	
-  void XINC_Click(int index);	
+  virtual  void updateGui();	
 
 protected:
   /// populate widgets with properties from the server manager
@@ -50,7 +49,10 @@ protected:
 	QComboBox *XINC;	
 	QComboBox *YINC;	
 	QComboBox *ZINC;	
-	QCheckBox *UseSizes;
+
+	QComboBox* xEntry;
+	QComboBox* yEntry;
+	QComboBox* zEntry;
 
 
 };

@@ -11,24 +11,27 @@
           <Group name="filters"/>
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkPolyData"/>
+          <DataType value="vtkDataSet"/>
         </DataTypeDomain>
 		
-		<InputArrayDomain name="input_array1" number_of_components="1">
+        <InputArrayDomain name="input_array1"
+                           optional="1">
         <RequiredProperties>
           <Property name="SelectInputScalars"
               function="FieldDataSelection"/>
         </RequiredProperties>
 		</InputArrayDomain>
 	  
-		<InputArrayDomain name="input_array2" number_of_components="1">
+        <InputArrayDomain name="input_array2"
+                           optional="1">
 			<RequiredProperties>
 				<Property name="SelectInputScalars"
 				function="FieldDataSelection"/>
 			</RequiredProperties>
 		</InputArrayDomain>
 	  
-		<InputArrayDomain name="input_array3" number_of_components="1">
+        <InputArrayDomain name="input_array3"
+                           optional="1">
 			<RequiredProperties>
 				<Property name="SelectInputScalars"
 				function="FieldDataSelection"/>
@@ -36,26 +39,34 @@
 		</InputArrayDomain>	  
 	  </InputProperty>
 	  
-	  <IntVectorProperty name="UseSizes"
-       command="SetUseSizes"
+      <StringVectorProperty name="XEntry"
+         command="SetXEntry"
        number_of_elements="1"
-       animateable="1"
-       default_values="1">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Set this propertie if you want to use specific size of each block
-        </Documentation>        
-      </IntVectorProperty>
+         default_values="">
+      </StringVectorProperty>
+
+      <StringVectorProperty
+         name="YEntry"
+         command="SetYEntry"
+         number_of_elements="1"
+         default_values="">
+      </StringVectorProperty>
+
+      <StringVectorProperty name="ZEntry"
+         command="SetZEntry"
+         number_of_elements="1"
+         default_values="">
+      </StringVectorProperty>
 	  
 	  <StringVectorProperty
         name="XINC"
         command="SetXINC"
 	      number_of_elements="1"
 	      animateable="0"
-		   default_values=""
 	      label="XINC">
         <ArrayListDomain name="array_list"
              attribute_type="Scalars"
+       none_string="Not Available"
 			 input_domain_name="input_array1">
           <RequiredProperties>
             <Property name="Input" function="Input"/>
@@ -75,6 +86,7 @@
 	      label="YINC">
         <ArrayListDomain name="array_list"
              attribute_type="Scalars"
+        none_string="Not Available"
 			 input_domain_name="input_array2">
           <RequiredProperties>
             <Property name="Input" function="Input"/>
@@ -94,6 +106,7 @@
 	      label="ZINC">
         <ArrayListDomain name="array_list"
              attribute_type="Scalars"
+        none_string="Not Available"
 			 input_domain_name="input_array3">
           <RequiredProperties>
             <Property name="Input" function="Input"/>
@@ -108,9 +121,7 @@
         name="SizeCX"
         command="SetSizeCX"
         number_of_elements="1"
-        animateable="1"
-        default_values="5" >
-        <DoubleRangeDomain name="range" />
+        default_values="5.0" >
         <Documentation>
           The dimension Size by X Direction
         </Documentation>
@@ -120,9 +131,7 @@
         name="SizeCY"
         command="SetSizeCY"
         number_of_elements="1"
-        animateable="1"
-        default_values="5" >
-        <DoubleRangeDomain name="range" />
+          default_values="5.0" >
         <Documentation>
           The dimension Size by Y Direction
         </Documentation>
@@ -132,16 +141,11 @@
         name="SizeCZ"
         command="SetSizeCZ"
         number_of_elements="1"
-        animateable="1"
-        default_values="5" >
-        <DoubleRangeDomain name="range" />
+          default_values="5.0" >
         <Documentation>
           The dimension Size by Z Direction
         </Documentation>
       </DoubleVectorProperty>
-
-      
-      
     </SourceProxy>
   </ProxyGroup>
   <!-- End ConvertPointsToBlocks -->

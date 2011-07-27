@@ -11,23 +11,17 @@ pqConvertPointsToBlocks::pqConvertPointsToBlocks(pqProxy* pxy, QWidget* p) :
 		this->XINC= this->findChild<QComboBox*>("XINC");
 		this->YINC= this->findChild<QComboBox*>("YINC");
 		this->ZINC= this->findChild<QComboBox*>("ZINC");
-		this->UseSizes = this->findChild<QCheckBox*>("UseSizes");
+	this->xEntry = this->findChild<QComboBox*>("XEntry");
+	this->yEntry = this->findChild<QComboBox*>("YEntry");
+	this->zEntry = this->findChild<QComboBox*>("ZEntry");
 
-	  this->SizeCX->setDisabled(true);
-	  this->SizeCY->setDisabled(true);
-	  this->SizeCZ->setDisabled(true);
+	QObject::connect(this->xEntry, SIGNAL(currentIndexChanged(int)),this, SLOT(updateGui(void)));
+	QObject::connect(this->yEntry, SIGNAL(currentIndexChanged(int)),this, SLOT(updateGui(void)));
+	QObject::connect(this->zEntry, SIGNAL(currentIndexChanged(int)),this, SLOT(updateGui(void)));
 
-		//search the index of the array in the XINC combox and use that to set the others
-		if(this->XINC->count()>1)
-		{
-			this->YINC->setCurrentIndex(this->XINC->currentIndex()+1);
-			this->ZINC->setCurrentIndex(this->XINC->currentIndex()+2);
-		}
-		QObject::connect(this->XINC, SIGNAL(currentIndexChanged(int)), this,
-                 SLOT(XINC_Click(int)));
+	this->linkServerManagerProperties();
 
-		QObject::connect(this->UseSizes, SIGNAL(stateChanged(int)),this, SLOT(UseSizesMenu(void)));
-		this->linkServerManagerProperties();
+	this->updateGui();
 	}
 
 pqConvertPointsToBlocks::~pqConvertPointsToBlocks()
@@ -52,36 +46,38 @@ void pqConvertPointsToBlocks::linkServerManagerProperties()
 }
 
 
-void pqConvertPointsToBlocks::UseSizesMenu()
+void pqConvertPointsToBlocks::updateGui()
 {	 	  
-	if(this->UseSizes->isChecked())
+	if(this->xEntry->currentIndex() == 1)
 	{
 		this->XINC->setEnabled(true);
-		this->YINC->setEnabled(true);
-		this->ZINC->setEnabled(true);
-
-	  this->SizeCX->setDisabled(true);
-	  this->SizeCY->setDisabled(true);
-	  this->SizeCZ->setDisabled(true);
-
+		this->SizeCX->setEnabled(false);
 	}
 	else
 	{
-	  this->XINC->setDisabled(true);
-	  this->YINC->setDisabled(true);
-	  this->ZINC->setDisabled(true);
-
+		this->XINC->setEnabled(false);
 		this->SizeCX->setEnabled(true);
-		this->SizeCY->setEnabled(true);
-		this->SizeCZ->setEnabled(true);
 	}
+
+	if(this->yEntry->currentIndex() == 1)
+	{
+		this->YINC->setEnabled(true);
+		this->SizeCY->setEnabled(false);
+	}
+	else
+	{
+		this->YINC->setEnabled(false);
+		this->SizeCY->setEnabled(true);
 }
 
-void pqConvertPointsToBlocks::XINC_Click(int index)
+	if(this->zEntry->currentIndex() == 1)
 {
-	if(this->XINC->count()>1)
+		this->ZINC->setEnabled(true);
+		this->SizeCZ->setEnabled(false);
+	}
+	else
 		{
-			this->YINC->setCurrentIndex(index+1);
-			this->ZINC->setCurrentIndex(index+2);
+		this->ZINC->setEnabled(false);
+		this->SizeCZ->setEnabled(true);
 		}
 }
