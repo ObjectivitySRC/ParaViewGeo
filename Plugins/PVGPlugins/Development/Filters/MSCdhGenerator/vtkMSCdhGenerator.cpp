@@ -551,15 +551,15 @@ void vtkMSCdhGenerator::generateDrillHole(map<int,double>& currentElements,
 // functions
 //   dd is between 0 and 1, return a decreasing value between 1 and 0
 double proximityConstant( double dd ) { return 1;}
-double proximityLinear( double dd ) { return 1.0 - dd; }
+double proximityLinear( double dd ) { return max( 1.0 , 1.2*(1.- dd) ); }
 double proximityCosinus( double dd ) { return 0.5*(1.+ cos( dd*vtkMath::DoublePi() ));}
 double proximityStairs( double dd )
 {
-	if ( dd < 0.1 ) // measured
+	if ( dd < 0.2 ) // measured
 		return 1.0;
-	if ( dd < 0.4 ) // indicated
-		return 0.3;
-	return 0.1;  // inferred
+	if ( dd < 0.5 ) // indicated
+		return 0.67;
+	return 0.35;  // inferred
 }
 //--------------------------------------------------------------------------------------
 void vtkMSCdhGenerator::addDrillholeNeighbors(map<int,double>& currentElements,
