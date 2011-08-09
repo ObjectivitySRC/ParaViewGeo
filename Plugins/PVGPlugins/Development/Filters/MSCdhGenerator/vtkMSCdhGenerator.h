@@ -97,6 +97,9 @@ public:
 	vtkSetMacro(DrillMovingCost, double);
 	vtkGetMacro(DrillMovingCost, double);
 
+	vtkSetStringMacro(CollarCostsValue);
+	vtkGetStringMacro(CollarCostsValue);	
+
 	vtkSetStringMacro(BlocksMineralValue);
 	vtkGetStringMacro(BlocksMineralValue);	
 
@@ -161,6 +164,7 @@ protected:
 		double azr,
 		double dipr);
 
+	void writeCollarsToFile();
 	void writeBlocksToFile();
 
 	void writeDrillholeToFile(const map<int,double>& currentElements, 
@@ -250,6 +254,7 @@ private:
 
 	double DRadius;
 
+	char* CollarCostsValue;
 	char* BlocksMineralValue;
 
 	vtkPolyData* InputGrid;
@@ -290,6 +295,7 @@ private:
 
 	int numberOfCollarPoints;
 
+	vtkDataArray* collarCostsValueArray;
 	vtkDataArray* blocksMineralValueArray;
 
 	int UseEllipsoid;

@@ -62,6 +62,7 @@ vtkMSCdhGenerator::vtkMSCdhGenerator()
 	this->SetNumberOfInputPorts(2);
 	this->CollarFile = NULL;
 	this->OutputFile = NULL;
+	this->CollarCostsValue = NULL;
 	this->BlocksMineralValue = NULL;
 	this->UseEllipsoid = 0;
 
@@ -174,6 +175,16 @@ int vtkMSCdhGenerator::RequestData(vtkInformation *vtkNotUsed(request),
 		this->InputCollarPoints = NULL;
 	}
 
+	// temporary string "CollarId" should become this->CollarCostsValue
+	this->collarCostsValueArray = 
+		this->InputCollarPoints->GetPointData()->GetArray("CollarIds");
+
+	if(this->collarCostsValueArray == NULL)
+	{
+		vtkErrorMacro("this filter requires a collar cost value point property to work");
+		return 0;
+	}
+
 	this->blocksMineralValueArray = 
 		this->InputGrid->GetPointData()->GetArray(this->BlocksMineralValue);
 
@@ -224,8 +235,9 @@ int vtkMSCdhGenerator::RequestData(vtkInformation *vtkNotUsed(request),
 	this->outputFile << "Number Of Blocks  = " << this->InputGrid->GetNumberOfPoints() << endl;
 	this->outputFile << "Number Of Groups  = " << this->numberOfCollarPoints << endl;
 	this->outputFile << "Drill Cost ($/m)  = " << this->CostPerMeter << endl;
-	this->outputFile << "Drill Moving Cost = " << this->DrillMovingCost << endl;
+//	this->outputFile << "Drill Moving Cost = " << this->DrillMovingCost << endl;
 
+	this->writeCollarsToFile();
 	this->writeBlocksToFile();
 
 	this->outputFile << "Drillholes : groupId x1 y1 z1 x2 y2 z2 length BlockId|yi ... \n";
@@ -619,6 +631,14 @@ void vtkMSCdhGenerator::addDrillholeNeighbors(map<int,double>& currentElements,
 	}
 }
 
+//--------------------------------------------------------------------------------------
+void vtkMSCdhGenerator::writeCollarsToFile()
+{
+	this->outputFile << "Collar costs =" << endl;
+	for(int i = 0; i< this->collarCostsValueArray->GetNumberOfTuples(); ++i)
+		this->outputFile << this->collarCostsValueArray->GetComponent(i,0)<< " ";
+	this->outputFile << endl;
+}
 //--------------------------------------------------------------------------------------
 void vtkMSCdhGenerator::writeBlocksToFile()
 {
