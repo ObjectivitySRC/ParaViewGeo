@@ -234,7 +234,7 @@ int vtkMSCdhGenerator::RequestData(vtkInformation *vtkNotUsed(request),
 	}
 	this->outputFile << "Number Of Blocks  = " << this->InputGrid->GetNumberOfPoints() << endl;
 	this->outputFile << "Number Of Groups  = " << this->numberOfCollarPoints << endl;
-	this->outputFile << "Drill Cost ($/m)  = " << this->CostPerMeter << endl;
+//	this->outputFile << "Drill Cost ($/m)  = " << this->CostPerMeter << endl;
 //	this->outputFile << "Drill Moving Cost = " << this->DrillMovingCost << endl;
 
 	this->writeCollarsToFile();

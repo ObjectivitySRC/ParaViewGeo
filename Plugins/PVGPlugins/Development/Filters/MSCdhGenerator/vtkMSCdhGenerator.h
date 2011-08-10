@@ -91,11 +91,13 @@ public:
 	vtkSetMacro(ComputeRanges, int);
 	vtkGetMacro(ComputeRanges, int);
 
+	// to be removed
 	vtkSetMacro(CostPerMeter, double);
-	vtkGetMacro(CostPerMeter, double);
+	//vtkGetMacro(CostPerMeter, double);
 
+	//to be removed
 	vtkSetMacro(DrillMovingCost, double);
-	vtkGetMacro(DrillMovingCost, double);
+	//vtkGetMacro(DrillMovingCost, double);
 
 	vtkSetStringMacro(CollarCostsValue);
 	vtkGetStringMacro(CollarCostsValue);	
@@ -288,6 +290,7 @@ private:
 
 	int ComputeRanges;
 
+	// to be removed
 	double CostPerMeter;
 	double DrillMovingCost;
 
