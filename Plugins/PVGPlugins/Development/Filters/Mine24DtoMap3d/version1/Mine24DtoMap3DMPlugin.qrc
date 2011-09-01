@@ -1,6 +1,0 @@
-<RCC>
-<qresource prefix="/ParaViewResources">
- <file alias="Mine24DtoMap3DCategory.xml">Mine24DtoMap3DCategory.xml</file>
-
-</qresource>
-</RCC>

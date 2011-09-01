@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/CustomWidget" >
-        <file>pqRuler.ui</file>
-    </qresource>
-</RCC>

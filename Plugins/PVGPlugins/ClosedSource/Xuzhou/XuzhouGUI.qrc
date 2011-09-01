@@ -1,6 +1,0 @@
-<RCC>
-  <qresource prefix="/XuzhouGUI" >
-		<file>LineNetworkReader/pqLineNetworkReader.ui</file>
-	</qresource>
-</RCC>
-

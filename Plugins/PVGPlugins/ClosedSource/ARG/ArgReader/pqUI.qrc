@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/ArgReader" >
-        <file>pqArgReader.ui</file>
-    </qresource>
-</RCC>

@@ -1,2 +1,0 @@
-LIBS += -lGsTLAppli_grid -lGsTLAppli_math -lGsTLAppli_utils
-LIBS += -lGsTLAppli_test_libs -lGsTLAppli_geostat

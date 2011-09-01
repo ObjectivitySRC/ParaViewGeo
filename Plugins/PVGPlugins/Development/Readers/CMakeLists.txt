@@ -1,3 +1,0 @@
-SUBDIRS(DrillHoleReader)
-SUBDIRS(ShapeFileReader)
-

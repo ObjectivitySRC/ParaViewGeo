@@ -1,6 +1,0 @@
-<ParaViewReaders>
-  <Reader name="FDEMReader"
-    extensions="ym"
-    file_description="F/DEM File">
-  </Reader>
-</ParaViewReaders>

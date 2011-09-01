@@ -1,6 +1,0 @@
-<ParaViewReaders>
-  <Reader name="SGeMSReader"
-    extensions="sgm"
-    file_description="S-GeMS Files">
-  </Reader>
-</ParaViewReaders>

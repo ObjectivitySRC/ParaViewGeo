@@ -1,6 +1,0 @@
-TARGET = test_oinv_view
-SOURCES = test_oinv_view.cpp
-LIBS += -L$(QTDIR)/tools/designer/uilib 
-LIBS += -lGsTLAppli_math -lGsTLAppli_utils -lGsTLAppli_gui -lqui
-LIBS += -lGsTLAppli_appli -lGsTLAppli_grid -lGsTLAppli_filters
-LIBS += -lGsTLAppli_actions -lGsTLAppli_geostat -lGsTLAppli_extragui

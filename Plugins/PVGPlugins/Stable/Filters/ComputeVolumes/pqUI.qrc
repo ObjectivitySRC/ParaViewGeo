@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/CustomWidget" >
-        <file>pqComputeVolumes.ui</file>
-    </qresource>
-</RCC>

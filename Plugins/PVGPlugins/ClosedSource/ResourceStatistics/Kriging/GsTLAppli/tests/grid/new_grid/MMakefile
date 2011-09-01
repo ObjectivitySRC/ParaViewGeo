@@ -1,4 +1,0 @@
-LIBS += -lGsTLAppli_grid -lGsTLAppli_math -lGsTLAppli_utils -lGsTLAppli_appli
-
-SOURCES = test_assign_data.cpp
-TARGET = test_assign_data

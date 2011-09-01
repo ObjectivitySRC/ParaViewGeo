@@ -1,6 +1,0 @@
-<ParaViewReaders>
-  <Reader name="DrillHoleReader"
-    extensions="dhd evo"
-    file_description="Drillhole Database">
-  </Reader>
-</ParaViewReaders>

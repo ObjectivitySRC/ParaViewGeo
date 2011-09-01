@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/CustomWidget" >
-        <file>pqTimeThreshold.ui</file>
-    </qresource>
-</RCC>

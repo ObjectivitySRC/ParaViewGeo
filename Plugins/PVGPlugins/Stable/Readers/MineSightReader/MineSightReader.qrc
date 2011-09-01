@@ -1,6 +1,0 @@
-<RCC>
-	<qresource prefix="/ParaViewResources">
-		<file>MineSightReaderGUI.xml</file>
-	</qresource>
-</RCC>
-

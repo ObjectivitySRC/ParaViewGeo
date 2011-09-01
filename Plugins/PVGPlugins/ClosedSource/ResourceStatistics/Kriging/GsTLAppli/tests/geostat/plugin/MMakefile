@@ -1,3 +1,0 @@
-CONFIG += plugin
-DESTDIR=.
-TARGET = MovingAverage

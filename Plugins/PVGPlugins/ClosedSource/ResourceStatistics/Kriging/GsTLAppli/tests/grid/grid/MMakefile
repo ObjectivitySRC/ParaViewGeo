@@ -1,4 +1,0 @@
-LIBS += -lGsTLAppli_utils -lGsTLAppli_math -lGsTLAppli_grid -lGsTLAppli_appli
-
-TARGET = test_strati_grid
-SOURCES = test_strati_grid.cpp

@@ -1,8 +1,0 @@
-CONFIG += qt
-INCLUDEPATH += $$GSTLHOME/GsTL/utils
-
-win32 {
-  DEFINES += GRID_EXPORTS
-  LIBS += -lGsTLAppli_utils -lGsTLAppli_math
-  LIBS += -lGsTLAppli_appli
-}

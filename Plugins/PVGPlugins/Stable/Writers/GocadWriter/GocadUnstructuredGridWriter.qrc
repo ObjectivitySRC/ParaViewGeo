@@ -1,6 +1,0 @@
-<RCC>
-	<qresource prefix="/ParaViewResources">
-		<file>GocadUnstructuredGridWriterGUI.xml</file>
-	</qresource>
-</RCC>
-

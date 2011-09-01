@@ -1,6 +1,0 @@
-<ParaViewReaders>
-  <Reader name="SOTResult"
-    extensions="sof SOT Result File"
-    file_description="SOT Result Files">
-  </Reader>
-</ParaViewReaders>

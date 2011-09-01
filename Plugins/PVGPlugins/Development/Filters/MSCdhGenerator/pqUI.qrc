@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/CustomWidget" >
-        <file>pqMSCdhGenerator.ui</file>
-    </qresource>
-</RCC>

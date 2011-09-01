@@ -1,2 +1,0 @@
-SUBDIRS(Map3dWriter)
-

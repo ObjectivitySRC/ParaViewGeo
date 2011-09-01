@@ -1,6 +1,0 @@
-<RCC>
-	<qresource prefix="/ParaViewResources">
-		<file>ShapeFileReaderGUI.xml</file>
-	</qresource>
-</RCC>
-

@@ -1,6 +1,0 @@
-<ParaViewReaders>
-  <Reader name="GeoReferencedImageReader"
-    extensions="tif TIF tiff TIFF jpg JPG jpeg JPEG png PNG"
-    file_description="Geo-Referenced Image Files">
-  </Reader>
-</ParaViewReaders>

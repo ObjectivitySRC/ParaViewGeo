@@ -1,6 +1,0 @@
-<ParaViewFilters>
- <Category name="Mirarco">
-  <Filter name="SurfaceReconstructor"/>
-  <Filter name="DUMMY_FILTER"/>
- </Category>
-</ParaViewFilters>

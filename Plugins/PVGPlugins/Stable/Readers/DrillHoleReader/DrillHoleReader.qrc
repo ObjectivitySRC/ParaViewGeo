@@ -1,6 +1,0 @@
-<RCC>
-	<qresource prefix="/ParaViewResources">
-		<file>DrillholeReaderGUI.xml</file>
-	</qresource>
-</RCC>
-

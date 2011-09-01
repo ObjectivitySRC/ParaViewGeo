@@ -1,9 +1,0 @@
-<param>
-  <GridSelector  value="mygrid"  />
-  <PropertyName  value="perm"  />
-  <TransformData  value="1"  />
-  <FromData  value="0"  />
-  <FromFile  value="1"  />
-  <TransformFileName  value="gaussian" />
-  <LineEdit2  value="" />
-</param>

@@ -1,6 +1,0 @@
-<RCC>
-	<qresource prefix="/ParaViewResources">
-		<file>DMReaderGUI.xml</file>
-	</qresource>
-</RCC>
-

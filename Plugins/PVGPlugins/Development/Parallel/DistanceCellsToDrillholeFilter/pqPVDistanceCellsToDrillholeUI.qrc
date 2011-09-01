@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/CustomWidget" >
-        <file>pqPVDistanceCellsToDrillhole.ui</file>
-    </qresource>
-</RCC>

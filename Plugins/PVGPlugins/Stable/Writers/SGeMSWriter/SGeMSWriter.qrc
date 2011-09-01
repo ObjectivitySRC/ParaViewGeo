@@ -1,6 +1,0 @@
-<RCC>
-	<qresource prefix="/ParaViewResources">
-		<file>SGeMSWriterGUI.xml</file>
-	</qresource>
-</RCC>
-

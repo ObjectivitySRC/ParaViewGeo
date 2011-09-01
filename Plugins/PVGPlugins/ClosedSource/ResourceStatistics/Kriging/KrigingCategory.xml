@@ -1,6 +1,0 @@
-<ParaViewFilters>
- <Category name="Geostatistics">
-  <Filter name="Kriging"/>
-  <Filter name="DUMMY_FILTER"/>
- </Category>
-</ParaViewFilters>

@@ -1,6 +1,0 @@
-<ParaViewFilters>
- <Category name="ABRI">
-  <Filter name="Block Model Normalization"/>
-  <Filter name="DUMMY_FILTER"/>
- </Category>
-</ParaViewFilters>

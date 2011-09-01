@@ -1,6 +1,0 @@
-<ParaViewReaders>
-  <Reader name="MethaneReader"
-    extensions="mld"
-    file_description="Methane Level Database">
-  </Reader>
-</ParaViewReaders>

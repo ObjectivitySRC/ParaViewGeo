@@ -1,8 +1,0 @@
-<ParaViewFilters>
- <Category name="Mirarco">
-   <Category name="Compositing">
-    <Filter name="Slice Compositing"/>
-    <Filter name="DUMMY_FILTER"/>
-   </Category>
- </Category>
-</ParaViewFilters>

@@ -1,7 +1,0 @@
-SOURCES = input_widget.cpp test_gui.cpp
-TARGET = test_gui
-
-LIBS += -L$(QTDIR)/tools/designer/uilib 
-LIBS += -lGsTLAppli_math -lGsTLAppli_utils -lGsTLAppli_gui -lqui
-LIBS += -lGsTLAppli_grid -lGsTLAppli_appli -lGsTLAppli_geostat
-LIBS += -L$(QTDIR)/plugins/designer -lGsTLwidgets

@@ -1,6 +1,0 @@
-<RCC>
-	<qresource prefix="/ParaViewResources">
-		<file>GocadWriterGUI.xml</file>
-	</qresource>
-</RCC>
-

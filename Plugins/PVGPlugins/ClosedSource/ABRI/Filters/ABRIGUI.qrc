@@ -1,8 +1,0 @@
-<RCC>
-    <qresource prefix="/ABRIFilters" >
-      <file>FitnessCalculator/pqFitnessCalculator.ui</file>
-	  <file>ApplyScheduleToBlockModel/pqApplyScheduleToBlockModel.ui</file>
-	  <file>BlockNormalization/pqBlockNormalization.ui</file>
-      <file>StopesSelection/pqStopesSelection.ui</file>     
-    </qresource>
-</RCC>

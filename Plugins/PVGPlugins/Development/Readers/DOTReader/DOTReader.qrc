@@ -1,6 +1,0 @@
-<RCC>
-	<qresource prefix="/ParaViewResources">
-		<file>DOTReaderGUI.xml</file>
-	</qresource>
-</RCC>
-

@@ -1,6 +1,0 @@
-<RCC>
-	<qresource prefix="/ParaViewResources">
-		<file>PointSetReaderGUI.xml</file>
-	</qresource>
-</RCC>
-

@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/CustomWidget" >
-        <file>pqApplyScheduleToBlockModel.ui</file>
-    </qresource>
-</RCC>

@@ -1,6 +1,0 @@
-<RCC>
-	<qresource prefix="/ParaViewResources">
-		<file>FDEMReaderGUI.xml</file>
-	</qresource>
-</RCC>
-

@@ -1,6 +1,0 @@
-<ParaViewWriters>
-  <Writer name="RegionsBoundingBox"
-    extensions="exf"
-    file_description="Segments Bounding Boxes File">
-  </Writer>
-</ParaViewWriters>

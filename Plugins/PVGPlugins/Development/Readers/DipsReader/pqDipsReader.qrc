@@ -1,5 +1,0 @@
-<RCC>
-	<qresource prefix="/ParaViewResources">
-		<file>DipsReaderGUI.xml</file>
-	</qresource>
-</RCC>

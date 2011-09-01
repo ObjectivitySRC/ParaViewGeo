@@ -1,6 +1,0 @@
-<RCC>
-	<qresource prefix="/ParaViewResources">
-		<file>AbriToSotWriterGUI.xml</file>
-	</qresource>
-</RCC>
-

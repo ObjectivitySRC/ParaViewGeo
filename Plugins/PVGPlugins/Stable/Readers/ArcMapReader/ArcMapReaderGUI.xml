@@ -1,6 +1,0 @@
-<ParaViewReaders>
-  <Reader name="ArcMapReader"
-    extensions="arc"
-    file_description="ArcMap arc files">
-  </Reader>
-</ParaViewReaders>

@@ -1,6 +1,0 @@
-<RCC>
-	<qresource prefix="/ParaViewResources">
-		<file>GeoReferencedImageReaderGUI.xml</file>
-	</qresource>
-</RCC>
-

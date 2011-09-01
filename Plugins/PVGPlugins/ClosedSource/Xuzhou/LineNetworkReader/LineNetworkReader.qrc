@@ -1,6 +1,0 @@
-<RCC>
-	<qresource prefix="/ParaViewResources">
-		<file>LineNetworkReaderGUI.xml</file>
-	</qresource>
-</RCC>
-

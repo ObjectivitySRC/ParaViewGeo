@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/CustomWidget" >
-        <file>pqDrillholeGA.ui</file>
-    </qresource>
-</RCC>

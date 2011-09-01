@@ -1,6 +1,0 @@
-<ParaViewReaders>
-  <Reader name="LineNetworkReader"
-    extensions="lnr"
-    file_description="Line Network File">
-  </Reader>
-</ParaViewReaders>

@@ -1,6 +1,0 @@
-<RCC>
-	<qresource prefix="/ParaViewResources">
-		<file>SOTWriterGUI.xml</file>
-	</qresource>
-</RCC>
-

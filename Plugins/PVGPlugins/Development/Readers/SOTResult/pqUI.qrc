@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/CustomWidget" >
-        <file>pqSOTResult.ui</file>
-    </qresource>
-</RCC>

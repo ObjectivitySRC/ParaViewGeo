@@ -1,4 +1,0 @@
-LIBS += -lGsTLAppli_utils
-
-SOURCES = test_string_manip.cpp
-TARGET = test_string_manip

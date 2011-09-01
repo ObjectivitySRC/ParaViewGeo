@@ -1,6 +1,0 @@
-<ParaViewFilters>
- <Category name="Mirarco">
-  <Filter name="RelativeTransform"/>
-  <Filter name="DUMMY_FILTER"/>
- </Category>
-</ParaViewFilters>

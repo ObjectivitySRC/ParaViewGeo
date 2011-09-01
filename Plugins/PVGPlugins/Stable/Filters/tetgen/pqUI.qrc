@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/CustomWidget" >
-        <file>pqTetgen.ui</file>
-    </qresource>
-</RCC>

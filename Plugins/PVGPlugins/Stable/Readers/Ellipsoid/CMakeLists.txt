@@ -1,7 +1,0 @@
-PROJECT(Ellipsoid)
-FIND_PACKAGE(ParaView REQUIRED)
-INCLUDE(${PARAVIEW_USE_FILE})
-
-ADD_PARAVIEW_PLUGIN(EllipseSMPlugin "1.0"
-			SERVER_MANAGER_XML Ellipse.xml
-			SERVER_MANAGER_SOURCES vtkEllipsoid.cxx vtkElliptic.cxx)      
