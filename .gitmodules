@@ -13,3 +13,6 @@
 [submodule "Utilities/VisItBridge"]
 	path = Utilities/VisItBridge
 	url = git://paraview.org/VisItBridge.git
+[submodule "Plugins/PVGPlugins"]
+	path = Plugins/PVGPlugins
+	url = git@192.168.22.240:ProjPVGPlugins.git
