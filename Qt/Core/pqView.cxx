@@ -33,13 +33,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // ParaView Server Manager includes.
 #include "vtkEventQtSlotConnect.h"
+#include "vtkImageData.h"
 #include "vtkMath.h"
 #include "vtkProcessModule.h"
 #include "vtkSmartPointer.h"
 #include "vtkSMProxyProperty.h"
+#include "vtkSMSession.h"
 #include "vtkSMSourceProxy.h"
 #include "vtkSMViewProxy.h"
-#include "vtkImageData.h"
+#include "vtkPVXMLElement.h"
 
 // Qt includes.
 #include <QList>
@@ -55,6 +57,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pqServer.h"
 #include "pqServerManagerModel.h"
 #include "pqTimeKeeper.h"
+#include "pqOutputPort.h"
+#include "pqPipelineSource.h"
 
 inline int pqCeil(double val)
 {
@@ -127,7 +131,7 @@ pqView::pqView( const QString& type,
   this->Internal->RenderTimer.setSingleShot(true);
   this->Internal->RenderTimer.setInterval(1);
   QObject::connect(&this->Internal->RenderTimer, SIGNAL(timeout()),
-    this, SLOT(forceRender()));
+    this, SLOT(tryRender()));
 
   pqServerManagerModel* smModel = 
     pqApplicationCore::instance()->getServerManagerModel();
@@ -187,18 +191,27 @@ void pqView::render()
 }
 
 //-----------------------------------------------------------------------------
+void pqView::tryRender()
+{
+  if (this->getProxy()->GetSession()->GetPendingProgress())
+    {
+    this->render();
+    }
+  else
+    {
+    this->forceRender();
+    }
+}
+
+//-----------------------------------------------------------------------------
 void pqView::forceRender()
 {
   vtkSMViewProxy* view = this->getViewProxy();
   if (view)
     {
-    // FIXME:UDA We are managing progess in View module, 
-    // do we need it here?
-    //vtkProcessModule::GetProcessModule()->SendPrepareProgress(
-    //  view->GetConnectionID());
+    view->GetSession()->PrepareProgress();
     view->StillRender();
-    //vtkProcessModule::GetProcessModule()->SendCleanupPendingProgress(
-    //  view->GetConnectionID());
+    view->GetSession()->CleanupPendingProgress();
     }
 }
 
@@ -383,6 +396,50 @@ vtkImageData* pqView::captureImage(const QSize& fullsize)
     this->render();
     }
   return vtkimage;
+}
+
+//-----------------------------------------------------------------------------
+bool pqView::canDisplay(pqOutputPort* opPort) const
+{
+  pqPipelineSource* source = opPort ? opPort->getSource() : 0;
+  vtkSMSourceProxy* sourceProxy = source ? vtkSMSourceProxy::SafeDownCast(source->getProxy()) : 0;
+  if(!opPort||
+     !source ||
+     opPort->getServer()->GetConnectionID() != this->getServer()->GetConnectionID() ||
+     !sourceProxy ||
+     sourceProxy->GetOutputPortsCreated() == 0)
+    {
+    return false;
+    }
+
+  vtkPVXMLElement* hints = sourceProxy->GetHints();
+  if (hints)
+    {
+    unsigned int elementCount = hints->GetNumberOfNestedElements();
+    for(unsigned int i = 0; i < elementCount; i++)
+      {
+      vtkPVXMLElement* child = hints->GetNestedElement(i);
+      const char *childName = child->GetName();
+
+      if(childName && strcmp(childName, "DefaultRepresentations") == 0)
+        {
+        unsigned int defaultRepsCount = child->GetNumberOfNestedElements();
+        for(unsigned int j = 0; j < defaultRepsCount; j++)
+          {
+          vtkPVXMLElement *defaultRep = child->GetNestedElement(j);
+
+          const char *defaultRepViewType = defaultRep->GetAttribute("view");
+          if(defaultRepViewType &&
+             this->ViewType == defaultRepViewType)
+            {
+            return true;
+            }
+          }
+        }
+      }
+    }
+
+  return false;
 }
 
 //-----------------------------------------------------------------------------

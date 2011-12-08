@@ -30,57 +30,71 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
 #include "pqProgressBar.h"
-#include "pqProgressBarHelper.h"
-#include <QTimer>
-#include <QHBoxLayout>
+
+#include <QGridLayout>
+#include <QLabel>
+#include <QProgressBar>
+#include <QString>
 
 //-----------------------------------------------------------------------------
-pqProgressBar::pqProgressBar(QWidget* _p) : QProgressBar(_p)
+pqProgressBar::pqProgressBar(QWidget* _p) : QWidget(_p), PreviousMessage("")
 {
-  this->Helper = new pqProgressBarHelper(this);
-  this->Helper->enableProgress(false);
-  this->CleanUp = false;
+
+  QGridLayout *gridlayout = new QGridLayout(this);
+  gridlayout->setSpacing(0);
+  gridlayout->setContentsMargins(0,0,4,0);
+
+  this->ProgressBar = new QProgressBar(this);
+  this->ProgressBar->setRange(0,100);
+  this->ProgressBar->setValue(0);
+  this->ProgressBar->setTextVisible(false);
+  this->ProgressBar->setMinimumWidth(200);
+  this->ProgressBar->setSizePolicy(QSizePolicy::MinimumExpanding,QSizePolicy::Fixed);
+
+  this->ProgressLabel = new QLabel(this);
+  this->ProgressLabel->setMinimumWidth(100);
+  this->ProgressLabel->setSizePolicy(QSizePolicy::Minimum,QSizePolicy::Fixed);
+
+  gridlayout->addWidget(this->ProgressBar,0,0);
+  gridlayout->addWidget(this->ProgressLabel,0,1);
+  this->setLayout(gridlayout);
+
+
+  this->reset();
 }
 
 
 //-----------------------------------------------------------------------------
 pqProgressBar::~pqProgressBar()
 {
+  delete this->ProgressBar;
+  delete this->ProgressLabel;
 }
 
 //-----------------------------------------------------------------------------
-void pqProgressBar::setProgress(const QString& message, int _value)
+void pqProgressBar::setProgress(const QString& message, int value)
 {
-  if(this->Helper->progressEnabled())
+  this->ProgressBar->setValue(value);
+  QString msg = QString("%1: %2").arg(message, QString::number(value));
+  if ( msg.length() > this->PreviousMessage.length() )
     {
-    this->Helper->setFormat(QString("%1: %p").arg(message));
-    this->Helper->setProgress(_value);
+    //we need to get the label to be resized correctly so it fits
+    //this is trickier than it seems. By hiding it and than calling show
+    //we invalidate numerous flags which causes an ensurePolished and
+    // it also FORCES a updateGeometry. If you now a cleaner way, please
+    //change this
+    this->ProgressLabel->hide();
     }
+  this->ProgressLabel->setText(msg);
+  this->ProgressLabel->show();
+    
+  this->PreviousMessage = msg;
 }
 
 //-----------------------------------------------------------------------------
-void pqProgressBar::enableProgress(bool e)
+void pqProgressBar::reset()
 {
-  if(e && !this->Helper->progressEnabled())
-    {
-    this->Helper->enableProgress(true);
-    }
-  else if(!e && this->Helper->progressEnabled())
-    {
-    this->Helper->setProgress(100);
-    if(!this->CleanUp)
-      {
-      this->CleanUp = true;
-      QTimer::singleShot(0, this, SLOT(cleanup()));
-      }
-    }
+  this->ProgressBar->reset();
+  this->ProgressLabel->hide();
+  this->PreviousMessage = "";
 }
-
-//-----------------------------------------------------------------------------
-void pqProgressBar::cleanup()
-{
-  this->CleanUp = false;
-  this->Helper->enableProgress(false);
-}
-
-

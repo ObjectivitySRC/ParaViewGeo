@@ -55,7 +55,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pqFiltersMenuReaction.h"
 #include "pqHelpReaction.h"
 #include "pqIgnoreSourceTimeReaction.h"
-#include "pqUpdateProxyDefinitionsBehavior.h"
 #include "pqLoadDataReaction.h"
 #include "pqLoadStateReaction.h"
 #include "pqMainControlsToolbar.h"
@@ -145,6 +144,7 @@ void pqParaViewMenuBuilders::buildEditMenu(QMenu& menu)
   new pqDeleteReaction(ui.actionDelete);
   new pqDeleteReaction(ui.actionDelete_All, true);
   new pqCopyReaction(ui.actionCopy);
+  new pqCopyReaction(ui.actionPaste, true);
   new pqApplicationSettingsReaction(ui.actionEditSettings);
   new pqViewSettingsReaction(ui.actionEditViewSettings);
   new pqDataQueryReaction(ui.actionQuery);
@@ -155,9 +155,8 @@ void pqParaViewMenuBuilders::buildSourcesMenu(QMenu&  menu,
   QMainWindow* mainWindow)
 {
   pqProxyGroupMenuManager* mgr = new pqProxyGroupMenuManager(&menu, "ParaViewSources");
+  mgr->addProxyDefinitionUpdateListener("sources");
   new pqSourcesMenuReaction(mgr);
-  new pqUpdateProxyDefinitionsBehavior(
-    pqUpdateProxyDefinitionsBehavior::SOURCES, "sources", mgr);
   pqPVApplicationCore::instance()->registerForQuicklaunch(&menu);
   if (mainWindow)
     {
@@ -170,12 +169,10 @@ void pqParaViewMenuBuilders::buildSourcesMenu(QMenu&  menu,
 void pqParaViewMenuBuilders::buildFiltersMenu(QMenu& menu,
   QMainWindow* mainWindow)
 {
-  pqProxyGroupMenuManager* mgr =
-    new pqProxyGroupMenuManager(&menu, "ParaViewFilters");
+  pqProxyGroupMenuManager* mgr = new pqProxyGroupMenuManager(&menu, "ParaViewFilters");
+  mgr->addProxyDefinitionUpdateListener("filters");
   mgr->setRecentlyUsedMenuSize(10);
   new pqFiltersMenuReaction(mgr);
-  new pqUpdateProxyDefinitionsBehavior(
-    pqUpdateProxyDefinitionsBehavior::FILTERS, "filters", mgr);
   pqPVApplicationCore::instance()->registerForQuicklaunch(&menu);
 
   if (mainWindow)
@@ -283,6 +280,7 @@ void pqParaViewMenuBuilders::buildPipelineBrowserContextMenu(QWidget& widget)
   new pqIgnoreSourceTimeReaction(ui.actionPBIgnoreTime);
   new pqDeleteReaction(ui.actionPBDelete);
   new pqCopyReaction(ui.actionPBCopy);
+  new pqCopyReaction(ui.actionPBPaste, true);
 }
 
 //-----------------------------------------------------------------------------

@@ -337,7 +337,7 @@ QList<pqSMProxy> pqSMAdaptor::getProxyPropertyDomain(vtkSMProperty* Property)
   vtkSMProxyProperty* proxyProp = vtkSMProxyProperty::SafeDownCast(Property);
   if(proxyProp)
     {
-    vtkSMProxyManager* pm = vtkSMProxyManager::GetProxyManager();
+    vtkSMProxyManager* pm = Property->GetParent()->GetProxyManager();
     
     // get group domain of this property 
     // and add all proxies in those groups to our list
@@ -407,8 +407,6 @@ QList<QList<QVariant> > pqSMAdaptor::getSelectionProperty(vtkSMProperty* Propert
   iter->Delete();
   
   int numSelections = 0;
-  vtkSMVectorProperty* VectorProperty = NULL;
-  VectorProperty = vtkSMVectorProperty::SafeDownCast(Property);
   if(EnumerationDomain)
     {
     numSelections = EnumerationDomain->GetNumberOfEntries();

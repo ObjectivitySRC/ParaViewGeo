@@ -82,6 +82,30 @@ public:
   pqPropertyLinks Links;
 };
 
+namespace
+{
+  // implicit plane widget does not like it when any of the dimensions is 0. So
+  // we ensure that each dimension has some thickness.
+  static void pqFixBounds(vtkBoundingBox& bbox)
+    {
+    double max_length = bbox.GetMaxLength();
+    max_length = max_length > 0? max_length * 0.05 : 1;
+    double min_point[3], max_point[3];
+    bbox.GetMinPoint(min_point[0], min_point[1], min_point[2]);
+    bbox.GetMaxPoint(max_point[0], max_point[1], max_point[2]);
+    for (int cc=0; cc < 3; cc++)
+      {
+      if (bbox.GetLength(cc) == 0)
+        {
+        min_point[cc] -= max_length;
+        max_point[cc] += max_length;
+        }
+      }
+    bbox.SetMinPoint(min_point);
+    bbox.SetMaxPoint(max_point);
+    }
+}
+
 /////////////////////////////////////////////////////////////////////////
 // pqImplicitPlaneWidget
 
@@ -148,7 +172,7 @@ pqImplicitPlaneWidget::pqImplicitPlaneWidget(vtkSMProxy* o, vtkSMProxy* pxy, QWi
 
   pqServerManagerModel* smmodel =
     pqApplicationCore::instance()->getServerManagerModel();
-  this->createWidget(smmodel->findServer(o->GetConnectionID()));
+  this->createWidget(smmodel->findServer(o->GetSession()));
 }
 
 pqImplicitPlaneWidget::~pqImplicitPlaneWidget()
@@ -321,7 +345,8 @@ void pqImplicitPlaneWidget::select()
   vtkSMPropertyHelper(widget, "Origin").Get(center, 3);
   vtkBoundingBox box(input_bounds);
   box.AddPoint(center);
-  box.GetBounds(input_bounds);
+  pqFixBounds(box);
+  box.GetBounds(input_bounds);  
 
   vtkSMPropertyHelper(widget, "PlaceWidget").Set(input_bounds, 6);
   widget->UpdateVTKObjects();
@@ -336,11 +361,16 @@ void pqImplicitPlaneWidget::resetBounds(double input_bounds[6])
 {
   vtkSMNewWidgetRepresentationProxy* widget = this->getWidgetProxy();
   vtkBoundingBox box(input_bounds);
+  pqFixBounds(box);
 
   double input_origin[3];
   box.GetCenter(input_origin);
 
-  vtkSMPropertyHelper(widget, "PlaceWidget").Set(input_bounds, 6);
+  double bounds[6];
+  box.GetBounds(bounds);
+
+  widget->InvokeCommand("Reset");
+  vtkSMPropertyHelper(widget, "PlaceWidget").Set(bounds, 6);
   widget->UpdateVTKObjects();
   vtkSMPropertyHelper(widget, "Origin").Set(input_origin, 3);
   widget->UpdateVTKObjects();
@@ -374,6 +404,7 @@ void pqImplicitPlaneWidget::onUseCenterBounds()
     }
 
   vtkBoundingBox box(input_bounds);
+  pqFixBounds(box);
   double input_origin[3];
   box.GetCenter(input_origin);
   vtkSMPropertyHelper(widget, "Origin").Set(input_origin, 3);

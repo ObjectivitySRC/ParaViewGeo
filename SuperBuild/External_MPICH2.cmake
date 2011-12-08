@@ -2,7 +2,7 @@
 # The MPICH2 external project for ParaView
 set(MPICH2_source "${CMAKE_CURRENT_BINARY_DIR}/MPICH2")
 set(MPICH2_build "${CMAKE_CURRENT_BINARY_DIR}/MPICH2-build")
-set(MPICH2_install "${CMAKE_CURRENT_BINARY_DIR}/MPICH2-install")
+set(MPICH2_install "${CMAKE_CURRENT_BINARY_DIR}")
 
 # If Windows we use CMake otherwise ./configure
 if(WIN32)
@@ -43,6 +43,7 @@ set(MPIEXEC ${MPICH2_install}/bin/mpiexec${CMAKE_EXECUTABLE_SUFFIX})
 set(MPICC ${MPICH2_install}/bin/mpicc${CMAKE_EXECUTABLE_SUFFIX})
 set(MPICXX ${MPICH2_install}/bin/mpic++${CMAKE_EXECUTABLE_SUFFIX})
 set(MPI_INCLUDE_PATH ${MPICH2_install}/include)
+set(MPI_INSTALL ${MPICH2_install})
 if(WIN32)
   set(MPI_LIBRARY optimized ${MPICH2_install}/lib/libmpi${_LINK_LIBRARY_SUFFIX} debug ${MPICH2_install}/lib/libmpid${_LINK_LIBRARY_SUFFIX})
   set(MPI_EXTRA_LIBRARY optimized ${MPICH2_install}/lib/libmpi_cxx${_LINK_LIBRARY_SUFFIX} debug ${MPICH2_install}/lib/libmpi_cxxd${_LINK_LIBRARY_SUFFIX})

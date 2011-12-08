@@ -76,7 +76,7 @@ QList<pqPipelineSource*> pqLoadDataReaction::loadData()
   vtkSMReaderFactory* readerFactory =
     vtkSMProxyManager::GetProxyManager()->GetReaderFactory();
   QString filters = readerFactory->GetSupportedFileTypes(
-    server->GetConnectionID());
+    server->session());
   if (!filters.isEmpty())
     {
     filters += ";;";
@@ -91,7 +91,11 @@ QList<pqPipelineSource*> pqLoadDataReaction::loadData()
   if (fileDialog.exec() == QDialog::Accepted)
     {
     QList<QStringList> files = fileDialog.getAllSelectedFiles();    
-    pqLoadDataReaction::loadData(files);
+    pqPipelineSource* source = pqLoadDataReaction::loadData(files);
+    if (source)
+      {
+      sources << source;
+      }
     }
   return sources;
 }
@@ -170,8 +174,7 @@ bool pqLoadDataReaction::TestFileReadability(
   pqServer *server,
   vtkSMReaderFactory *factory)
 {
-  return factory->TestFileReadability(file.toAscii().data(),
-    server->GetConnectionID());
+  return factory->TestFileReadability(file.toAscii().data(), server->session());
 }
 
 //-----------------------------------------------------------------------------
@@ -183,7 +186,7 @@ bool pqLoadDataReaction::DetermineFileReader(
 {
   QString readerType,readerGroup;
   vtkStringList* list = factory->GetReaders(filename.toAscii().data(),
-    server->GetConnectionID());
+    server->session());
   if(list->GetLength() > 3)
     {
     // If more than one readers found.
@@ -201,7 +204,7 @@ bool pqLoadDataReaction::DetermineFileReader(
       }
     }        
   else if (factory->CanReadFile(filename.toAscii().data(),
-    server->GetConnectionID()))
+    server->session()))
     {
     //reader knows the type
     readerType = factory->GetReaderName();

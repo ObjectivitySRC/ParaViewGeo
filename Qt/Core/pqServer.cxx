@@ -29,33 +29,32 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
-
 #include "pqServer.h"
 
-#include "vtkClientServerStream.h"
-#include "vtkMapper.h"
-#include "vtkObjectFactory.h"
-#include "vtkProcessModuleConnectionManager.h"
-#include "vtkProcessModuleGUIHelper.h"
-#include "vtkProcessModule.h"
-#include "vtkPVOptions.h"
-#include "vtkPVServerInformation.h"
-#include "vtkSMPropertyHelper.h"
-#include "vtkSMProxyManager.h"
-#include "vtkSMRenderViewProxy.h"
-#include "vtkToolkits.h"
-
-// Qt includes.
-#include <QCoreApplication>
-#include <QtDebug>
-#include <QTimer>
-
-// ParaView includes.
 #include "pqApplicationCore.h"
 #include "pqOptions.h"
 #include "pqServerManagerModel.h"
 #include "pqSettings.h"
 #include "pqTimeKeeper.h"
+#include "vtkClientServerStream.h"
+#include "vtkMapper.h"
+#include "vtkObjectFactory.h"
+#include "vtkProcessModule.h"
+#include "vtkPVOptions.h"
+#include "vtkPVServerInformation.h"
+#include "vtkSMProperty.h"
+#include "vtkSMPropertyHelper.h"
+#include "vtkSMPropertyIterator.h"
+#include "vtkSMProxy.h"
+#include "vtkSMProxyManager.h"
+#include "vtkSMSession.h"
+#include "vtkToolkits.h"
+
+// Qt includes.
+#include <QColor>
+#include <QCoreApplication>
+#include <QtDebug>
+#include <QTimer>
 
 class pqServer::pqInternals
 {
@@ -77,6 +76,8 @@ pqServer::pqServer(vtkIdType connectionID, vtkPVOptions* options, QObject* _pare
 
   this->ConnectionID = connectionID;
   this->Options = options;
+  this->Session = vtkSMSession::SafeDownCast(
+    vtkProcessModule::GetProcessModule()->GetSession(connectionID));
 
   vtkPVServerInformation* serverInfo = this->getServerInformation();
   if (this->isRemote() && serverInfo && serverInfo->GetTimeout() > 0)
@@ -116,7 +117,8 @@ pqServer::~pqServer()
     vtkProcessModule::GetProcessModule()->Disconnect(this->ConnectionID);
     }
     */
-  this->ConnectionID = vtkProcessModuleConnectionManager::GetNullConnectionID();
+  this->ConnectionID = 0;
+  this->Session = NULL;
   delete this->Internals;
 }
 
@@ -130,12 +132,19 @@ void pqServer::initialize()
   this->createTimeKeeper();
 
   // Create the GlobalMapperPropertiesProxy.
-  vtkSMProxyManager* pxm = vtkSMProxyManager::GetProxyManager();
+  vtkSMProxyManager* pxm = vtkSMObject::GetProxyManager();
   vtkSMProxy* proxy = pxm->NewProxy("misc", "GlobalMapperProperties");
-  proxy->SetConnectionID(this->ConnectionID);
   proxy->UpdateVTKObjects();
   pxm->RegisterProxy("temp_prototypes", "GlobalMapperProperties", proxy);
   this->GlobalMapperPropertiesProxy = proxy;
+  proxy->Delete();
+
+  // Create Strict Load Balancing Proxy
+  pqSettings* settings = pqApplicationCore::instance()->settings();
+  proxy = pxm->NewProxy("misc", "StrictLoadBalancing");
+  vtkSMPropertyHelper(proxy, "DisableExtentsTranslator").Set(
+    settings->value("strictLoadBalancing", false).toBool());
+  proxy->UpdateVTKObjects();
   proxy->Delete();
 
   this->updateGlobalMapperProperties();
@@ -148,13 +157,16 @@ pqTimeKeeper* pqServer::getTimeKeeper() const
 }
 
 //-----------------------------------------------------------------------------
+vtkSMSession* pqServer::session() const
+{
+  return this->Session.GetPointer();
+}
+//-----------------------------------------------------------------------------
 void pqServer::createTimeKeeper()
 {
   // Set Global Time keeper.
-  vtkSMProxyManager* pxm = vtkSMProxyManager::GetProxyManager();
+  vtkSMProxyManager* pxm = vtkSMObject::GetProxyManager();
   vtkSMProxy* proxy = pxm->NewProxy("misc","TimeKeeper");
-  proxy->SetConnectionID(this->ConnectionID);
-  proxy->SetServers(vtkProcessModule::CLIENT);
   proxy->UpdateVTKObjects();
   pxm->RegisterProxy("timekeeper", "TimeKeeper", proxy);
   proxy->Delete();
@@ -177,23 +189,27 @@ vtkIdType pqServer::GetConnectionID() const
 }
 
 //-----------------------------------------------------------------------------
-QString pqServer::getRenderViewXMLName() const
-{
-  return "RenderView";
-}
-
-//-----------------------------------------------------------------------------
 int pqServer::getNumberOfPartitions()
 {
-  vtkProcessModule* pm = vtkProcessModule::GetProcessModule();
-  return pm->GetNumberOfPartitions(this->ConnectionID);
+  return this->Session->GetNumberOfProcesses(
+    vtkPVSession::DATA_SERVER | vtkPVSession::RENDER_SERVER);
 }
 
 //-----------------------------------------------------------------------------
 bool pqServer::isRemote() const
 {
-  vtkProcessModule* pm = vtkProcessModule::GetProcessModule();
-  return pm->IsRemote(this->ConnectionID);
+  return this->Session->IsA("vtkSMSessionClient");
+}
+
+//-----------------------------------------------------------------------------
+bool pqServer::isRenderServerSeparate()
+{
+  if (this->isRemote())
+    {
+    return this->Session->GetController(vtkPVSession::DATA_SERVER_ROOT) !=
+      this->Session->GetController(vtkPVSession::RENDER_SERVER_ROOT);
+    }
+  return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -201,24 +217,6 @@ void pqServer::setResource(const pqServerResource &server_resource)
 {
   this->Resource = server_resource;
   emit this->nameChanged(this);
-}
-
-//-----------------------------------------------------------------------------
-void pqServer::getSupportedProxies(const QString& xmlgroup, QList<QString>& names)
-{
-  names.clear();
-  vtkSMProxyManager* pxm = vtkSMProxyManager::GetProxyManager();
-  unsigned int numProxies = pxm->GetNumberOfXMLProxies(
-    xmlgroup.toAscii().data());
-  for (unsigned int cc=0; cc <numProxies; cc++)
-    {
-    const char* name = pxm->GetXMLProxyName(xmlgroup.toAscii().data(),
-      cc);
-    if (name)
-      {
-      names.push_back(name);
-      }
-    }
 }
 
 //-----------------------------------------------------------------------------
@@ -230,8 +228,13 @@ vtkPVOptions* pqServer::getOptions() const
 //-----------------------------------------------------------------------------
 vtkPVServerInformation* pqServer::getServerInformation() const
 {
-  vtkProcessModule* pm = vtkProcessModule::GetProcessModule();
-  return pm->GetServerInformation(this->GetConnectionID());
+  return this->Session->GetServerInformation();
+}
+
+//-----------------------------------------------------------------------------
+bool pqServer::isProgressPending() const
+{
+  return (this->Session && this->Session->GetPendingProgress());
 }
 
 //-----------------------------------------------------------------------------
@@ -255,13 +258,16 @@ void pqServer::setHeartBeatTimeout(int msec)
 //-----------------------------------------------------------------------------
 void pqServer::heartBeat()
 {
-  vtkProcessModule* pm = vtkProcessModule::GetProcessModule();
-  vtkClientServerStream stream;
-  stream << vtkClientServerStream::Invoke
-         << pm->GetProcessModuleID()
-         << "GetProcessModule"
-         << vtkClientServerStream::End;
-  pm->SendStream(this->ConnectionID, vtkProcessModule::SERVERS, stream);
+  // Send random stream to all processes to produce some traffic and prevent
+  // automatic disconnection
+  if(this->Session && !this->Session->GetPendingProgress())
+    {
+    vtkClientServerStream stream;
+    stream << vtkClientServerStream::Invoke
+           << "HeartBeat"
+           << vtkClientServerStream::End;
+    this->Session->ExecuteStream(vtkPVSession::SERVERS, stream, true);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -478,4 +484,10 @@ void pqServer::updateGlobalMapperProperties()
     server->setGlobalImmediateModeRendering(
       pqServer::globalImmediateModeRenderingSetting());
     }
+}
+
+//-----------------------------------------------------------------------------
+vtkSMProxyManager* pqServer::proxyManager() const
+{
+  return vtkSMObject::GetProxyManager();
 }

@@ -16,14 +16,11 @@ INCLUDE_DIRECTORIES(
   "${ParaView_SOURCE_DIR}/VTK/Common"
   "${ParaView_SOURCE_DIR}/VTK/Parallel"
   "${ParaView_SOURCE_DIR}/VTK/Wrapping/Python"
-  "${ParaView_SOURCE_DIR}/Servers/Common"
-  "${ParaView_SOURCE_DIR}/Servers/Filters"
-  "${ParaView_SOURCE_DIR}/Servers/ServerManager"
-  "${ParaView_BINARY_DIR}/Servers/ServerManager"
-  "${ParaView_BINARY_DIR}/Servers/Filters"
-  "${ParaView_BINARY_DIR}/Servers/Common"
-  "${ParaView_SOURCE_DIR}/Utilities/VTKClientServer"
-  "${ParaView_BINARY_DIR}/Utilities/VTKClientServer"
+  "${ParaView_BINARY_DIR}/VTK/Wrapping/Python"
+  "${PVCommon_SOURCE_DIR}"
+  "${PVClientServerCore_SOURCE_DIR}"
+  "${PVServerImplementation_SOURCE_DIR}"
+  "${PVServerManager_SOURCE_DIR}"
   )
 
 # create the VTK/Python  executable
@@ -35,8 +32,7 @@ VTK_ADD_LIBRARY(vtkPVPythonInterpretor
   vtkPVPythonInteractiveInterpretor.cxx)
 
 VTK_ADD_LIBRARY(vtkPVPython
-  vtkPVPythonOptions.cxx
-  vtkPVProcessModulePythonHelper.cxx)
+  vtkPVPythonOptions.cxx)
 
 add_executable_with_forwarding(PV_EXE_SUFFIX
   pvpython
@@ -130,6 +126,10 @@ SET(_PVPYTHON_LINK_LIBS
 IF(VTK_WRAP_TCL)
   SET(_PVPYTHON_LINK_LIBS ${_PVPYTHON_LINK_LIBS}  ${VTK_TK_LIBRARIES})
 ENDIF(VTK_WRAP_TCL)
+
+IF(VTK_USE_SYSTEM_PNG)
+  LIST(APPEND _PVPYTHON_LINK_LIBS ${PNG_LIBRARY})
+ENDIF(VTK_USE_SYSTEM_PNG)
 
 TARGET_LINK_LIBRARIES(vtkPVPython ${_PVPYTHON_LINK_LIBS})
 TARGET_LINK_LIBRARIES(pvpython${PV_EXE_SUFFIX} vtkPVPython)

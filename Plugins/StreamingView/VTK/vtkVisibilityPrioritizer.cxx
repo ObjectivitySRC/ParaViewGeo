@@ -48,6 +48,10 @@ vtkVisibilityPrioritizer::vtkVisibilityPrioritizer()
   memcpy(this->Frustum, frustinit, 32*sizeof(double));
   this->FrustumTester = vtkExtractSelectedFrustum::New();
   this->GetInformation()->Set(vtkAlgorithm::PRESERVES_DATASET(), 1);
+
+  //if estimate was perfect, backfaces would be <0.0, but since dealing with curves
+  //and a single normal we err on side of visibility to reduce popping artifacts
+  this->BackFaceFactor = -0.75;
 }
 
 //----------------------------------------------------------------------------
@@ -142,7 +146,7 @@ int vtkVisibilityPrioritizer::RequestUpdateExtentInformation(
 }
 
 //------------------------------------------------------------------------------
-double vtkVisibilityPrioritizer::CalculatePriority(double *pbbox)
+double vtkVisibilityPrioritizer::CalculatePriority(double *pbbox, double *pnorm)
 {
   double outPriority = 1.0;
 
@@ -150,6 +154,34 @@ double vtkVisibilityPrioritizer::CalculatePriority(double *pbbox)
       pbbox[2] <= pbbox[3] &&
       pbbox[4] <= pbbox[5])
     {
+    if (pnorm != NULL)
+      {
+      double n = sqrt(pnorm[0]*pnorm[0] + pnorm[1]*pnorm[1] + pnorm[2]*pnorm[2]);
+      pnorm[0] = pnorm[0]/n;
+      pnorm[1] = pnorm[1]/n;
+      pnorm[2] = pnorm[2]/n;
+      double gaze[3];
+      gaze[0] = this->CameraState[6] - this->CameraState[0];
+      gaze[1] = this->CameraState[7] - this->CameraState[1];
+      gaze[2] = this->CameraState[8] - this->CameraState[2];
+      n = sqrt(gaze[0]*gaze[0] + gaze[1]*gaze[1] + gaze[2]*gaze[2]);
+      gaze[0] = gaze[0]/n;
+      gaze[1] = gaze[1]/n;
+      gaze[2] = gaze[2]/n;
+      //cerr << "gaze " << gaze[0] << "," << gaze[1] << "," << gaze[2] << endl;
+      double dotprod = gaze[0]*pnorm[0] + gaze[1]*pnorm[1] + gaze[2]*pnorm[2];
+      if (dotprod < this->BackFaceFactor)
+        {
+        //cerr << "reject" << endl;
+        outPriority = 0.0;
+        return outPriority;
+        }
+      else
+        {
+        //cerr << "accept" << endl;
+        }
+      }
+
     //use the frustum extraction filter to reject pieces that do not
     //intersect the view frustum
     if (!this->FrustumTester->OverallBoundsTest(pbbox))
@@ -161,44 +193,28 @@ double vtkVisibilityPrioritizer::CalculatePriority(double *pbbox)
       //for those that are not rejected, compute a priority from the bounds
       //such that pieces nearest to camera eye have highest priority 1 and
       //those furthest away have lowest 0.
-      //Must do this using only information about current piece.
+
       vtkBoundingBox box(pbbox);
-      double center[3];
-      //box.GetCenter(center);
-
-      // use the closest corner, not the center for uneven sized pieces
-      if(fabs(this->CameraState[0] - pbbox[0]) <
-         fabs(this->CameraState[0] - pbbox[1]))
+      double nearestptonbox[3];
+      for (int i=0; i<3; i++)
         {
-        center[0] = pbbox[0];
+        double p = this->CameraState[i];
+        if (pbbox[i*2] > p)
+          {
+          p = pbbox[i*2];
+          }
+        if (pbbox[i*2+1] < p)
+          {
+          p = pbbox[i*2+1];
+          }
+        nearestptonbox[i] = p;
         }
-      else
-        {
-        center[0] = pbbox[1];
-        }
-
-      if(fabs(this->CameraState[1] - pbbox[2]) <
-         fabs(this->CameraState[1] - pbbox[3]))
-        {
-        center[1] = pbbox[2];
-        }
-      else
-        {
-        center[1] = pbbox[3];
-        }
-
-      if(fabs(this->CameraState[2] - pbbox[4]) <
-         fabs(this->CameraState[2] - pbbox[5]))
-        {
-        center[2] = pbbox[4];
-        }
-      else
-        {
-        center[2] = pbbox[5];
-        }
-
       double dbox=sqrt
-        (vtkMath::Distance2BetweenPoints(&this->CameraState[0], center));
+        (vtkMath::Distance2BetweenPoints(&this->CameraState[0],
+                                         nearestptonbox));
+
+      //ordering must only use information about current piece, so we
+      //normalize by dividing by distance to far corner or frustum
       const double *farlowerleftcorner = &this->Frustum[1*4];
       double dfar=sqrt
         (vtkMath::Distance2BetweenPoints

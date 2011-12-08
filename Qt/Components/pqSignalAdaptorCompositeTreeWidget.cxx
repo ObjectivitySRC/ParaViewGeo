@@ -849,6 +849,7 @@ void pqSignalAdaptorCompositeTreeWidget::updateSelectionCounts()
     {
     return;
     }
+
   vtkPVDataInformation* info = sourceProxy->GetSelectionOutput(
     this->Internal->Domain->GetSourcePort())->GetDataInformation();
 
@@ -892,7 +893,7 @@ void pqSignalAdaptorCompositeTreeWidget::setupSelectionUpdatedCallback(
       {
       this->Internal->VTKConnectSelection->Connect(
         selProxy, vtkCommand::UpdateDataEvent,
-        this, SLOT(updateSelectionCounts()), 0, 0, Qt::QueuedConnection);
+        this, SLOT(updateSelectionCounts()));
       }
     }
 }

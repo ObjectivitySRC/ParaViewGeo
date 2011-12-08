@@ -51,6 +51,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pqCoreUtilities.h"
 #include "pqDisplayPolicy.h"
 #include "pqEventDispatcher.h"
+#include "pqInterfaceTracker.h"
 #include "pqLinksModel.h"
 #include "pqLookupTableManager.h"
 #include "pqObjectBuilder.h"
@@ -74,14 +75,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pqUndoStack.h"
 #include "pqXMLUtil.h"
 #include "vtkInitializationHelper.h"
+#include "vtkProcessModuleAutoMPI.h"
 #include "vtkProcessModule.h"
+#include "vtkPVPluginTracker.h"
 #include "vtkPVXMLElement.h"
 #include "vtkPVXMLParser.h"
-#include "vtkSMApplication.h"
 #include "vtkSmartPointer.h"
 #include "vtkSMGlobalPropertiesManager.h"
 #include "vtkSMInputArrayDomain.h"
-#include "vtkSMPluginManager.h"
 #include "vtkSMProperty.h"
 #include "vtkSMPropertyHelper.h"
 #include "vtkSMPropertyIterator.h"
@@ -89,7 +90,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vtkSMProxyManager.h"
 #include "vtkSMReaderFactory.h"
 #include "vtkSMWriterFactory.h"
-#include "vtkProcessModuleAutoMPI.h"
 
 //-----------------------------------------------------------------------------
 class pqApplicationCore::pqInternals
@@ -123,7 +123,8 @@ pqApplicationCore::pqApplicationCore(int& argc, char** argv, pqOptions* options,
 
   // Create output window before initializing server manager.
   this->createOutputWindow();
-  vtkInitializationHelper::Initialize(argc, argv, options);
+  vtkInitializationHelper::Initialize(argc, argv,
+    vtkProcessModule::PROCESS_CLIENT, options);
   this->constructor();
   this->FinalizeOnExit = true;
 }
@@ -156,6 +157,8 @@ void pqApplicationCore::constructor()
   // *  Create the pqObjectBuilder. This is used to create pipeline objects.
   this->ObjectBuilder = new pqObjectBuilder(this);
 
+  this->InterfaceTracker = new pqInterfaceTracker(this);
+
   this->PluginManager = new pqPluginManager(this);
 
   // * Create various factories.
@@ -170,8 +173,8 @@ void pqApplicationCore::constructor()
   this->ProgressManager = new pqProgressManager(this);
 
   // add standard server manager model interface
-  this->PluginManager->addInterface(
-    new pqStandardServerManagerModelInterface(this->PluginManager));
+  this->InterfaceTracker->addInterface(
+    new pqStandardServerManagerModelInterface(this->InterfaceTracker));
 
   this->LinksModel = new pqLinksModel(this);
 
@@ -182,6 +185,14 @@ void pqApplicationCore::constructor()
   QObject::connect(this->ServerManagerObserver,
     SIGNAL(stateSaved(vtkPVXMLElement*)),
     this, SLOT(onStateSaved(vtkPVXMLElement*)));
+  QObject::connect(QCoreApplication::instance(),SIGNAL(lastWindowClosed()),
+    this, SLOT(prepareForQuit()));
+
+  // this has to happen after the construction of pqInterfaceTracker since if
+  // the plugin initialization code itself may request access to  the interface
+  // tracker.
+  this->InterfaceTracker->initialize();
+  this->PluginManager->loadPluginsFromSettings();
 }
 
 //-----------------------------------------------------------------------------
@@ -190,6 +201,9 @@ pqApplicationCore::~pqApplicationCore()
   // Ensure that startup plugins get a chance to cleanup before pqApplicationCore is gone.
   delete this->PluginManager;
   this->PluginManager = 0;
+
+  delete this->InterfaceTracker;
+  this->InterfaceTracker = 0;
 
   // give chance to save before pqApplicationCore is gone
   delete this->ServerStartups;
@@ -326,6 +340,8 @@ vtkSMGlobalPropertiesManager* pqApplicationCore::getGlobalPropertiesManager()
 
     // load settings.
     this->loadGlobalPropertiesFromSettings();
+
+    this->Internal->GlobalPropertiesManager->Modified();
     }
   return this->Internal->GlobalPropertiesManager;
 }
@@ -407,7 +423,7 @@ void pqApplicationCore::loadPalette(const QString& paletteName)
 void pqApplicationCore::loadPalette(vtkPVXMLElement* xml)
 {
   vtkSMGlobalPropertiesManager* mgr = this->getGlobalPropertiesManager();
-  mgr->LoadState(xml, NULL);
+  mgr->LoadXMLState(xml, NULL);
 }
 
 //-----------------------------------------------------------------------------
@@ -417,7 +433,7 @@ void pqApplicationCore::loadPalette(vtkPVXMLElement* xml)
 vtkPVXMLElement* pqApplicationCore::getCurrrentPalette()
 {
   vtkSMGlobalPropertiesManager* mgr = this->getGlobalPropertiesManager();
-  return mgr->SaveState(NULL);
+  return mgr->SaveXMLState(NULL);
 }
 
 //-----------------------------------------------------------------------------
@@ -455,18 +471,18 @@ QObject* pqApplicationCore::manager(const QString& function)
 void pqApplicationCore::saveState(const QString& filename)
 {
   // * Save the Proxy Manager state.
-  vtkSMProxyManager::GetProxyManager()->SaveState(filename.toAscii().data());
+  vtkSMObject::GetProxyManager()->SaveXMLState(filename.toAscii().data());
 }
 
 //-----------------------------------------------------------------------------
 vtkPVXMLElement* pqApplicationCore::saveState()
 {
   // * Save the Proxy Manager state.
-  vtkSMProxyManager* pxm = vtkSMProxyManager::GetProxyManager();
+  vtkSMProxyManager* pxm = vtkSMObject::GetProxyManager();
 
   // Eventually proxy manager will save state for each connection separately.
   // For now, we only have one connection, so simply save it.
-  return pxm->SaveState();
+  return pxm->SaveXMLState();
 }
 
 //-----------------------------------------------------------------------------
@@ -493,19 +509,25 @@ void pqApplicationCore::loadState(
     return ;
     }
 
+  // BUG #12398:
+  // This change was added to prevent VisTrails from recording unwanted events.
+  // We disable recording view deletion in Undo/Stack
+  // In anycase, the stack will be cleared, why bother recording something...
+  BEGIN_UNDO_EXCLUDE();
   QList<pqView*> current_views =
     this->ServerManagerModel->findItems<pqView*>(server);
   foreach (pqView* view, current_views)
     {
     this->ObjectBuilder->destroy(view);
     }
+  END_UNDO_EXCLUDE();
 
   emit this->aboutToLoadState(rootElement);
 
-  // FIXME: this->LoadingState cannot be relied upon.
+  // TODO: this->LoadingState cannot be relied upon.
   this->LoadingState = true;
-  vtkSMProxyManager* pxm = vtkSMProxyManager::GetProxyManager();
-  pxm->LoadState(rootElement, server->GetConnectionID());
+  vtkSMProxyManager* pxm = server->proxyManager();
+  pxm->LoadXMLState(rootElement);
   this->LoadingState = false;
 }
 
@@ -622,10 +644,10 @@ pqServer* pqApplicationCore::getActiveServer() const
 }
 
 //-----------------------------------------------------------------------------
-void pqApplicationCore::quit()
+void pqApplicationCore::prepareForQuit()
 {
   // As tempting as it is to connect this slot to
-  // aboutToQuit() signal, it doesn;t work since that signal is not
+  // aboutToQuit() signal, it doesn't work since that signal is not
   // fired until the event loop exits, which doesn't happen until animation
   // stops playing.
   QList<pqAnimationScene*> scenes =
@@ -634,6 +656,12 @@ void pqApplicationCore::quit()
     {
     scene->pause();
     }
+}
+
+//-----------------------------------------------------------------------------
+void pqApplicationCore::quit()
+{
+  this->prepareForQuit();
   QCoreApplication::instance()->quit();
 }
 
@@ -670,6 +698,9 @@ void pqApplicationCore::loadConfiguration(const QString& filename)
     return;
     }
 
+  // Now, the reader/writer factories cannot be initialized until after a
+  // session has been created. So what do we do? Do we save the xml for
+  // processing everytime the session startsup?
   vtkPVXMLElement* root = parser->GetRootElement();
 
   // Load configuration files for server manager components since they don't
@@ -693,35 +724,6 @@ pqTestUtility* pqApplicationCore::testUtility()
 }
 
 //-----------------------------------------------------------------------------
-void pqApplicationCore::loadDistributedPlugins(const char* filename)
+void pqApplicationCore::loadDistributedPlugins(const char* vtkNotUsed(filename))
 {
-  QString config_file = filename;
-  if (!filename)
-    {
-    QStringList list = pqCoreUtilities::findParaviewPaths(QString(".plugins"),
-                                                          true, false);
-    if(list.size() > 0)
-      {
-      config_file = list.at(0);
-      }
-//    config_file = QApplication::applicationDirPath() +  "/.plugins";
-//#if defined(__APPLE__)
-//    // for installed applications.
-//    config_file = QApplication::applicationDirPath() + "/../Support/.plugins";
-//    if (!QFile::exists(config_file))
-//      {
-//      config_file =  QApplication::applicationDirPath() + "/../../../.plugins";
-//      }
-//#endif
-//#if defined(WIN32)
-//    if (!QFile::exists(config_file))
-//      {
-//      // maybe running from the build tree.
-//      config_file = QApplication::applicationDirPath() + "/../.plugins";
-//      }
-//#endif
-    }
-
-  vtkSMApplication::GetApplication()->GetPluginManager()->LoadPluginConfigurationXML(
-    config_file.toStdString().c_str());
 }

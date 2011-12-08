@@ -166,7 +166,7 @@ ELSE (NOT PARAVIEW_INSTALL_DEVELOPMENT)
   SET (QT_TESTING_INSTALL_DEVELOPMENT 1)
 ENDIF(NOT PARAVIEW_INSTALL_DEVELOPMENT)
 
-OPTION(PARAVIEW_INSTALL_THIRD_PARTY_LIBRARIES "Enable installation of third party libraries such as Qt and FFMPEG." ON)
+OPTION(PARAVIEW_INSTALL_THIRD_PARTY_LIBRARIES "Enable installation of third party libraries such as Qt and FFMPEG." OFF)
 MARK_AS_ADVANCED(PARAVIEW_INSTALL_THIRD_PARTY_LIBRARIES)
 
 SET(PV_INSTALL_NO_LIBRARIES)
@@ -199,7 +199,11 @@ SET (VTK_INSTALL_NO_PYTHON ON)
 SET (VTK_INSTALL_NO_VTKPYTHON ON)
 # Tell VTK to install python extension modules using CMake so they get installed
 # with the other python extension modules ParaView creates.
-SET (VTK_INSTALL_PYTHON_USING_CMAKE ON)
+IF(WIN32)
+  SET (VTK_INSTALL_PYTHON_USING_CMAKE ON)
+ELSE()
+  SET (VTK_INSTALL_PYTHON_USING_CMAKE OFF)
+ENDIF()
 SET (VTK_INSTALL_NO_QT_PLUGIN ON)
 SET (VTK_INSTALL_NO_LIBRARIES ${PV_INSTALL_NO_LIBRARIES})
 
@@ -359,12 +363,21 @@ ENDIF (PARAVIEW_DISABLE_VTK_TESTING)
 SET(ICET_MPIRUN_EXE "${VTK_MPIRUN_EXE}" CACHE INTERNAL
   "This is set from VTK_MPIRUN_EXE.")
 SET(ICET_MPI_PREFLAGS
-  "${VTK_MPI_PRENUMPROC_FLAGS};${VTK_MPI_NUMPROC_FLAG};${VTK_MPI_MAX_NUMPROCS};${VTK_MPI_PREFLAGS}" CACHE INTERNAL
-  "This is set from a combination of VTK_MPI_PREFLAGS VTK_MPI_NUMPROC_FLAG VTK_MPI_MAX_NUMPROCS VTK_MPI_PREFLAGS.")
+  "${VTK_MPI_PRENUMPROC_FLAGS};${VTK_MPI_PREFLAGS}" CACHE INTERNAL
+  "This is set from a combination of VTK_MPI_PREFLAGS and VTK_MPI_PREFLAGS.")
 SET(ICET_MPI_POSTFLAGS "${VTK_MPI_POSTFLAGS}"  CACHE INTERNAL
   "This is set from VTK_MPI_POSTFLAGS.")
 SET(ICET_MPI_MAX_NUMPROCS "${VTK_MPI_MAX_NUMPROCS}"  CACHE INTERNAL
   "This is set from VTK_MPI_MAX_NUMPROCS.")
+
+
+# include VTKConfig.cmake so that VTK_<blah> variables are defined
+# in ParaView scope.
+SET(VTK_DIR ${PARAVIEW_VTK_DIR})
+FIND_PACKAGE(VTK)
+IF(VTK_FOUND)
+  include(${ParaView_BINARY_DIR}/VTK/VTKConfig.cmake)
+ENDIF()
 
 SET(VTK_INCLUDE_DIR
   ${ParaView_SOURCE_DIR}/VTK
@@ -427,8 +440,10 @@ ENDIF(VTK_USE_SYSTEM_ZLIB)
 #########################################################################
 # Configure HDF5
 IF(VTK_USE_SYSTEM_HDF5)
-  SET(PARAVIEW_HDF5_LIBRARIES ${HDF5_LIBRARY})
+  SET(PARAVIEW_HDF5_LIBRARIES ${VTK_HDF5_LIBRARIES})
+  SET(HDF5_INCLUDE_DIR ${VTK_HDF5_INCLUDE_DIRS})
 ELSE()
+  # User HDF5's cmake config file.
   SET(HDF5_CONFIG ${ParaView_BINARY_DIR}/VTK/Utilities/vtkhdf5/vtkHDF5Config.cmake)
   INCLUDE("${HDF5_CONFIG}")
 
@@ -451,7 +466,9 @@ IF (PARAVIEW_BUILD_QT_GUI)
   SET(QtTesting_INSTALL_LIB_DIR ${PV_INSTALL_LIB_DIR})
   SET(QtTesting_INSTALL_CMAKE_DIR ${PV_INSTALL_CMAKE_DIR})
   SET(QT_TESTING_INSTALL_EXPORT_NAME ${PV_INSTALL_EXPORT_NAME})
-  SET_PROPERTY(GLOBAL APPEND PROPERTY VTK_TARGETS QtTesting)
+  IF (NOT PV_INSTALL_NO_LIBRARIES)
+    SET_PROPERTY(GLOBAL APPEND PROPERTY VTK_TARGETS QtTesting)
+  ENDIF (NOT PV_INSTALL_NO_LIBRARIES)
 ENDIF()
 
 #########################################################################
@@ -498,12 +515,24 @@ SET(XDMF_INCLUDE_DIRS
   "${ParaView_BINARY_DIR}/Utilities/Xdmf2/vtk")
 SET(PARAVIEW_LINK_XDMF ON)
 
-SET_PROPERTY(GLOBAL APPEND PROPERTY VTK_TARGETS Xdmf)
+IF (NOT PV_INSTALL_NO_LIBRARIES)
+  SET_PROPERTY(GLOBAL APPEND PROPERTY VTK_TARGETS Xdmf)
+ENDIF (NOT PV_INSTALL_NO_LIBRARIES)
 IF(XDMF_WRAP_PYTHON)
   SET_PROPERTY(GLOBAL APPEND PROPERTY VTK_TARGETS _Xdmf)
-ENDIF()
+Endif()
 
 ADD_SUBDIRECTORY(Utilities/Xdmf2)
+
+#########################################################################
+# Configure protobuf
+SET (PROTOBUF_INSTALL_BIN_DIR ${PV_INSTALL_BIN_DIR})
+SET (PROTOBUF_INSTALL_LIB_DIR ${PV_INSTALL_LIB_DIR})
+SET (PROTOBUF_INSTALL_EXPORT_NAME ${PV_INSTALL_EXPORT_NAME})
+IF (NOT PV_INSTALL_NO_LIBRARIES)
+  SET_PROPERTY(GLOBAL APPEND PROPERTY VTK_TARGETS protobuf)
+ENDIF (NOT PV_INSTALL_NO_LIBRARIES)
+ADD_SUBDIRECTORY(Utilities/protobuf)
 
 #########################################################################
 # Configure mpeg2 encoding
@@ -548,18 +577,23 @@ IF(VTK_USE_MPI)
   OPTION(PARAVIEW_USE_ICE_T "Use IceT multi display manager" ON)
   MARK_AS_ADVANCED(PARAVIEW_USE_ICE_T)
   IF (BUILD_TESTING)
-    OPTION(ICET_BUILD_TESTING "Build and run the IceT tests." OFF)
+    OPTION(ICET_BUILD_TESTING "Build and run the IceT tests." ON)
     MARK_AS_ADVANCED(ICET_BUILD_TESTING)
     IF (PARAVIEW_TEST_COMPOSITING)
       # Force the testing of IceT if we are testing compositing.
-      SET(ICET_BUILD_TESTING ON
-        CACHE BOOL "Build and run the IceT tests." FORCE)
+      SET(ICET_BUILD_TESTING ON CACHE BOOL "Build and run the IceT tests." FORCE)
     ENDIF (PARAVIEW_TEST_COMPOSITING)
+  ELSE(BUILD_TESTING)
+    IF(ICET_BUILD_TESTING)
+      SET(ICET_BUILD_TESTING OFF CACHE BOOL "Build and run the IceT tests." FORCE)
+    ENDIF(ICET_BUILD_TESTING)
   ENDIF (BUILD_TESTING)
   IF(PARAVIEW_USE_ICE_T)
 
     # Export IceT's Targets
-    SET_PROPERTY(GLOBAL APPEND PROPERTY VTK_TARGETS IceTCore IceTMPI IceTGL)
+    IF (NOT PV_INSTALL_NO_LIBRARIES)
+      SET_PROPERTY(GLOBAL APPEND PROPERTY VTK_TARGETS IceTCore IceTMPI IceTGL)
+    ENDIF (NOT PV_INSTALL_NO_LIBRARIES)
 
     SET(ICET_INCLUDE_DIR
       ${ParaView_SOURCE_DIR}/Utilities/IceT/src/include
@@ -618,18 +652,6 @@ SET(VTKCLIENTSERVER_INCLUDE_DIR
   ${ParaView_BINARY_DIR}/Utilities/VTKClientServer
   )
 ADD_SUBDIRECTORY(Utilities/VTKClientServer)
-
-#########################################################################
-# Configure Tcl Wraping.
-# We can't remove this from ParaViewCommon.cmake since it must be
-# included after VTK has been included but before ServerManager.
-IF (PARAVIEW_BUILD_GUI)
-  ADD_SUBDIRECTORY(Utilities/VTKTclWrapping)
-  SET(VTKTclWrapping_INSTALL_NO_DEVELOPMENT ${PV_INSTALL_NO_DEVELOPMENT})
-  SET(VTKTclWrapping_INSTALL_NO_RUNTIME ${PV_INSTALL_NO_RUNTIME})
-  SET(VTKTclWrapping_INSTALL_LIB_DIR ${PV_INSTALL_LIB_DIR})
-  SET(VTKTclWrapping_INSTALL_BIN_DIR ${PV_INSTALL_BIN_DIR})
-ENDIF (PARAVIEW_BUILD_GUI)
 
 #########################################################################
 # Import external projects, such as SAF.
@@ -764,22 +786,12 @@ ENDIF(PARAVIEW_USE_AMRCTH OR AMRCTH_SOURCE_DIR)
 
 #########################################################################
 # Configure Server
-SET(PVFILTERS_INCLUDE_DIR
-  ${ParaView_SOURCE_DIR}/Servers/Filters
-  ${ParaView_BINARY_DIR}/Servers/Filters)
-SET(PVSERVERMANAGER_INCLUDE_DIR
-  ${ParaView_SOURCE_DIR}/Servers/ServerManager
-  ${ParaView_BINARY_DIR}/Servers/ServerManager)
-SET(PVSERVERCOMMON_INCLUDE_DIR
-  ${ParaView_SOURCE_DIR}/Servers/Common
-  ${ParaView_BINARY_DIR}/Servers/Common)
-
 IF(PARAVIEW_USE_VISITBRIDGE)
   PARAVIEW_INCLUDE_SERVERMANAGER_RESOURCES(${VISITBRIDGE_READERS_XML_FILE})
   PARAVIEW_INCLUDE_GUI_RESOURCES(${VISITBRIDGE_READERS_GUI_XML_FILE})
 ENDIF(PARAVIEW_USE_VISITBRIDGE)
 
-ADD_SUBDIRECTORY(Servers)
+ADD_SUBDIRECTORY(ParaViewCore)
 
 #########################################################################
 # Configure Python executable
@@ -797,31 +809,30 @@ IF(PARAVIEW_MINIMAL_BUILD)
 ENDIF(PARAVIEW_MINIMAL_BUILD)
 
 #########################################################################
-# Configure Servers executables
-ADD_SUBDIRECTORY(Servers/Executables)
-
-
-#########################################################################
 CONFIGURE_FILE(${ParaView_CMAKE_DIR}/CTestCustom.ctest.in
   ${ParaView_BINARY_DIR}/CTestCustom.ctest @ONLY)
 
 #########################################################################
 SET(PARAVIEW_INCLUDE_DIRS
-  ${ParaView_SOURCE_DIR}/Utilities/VTKClientServer
+  ${HDF5_INCLUDE_DIR}
   ${KWCommon_INCLUDE_PATH}
-  ${ParaView_SOURCE_DIR}/Servers/Filters
-  ${ParaView_SOURCE_DIR}/Servers/ServerManager
-  ${ParaView_SOURCE_DIR}/Servers/Common
-  ${ParaView_SOURCE_DIR}/Utilities/VTKPythonWrapping/Executable
-  ${ParaView_SOURCE_DIR}/VTK/Wrapping
-  ${ParaView_BINARY_DIR}/VTK/Wrapping
+  ${PVClientServerCore_BINARY_DIR}
+  ${PVClientServerCore_SOURCE_DIR}
+  ${PVCommon_BINARY_DIR}
+  ${PVCommon_SOURCE_DIR}
+  ${PVServerImplementation_BINARY_DIR}
+  ${PVServerImplementation_SOURCE_DIR}
+  ${PVServerManager_BINARY_DIR}
+  ${PVServerManager_SOURCE_DIR}
+  ${PVVTKExtensions_BINARY_DIR}
+  ${PVVTKExtensions_SOURCE_DIR}
   ${ParaView_BINARY_DIR}
   ${ParaView_BINARY_DIR}/Utilities/VTKClientServer
-  ${ParaView_BINARY_DIR}/Servers/Filters
-  ${ParaView_BINARY_DIR}/Servers/ServerManager
-  ${ParaView_BINARY_DIR}/Servers/Common
+  ${ParaView_BINARY_DIR}/VTK/Wrapping
+  ${ParaView_SOURCE_DIR}/Utilities/VTKClientServer
+  ${ParaView_SOURCE_DIR}/Utilities/VTKPythonWrapping/Executable
+  ${ParaView_SOURCE_DIR}/VTK/Wrapping
   ${XDMF_INCLUDE_DIRS}
-  ${HDF5_INCLUDE_DIR}
   )
 
 IF(PARAVIEW_USE_VISITBRIDGE)

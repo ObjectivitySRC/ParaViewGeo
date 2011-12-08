@@ -1,6 +1,6 @@
 def DoCoProcessing(datadescription):
   timestep = datadescription.GetTimeStep()
-    
+
   grid = datadescription.GetInputDescriptionByName("input").GetGrid()
   pressure = grid.GetPointData().GetArray('Pressure')
 
@@ -14,7 +14,7 @@ def DoCoProcessing(datadescription):
   pdi = di.GetPointDataInformation()
   ai = pdi.GetArrayInformation('Pressure')
   pressurerange = ai.GetComponentRange(0)
-  
+
   contour.Isosurfaces = .5*(pressurerange[0]+pressurerange[1])
 
   # now output the results to the screen as well as taking
@@ -22,16 +22,16 @@ def DoCoProcessing(datadescription):
   #setup a window
   rep = Show(contour)
   ren = Render()
- 
+
   #set the background color
   ren.Background=[1,1,1]  #white
- 
+
   #set image size
   ren.ViewSize = [200, 300] #[width, height]
- 
+
   #set representation
   rep.Representation="Surface"
- 
+
   #save screenshot
   gridimagefilename = 'CPGrid'+str(timestep) + '.png'
   WriteImage(gridimagefilename)
@@ -49,8 +49,27 @@ def DoCoProcessing(datadescription):
 
   pressureimagefilename = 'CPPressure'+str(timestep) + '.png'
   WriteImage(pressureimagefilename)
-  
-  return
+
+  # explicitly delete the proxies -- may have to do this multiple times
+  tobedeleted = GetNextProxyToDelete()
+  while tobedeleted != None:
+      Delete(tobedeleted)
+      tobedeleted = GetNextProxyToDelete()
+
+def GetNextProxyToDelete():
+  iter = servermanager.vtkSMProxyIterator()
+  iter.Begin()
+  while not iter.IsAtEnd():
+    if iter.GetGroup().find("prototypes") != -1:
+       iter.Next()
+       continue
+    proxy = servermanager._getPyProxy(iter.GetProxy())
+    proxygroup = iter.GetGroup()
+    iter.Next()
+    if proxygroup != 'timekeeper' and proxy != None and proxygroup.find("pq_helper_proxies") == -1 :
+        return proxy
+
+  return None
 
 def RequestDataDescription(datadescription):
   time = datadescription.GetTime()

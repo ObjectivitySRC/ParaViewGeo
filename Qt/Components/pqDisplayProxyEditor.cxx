@@ -47,19 +47,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // ParaView Server Manager includes
 #include "vtkEventQtSlotConnect.h"
+#include "vtkGeometryRepresentationWithFaces.h"
 #include "vtkLabeledDataMapper.h"
 #include "vtkMaterialLibrary.h"
 #include "vtkPVArrayInformation.h"
 #include "vtkPVDataInformation.h"
 #include "vtkPVDataSetAttributesInformation.h"
-#include "vtkSMLookupTableProxy.h"
+#include "vtkSMCompositeTreeDomain.h"
+#include "vtkSMIntVectorProperty.h"
 #include "vtkSMProperty.h"
 #include "vtkSMProxyProperty.h"
 #include "vtkSMPVRepresentationProxy.h"
 #include "vtkSMRenderViewProxy.h"
 #include "vtkSMSourceProxy.h"
-#include "vtkSMCompositeTreeDomain.h"
-#include "vtkSMIntVectorProperty.h"
 
 // ParaView widget includes
 #include "pqSignalAdaptors.h"
@@ -76,11 +76,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pqPropertyLinks.h"
 #include "pqRenderView.h"
 #include "pqScalarsToColors.h"
+#include "pqServer.h"
 #include "pqSignalAdaptorCompositeTreeWidget.h"
 #include "pqSMAdaptor.h"
 #include "pqStandardColorLinkAdaptor.h"
+#include "pqTriggerOnIdleHelper.h"
 #include "pqUndoStack.h"
 #include "pqWidgetRangeDomain.h"
+#include "pqSettings.h"
 
 class pqDisplayProxyEditorInternal : public Ui::pqDisplayProxyEditor
 {
@@ -121,6 +124,7 @@ public:
   pqSignalAdaptorComboBox* BackfaceRepresentationAdaptor;
   pqWidgetRangeDomain* SliceDomain;
   pqSignalAdaptorCompositeTreeWidget* CompositeTreeAdaptor;
+  pqTriggerOnIdleHelper TriggerUpdateEnableState;
 
   // map of <material labels, material files>
   static QMap<QString, QString> MaterialMap;
@@ -135,6 +139,10 @@ pqDisplayProxyEditor::pqDisplayProxyEditor(pqPipelineRepresentation* repr, QWidg
 {
   this->Internal = new pqDisplayProxyEditorInternal;
   this->Internal->setupUi(this);
+
+  QObject::connect(&this->Internal->TriggerUpdateEnableState,
+    SIGNAL(triggered()), this, SLOT(updateEnableState()));
+
   this->setupGUIConnections();
 
   // setting a repr proxy will enable this
@@ -149,7 +157,10 @@ pqDisplayProxyEditor::pqDisplayProxyEditor(pqPipelineRepresentation* repr, QWidg
   QObject::connect(this->Internal->compositeTree, SIGNAL(itemSelectionChanged()),
     this, SLOT(volumeBlockSelected()));
 
-  this->DisableSpecularOnScalarColoring = true;
+  pqSettings *settings = pqApplicationCore::instance()->settings();
+  bool allowSpecularHighlightingWithScalarColoring = settings->value(
+    "allowSpecularHighlightingWithScalarColoring").toBool();
+  this->DisableSpecularOnScalarColoring = !allowSpecularHighlightingWithScalarColoring;
 }
 
 //-----------------------------------------------------------------------------
@@ -182,6 +193,8 @@ void pqDisplayProxyEditor::setRepresentation(pqPipelineRepresentation* repr)
     }
 
   this->Internal->Representation = repr;
+  this->Internal->TriggerUpdateEnableState.setServer(
+    repr? repr->getServer() : NULL);
   if (!repr )
     {
     this->setEnabled(false);
@@ -397,6 +410,11 @@ void pqDisplayProxyEditor::setRepresentation(pqPipelineRepresentation* repr)
                 this->Internal->NonlinearSubdivisionLevel,
                 "value", SIGNAL(valueChanged(int)),
                 reprProxy, reprProxy->GetProperty("NonlinearSubdivisionLevel"));
+    this->Internal->NonlinearSubdivisionLevel->setEnabled(true);
+    }
+  else
+    {
+    this->Internal->NonlinearSubdivisionLevel->setEnabled(false);
     }
 
   // setup for map scalars
@@ -415,7 +433,7 @@ void pqDisplayProxyEditor::setRepresentation(pqPipelineRepresentation* repr)
   this->Internal->ColorBy->setRepresentation(repr);
   QObject::connect(this->Internal->ColorBy,
     SIGNAL(modified()),
-    this, SLOT(updateEnableState()), Qt::QueuedConnection);
+    &this->Internal->TriggerUpdateEnableState, SLOT(trigger()));
 
   this->Internal->StyleRepresentation->setRepresentation(repr);
   QObject::connect(this->Internal->StyleRepresentation,
@@ -424,7 +442,7 @@ void pqDisplayProxyEditor::setRepresentation(pqPipelineRepresentation* repr)
 
   QObject::connect(this->Internal->StyleRepresentation,
     SIGNAL(currentTextChanged(const QString&)),
-    this, SLOT(updateEnableState()), Qt::QueuedConnection);
+    &this->Internal->TriggerUpdateEnableState, SLOT(trigger()));
 
   this->Internal->Texture->setRepresentation(repr);
 
@@ -512,7 +530,7 @@ void pqDisplayProxyEditor::setRepresentation(pqPipelineRepresentation* repr)
 
   QObject::connect(this->Internal->BackfaceStyleRepresentation,
                    SIGNAL(currentIndexChanged(const QString&)),
-                   this, SLOT(updateEnableState()), Qt::QueuedConnection);
+                   &this->Internal->TriggerUpdateEnableState, SLOT(trigger()));
 
   // setup for choosing backface color
   if (reprProxy->GetProperty("BackfaceDiffuseColor"))
@@ -540,42 +558,6 @@ void pqDisplayProxyEditor::setRepresentation(pqPipelineRepresentation* repr)
                                          reprProxy->GetProperty("BackfaceOpacity"));
     }
 
-#if 0                                       //FIXME
-  // material
-  this->Internal->StyleMaterial->blockSignals(true);
-  this->Internal->StyleMaterial->clear();
-  if(vtkMaterialLibrary::GetNumberOfMaterials() > 0)
-    {
-    this->Internal->StyleMaterial->addItem("None");
-    this->Internal->StyleMaterial->addItem("Browse...");
-    this->Internal->StyleMaterial->addItems(this->Internal->MaterialMap.keys());
-    const char* mat = this->Internal->Representation->getDisplayProxy()->GetMaterialCM();
-    if(mat)
-      {
-      QString filename = mat;
-      QMap<QString, QString>::iterator iter;
-      for(iter = this->Internal->MaterialMap.begin();
-          iter != this->Internal->MaterialMap.end();
-          ++iter)
-        {
-        if(filename == iter.value())
-          {
-          int foundidx = this->Internal->StyleMaterial->findText(iter.key());
-          this->Internal->StyleMaterial->setCurrentIndex(foundidx);
-          return;
-          }
-        }
-      }
-    }
-  else
-    {
-    this->Internal->StyleMaterial->addItem("Unavailable");
-    this->Internal->StyleMaterial->setEnabled(false);
-    }
-  this->Internal->StyleMaterial->blockSignals(false);
-#endif
-
-
   new pqStandardColorLinkAdaptor(this->Internal->ColorActorColor,
     reprProxy, "DiffuseColor");
   if (reprProxy->GetProperty("EdgeColor"))
@@ -590,7 +572,7 @@ void pqDisplayProxyEditor::setRepresentation(pqPipelineRepresentation* repr)
     }
 
   this->DisableSlots = 0;
-  QTimer::singleShot(0, this, SLOT(updateEnableState()));
+  //QTimer::singleShot(0, this, SLOT(updateEnableState()));
 
 
   //
@@ -609,6 +591,20 @@ void pqDisplayProxyEditor::setRepresentation(pqPipelineRepresentation* repr)
       "checked", SIGNAL(toggled(bool)),
       reprProxy, reprProxy->GetProperty("AutoAdjustSampleDistances"));
     }
+  if (reprProxy->GetProperty("Shade"))
+    {
+    this->Internal->Links->addPropertyLink(this->Internal->Shading,
+      "checked", SIGNAL(toggled(bool)),
+      reprProxy, reprProxy->GetProperty("Shade"));
+    this->Internal->Shading->setEnabled(true);
+    }
+  else
+    {
+    this->Internal->Shading->setEnabled(false);
+    }
+
+  this->updateEnableState();
+
 }
 
 //-----------------------------------------------------------------------------
@@ -645,50 +641,37 @@ void pqDisplayProxyEditor::setupGUIConnections()
   /// sure that the undo-element for setting up of the "global property" link
   /// gets added in the same set in which the solid/edge color is changed.
   this->Internal->ColorActorColor->setUndoLabel("Change Solid Color");
-  pqUndoStack* stack = pqApplicationCore::instance()->getUndoStack();
-  if (stack)
-    {
-    QObject::connect(this->Internal->ColorActorColor,
-      SIGNAL(beginUndo(const QString&)),
-      stack, SLOT(beginUndoSet(const QString&)));
-    QObject::connect(this->Internal->ColorActorColor,
-      SIGNAL(endUndo()), stack, SLOT(endUndoSet()));
-    }
+  QObject::connect(this->Internal->ColorActorColor,
+    SIGNAL(beginUndo(const QString&)),
+    this, SLOT(beginUndoSet(const QString&)));
+  QObject::connect(this->Internal->ColorActorColor,
+    SIGNAL(endUndo()), this, SLOT(endUndoSet()));
 
   this->Internal->EdgeColorAdaptor = new pqSignalAdaptorColor(
     this->Internal->EdgeColor, "chosenColor",
     SIGNAL(chosenColorChanged(const QColor&)), false);
   this->Internal->EdgeColor->setUndoLabel("Change Edge Color");
-  if (stack)
-    {
-    QObject::connect(this->Internal->EdgeColor,
-      SIGNAL(beginUndo(const QString&)),
-      stack, SLOT(beginUndoSet(const QString&)));
-    QObject::connect(this->Internal->EdgeColor,
-      SIGNAL(endUndo()), stack, SLOT(endUndoSet()));
-    }
+  QObject::connect(this->Internal->EdgeColor,
+    SIGNAL(beginUndo(const QString&)),
+    this, SLOT(beginUndoSet(const QString&)));
+  QObject::connect(this->Internal->EdgeColor,
+    SIGNAL(endUndo()), this, SLOT(endUndoSet()));
 
   this->Internal->AmbientColorAdaptor = new pqSignalAdaptorColor(
     this->Internal->AmbientColor, "chosenColor",
     SIGNAL(chosenColorChanged(const QColor&)), false);
   this->Internal->AmbientColor->setUndoLabel("Change Ambient Color");
-  if (stack)
-    {
-    QObject::connect(this->Internal->AmbientColor,
-      SIGNAL(beginUndo(const QString&)),
-      stack, SLOT(beginUndoSet(const QString&)));
-    QObject::connect(this->Internal->AmbientColor,
-      SIGNAL(endUndo()), stack, SLOT(endUndoSet()));
-    }
-
-  QObject::connect(this->Internal->StyleMaterial, SIGNAL(currentIndexChanged(int)),
-                   this, SLOT(updateMaterial(int)));
+  QObject::connect(this->Internal->AmbientColor,
+    SIGNAL(beginUndo(const QString&)),
+    this, SLOT(beginUndoSet(const QString&)));
+  QObject::connect(this->Internal->AmbientColor,
+    SIGNAL(endUndo()), this, SLOT(endUndoSet()));
 
   this->Internal->SliceDirectionAdaptor = new pqSignalAdaptorComboBox(
     this->Internal->SliceDirection);
   QObject::connect(this->Internal->SliceDirectionAdaptor,
     SIGNAL(currentTextChanged(const QString&)),
-    this, SLOT(sliceDirectionChanged()), Qt::QueuedConnection);
+    this, SLOT(sliceDirectionChanged()));
 
   this->Internal->SelectedMapperAdaptor = new pqSignalAdaptorComboBox(
     this->Internal->SelectMapper);
@@ -706,16 +689,11 @@ void pqDisplayProxyEditor::setupGUIConnections()
                    this, SLOT(setBackfaceSolidColor(const QColor&)));
 
   this->Internal->BackfaceActorColor->setUndoLabel("Change Backface Solid Color");
-  stack = pqApplicationCore::instance()->getUndoStack();
-  if (stack)
-    {
-    QObject::connect(this->Internal->BackfaceActorColor,
-                     SIGNAL(beginUndo(const QString&)),
-                     stack, SLOT(beginUndoSet(const QString&)));
-    QObject::connect(this->Internal->BackfaceActorColor,
-                     SIGNAL(endUndo()), stack, SLOT(endUndoSet()));
-    }
-
+  QObject::connect(this->Internal->BackfaceActorColor,
+    SIGNAL(beginUndo(const QString&)),
+    this, SLOT(beginUndoSet(const QString&)));
+  QObject::connect(this->Internal->BackfaceActorColor,
+    SIGNAL(endUndo()), this, SLOT(endUndoSet()));
 
   QObject::connect(this->Internal->AutoAdjustSampleDistances,
                    SIGNAL(toggled(bool)),
@@ -726,14 +704,23 @@ void pqDisplayProxyEditor::setupGUIConnections()
 //-----------------------------------------------------------------------------
 void pqDisplayProxyEditor::updateEnableState()
 {
-  int reprType = this->Internal->Representation->getRepresentationType();
+  if (!this->Internal->Representation ||
+    this->Internal->Representation->getServer() == NULL)
+    {
+    return;
+    }
+
+  Q_ASSERT(
+    this->Internal->Representation->getServer()->isProgressPending() == false);
+
+  QString reprType = this->Internal->Representation->getRepresentationType();
 
   if (this->Internal->ColorBy->getCurrentText() == "Solid Color")
     {
     this->Internal->ColorInterpolateScalars->setEnabled(false);
-    if (reprType == vtkSMPVRepresentationProxy::WIREFRAME ||
-      reprType == vtkSMPVRepresentationProxy::POINTS ||
-      reprType == vtkSMPVRepresentationProxy::OUTLINE)
+    if (reprType == "Wireframe" ||
+      reprType == "Points" ||
+      reprType == "Outline")
       {
       this->Internal->ColorButtonStack->setCurrentWidget(
         this->Internal->AmbientColorPage);
@@ -761,33 +748,33 @@ void pqDisplayProxyEditor::updateEnableState()
 
 
   this->Internal->EdgeStyleGroup->setEnabled(
-    reprType == vtkSMPVRepresentationProxy::SURFACE_WITH_EDGES);
+    reprType == "Surface With Edges");
 
   this->Internal->SliceGroup->setEnabled(
-    reprType == vtkSMPVRepresentationProxy::SLICE);
-  if (reprType == vtkSMPVRepresentationProxy::SLICE)
+    reprType == "Slice" );
+  if (reprType == "Slice")
     {
     // every time the user switches to Slice mode we update the domain for the
     // slider since the domain depends on the input to the image mapper which
     // may have changed.
-    QTimer::singleShot(0, this, SLOT(sliceDirectionChanged()));
+    this->sliceDirectionChanged();
     }
 
   this->Internal->compositeTree->setVisible(
    this->Internal->CompositeTreeAdaptor &&
-   (reprType == vtkSMPVRepresentationProxy::VOLUME));
+   (reprType == "Volume"));
 
   this->Internal->SelectMapper->setEnabled(
-    reprType == vtkSMPVRepresentationProxy::VOLUME
+    reprType == "Volume"
     && this->Internal->Representation->getProxy()->GetProperty("SelectMapper"));
 
   vtkSMProperty *backfaceRepProperty = this->Internal->Representation
     ->getRepresentationProxy()->GetProperty("BackfaceRepresentation");
   if (   !backfaceRepProperty
-      || (   (reprType != vtkSMPVRepresentationProxy::POINTS)
-          && (reprType != vtkSMPVRepresentationProxy::WIREFRAME)
-          && (reprType != vtkSMPVRepresentationProxy::SURFACE)
-          && (reprType != vtkSMPVRepresentationProxy::SURFACE_WITH_EDGES) ) )
+      || (   (reprType != "Points")
+          && (reprType != "Wireframe")
+          && (reprType != "Surface")
+          && (reprType != "Surface With Edges") ) )
     {
     this->Internal->BackfaceStyleGroup->setEnabled(false);
     }
@@ -798,9 +785,9 @@ void pqDisplayProxyEditor::updateEnableState()
       = pqSMAdaptor::getElementProperty(backfaceRepProperty).toInt();
 
     bool backFollowsFront
-      = (   (backRepType == vtkSMPVRepresentationProxy::FOLLOW_FRONTFACE)
-         || (backRepType == vtkSMPVRepresentationProxy::CULL_BACKFACE)
-         || (backRepType == vtkSMPVRepresentationProxy::CULL_FRONTFACE) );
+      = (   (backRepType == vtkGeometryRepresentationWithFaces::FOLLOW_FRONTFACE)
+         || (backRepType == vtkGeometryRepresentationWithFaces::CULL_BACKFACE)
+         || (backRepType == vtkGeometryRepresentationWithFaces::CULL_FRONTFACE) );
 
     this->Internal->BackfaceStyleGroupOptions->setEnabled(!backFollowsFront);
     }
@@ -840,9 +827,13 @@ void pqDisplayProxyEditor::updateEnableState()
         return;
         }
       }
+    if ( arrayInfo )
+      {
+      this->Internal->ColorMapScalars->setCheckState(Qt::Checked);
+      }
     }
 
-  this->Internal->ColorMapScalars->setCheckState(Qt::Checked);
+  
   this->Internal->ColorMapScalars->setEnabled(false);
 }
 
@@ -932,52 +923,6 @@ void pqDisplayProxyEditor::setSpecularColor(QVariant specColor)
 }
 
 //-----------------------------------------------------------------------------
-void pqDisplayProxyEditor::updateMaterial(int vtkNotUsed(idx))
-{
-  // FIXME: when we enable materials.
-#if 0
-  if(idx == 0)
-    {
-    this->Internal->Representation->getDisplayProxy()->SetMaterialCM(0);
-    this->updateAllViews();
-    }
-  else if(idx == 1)
-    {
-    pqFileDialog diag(NULL, this, "Open Material File", QString(),
-                      "Material Files (*.xml)");
-    diag.setFileMode(pqFileDialog::ExistingFile);
-    if(diag.exec() == QDialog::Accepted)
-      {
-      QString filename = diag.getSelectedFiles()[0];
-      QMap<QString, QString>::iterator iter;
-      for(iter = this->Internal->MaterialMap.begin();
-          iter != this->Internal->MaterialMap.end();
-          ++iter)
-        {
-        if(filename == iter.value())
-          {
-          int foundidx = this->Internal->StyleMaterial->findText(iter.key());
-          this->Internal->StyleMaterial->setCurrentIndex(foundidx);
-          return;
-          }
-        }
-      QFileInfo fi(filename);
-      this->Internal->MaterialMap.insert(fi.fileName(), filename);
-      this->Internal->StyleMaterial->addItem(fi.fileName());
-      this->Internal->StyleMaterial->setCurrentIndex(
-        this->Internal->StyleMaterial->count() - 1);
-      }
-    }
-  else
-    {
-    QString label = this->Internal->StyleMaterial->itemText(idx);
-    this->Internal->Representation->getDisplayProxy()->SetMaterialCM(
-      this->Internal->MaterialMap[label].toAscii().data());
-    this->updateAllViews();
-    }
-#endif
-}
-//-----------------------------------------------------------------------------
 void pqDisplayProxyEditor::cubeAxesVisibilityChanged()
 {
   vtkSMProxy* reprProxy = (this->Internal->Representation)? this->Internal->Representation->getProxy() : NULL;
@@ -996,7 +941,10 @@ void pqDisplayProxyEditor::editCubeAxes()
 {
   pqCubeAxesEditorDialog dialog(this);
   dialog.setRepresentationProxy(this->Internal->Representation->getProxy());
-  dialog.exec();
+  if (dialog.exec() == QDialog::Accepted)
+    {
+    this->Internal->Representation->renderViewEventually();
+    }
 }
 //----------------------------------------------------------------------------
 bool pqDisplayProxyEditor::isCubeAxesVisible()
@@ -1104,4 +1052,16 @@ void pqDisplayProxyEditor::selectedMapperChanged()
     {
       // Do nothing.
     }
+}
+
+//-----------------------------------------------------------------------------
+void pqDisplayProxyEditor::beginUndoSet(const QString& str)
+{
+  BEGIN_UNDO_SET(str.toAscii().data());
+}
+
+//-----------------------------------------------------------------------------
+void pqDisplayProxyEditor::endUndoSet()
+{
+  END_UNDO_SET();
 }

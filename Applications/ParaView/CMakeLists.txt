@@ -16,7 +16,7 @@ set (QT_USE_QTNETWORK TRUE)
 include(${QT_USE_FILE})
 
 include_directories(
-  ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR})
 
 set(ParaView_SOURCE_FILES
@@ -69,16 +69,10 @@ build_paraview_client(paraview
     INSTALL_BIN_DIR "${PV_INSTALL_BIN_DIR}"
     INSTALL_LIB_DIR "${PV_INSTALL_LIB_DIR}")
 
-# Configure the ".plugins" configuration xml for making paraview aware of the
-# distributed plugins.
-set (plugins_ini "<?xml version=\"1.0\"?>\n<Plugins>\n")
-foreach(pluginname ${PARAVIEW_PLUGINLIST})
-  set (plugins_ini "${plugins_ini}  <Plugin name=\"${pluginname}\" auto_load=\"0\"/>\n")
-endforeach(pluginname ${PARAVIEW_PLUGINLIST})
-set (plugins_ini "${plugins_ini}</Plugins>\n")
-
-
-write_plugins_file()
+# link enabled plugins if not building in shared library mode
+if(NOT BUILD_SHARED_LIBS)
+  target_link_libraries(paraview ${PARAVIEW_PLUGINLIST})
+endif(NOT BUILD_SHARED_LIBS)
 
 # This ensure that the paraview.qch file is generated.
 add_dependencies(${paraview_client_real_exe_name}
@@ -118,22 +112,38 @@ if (PARAVIEW_INSTALL_THIRD_PARTY_LIBRARIES AND NOT APPLE)
         execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(standard_lib=1)"
                         OUTPUT_VARIABLE PYTHON_LIBS_DIR
                         OUTPUT_STRIP_TRAILING_WHITESPACE)
+        set(PYTHON_LIBS_DEST ${pv_runtime_dest})
       else(WIN32)
         get_filename_component(PYTHON_LIBS_DIR "${PYTHON_LIBRARY}" PATH)
         file(TO_CMAKE_PATH ${PYTHON_LIBS_DIR} PYTHON_LIBS_DIR)
 
         # install pyconfig.h
-        string(REGEX MATCH "python[0-9].[0-9]" py_inc_dir ${PYTHON_INCLUDE_DIR})
+        string(REGEX MATCH "python[0-9].[0-9]" py_ver_dir ${PYTHON_INCLUDE_DIR})
         install(FILES ${PYTHON_INCLUDE_DIR}/pyconfig.h
-                DESTINATION ${PV_INSTALL_LIB_DIR}/include/${py_inc_dir}
+                DESTINATION ${PV_INSTALL_LIB_DIR}/include/${py_ver_dir}
+                PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ
                 COMPONENT Runtime)
+        set(PYTHON_LIBS_DIR ${PYTHON_LIBS_DIR}/${py_ver_dir})
+        set(PYTHON_LIBS_DEST ${pv_runtime_dest}/lib)
+        
+        file(GLOB python_modules "${ParaView_BINARY_DIR}/bin/*Python.so")
+
+        install(FILES ${python_modules}
+          DESTINATION ${pv_runtime_dest}
+          COMPONENT Runtime)
+
       endif(WIN32)
       
       file(TO_CMAKE_PATH ${PYTHON_LIBS_DIR} PYTHON_LIBS_DIR)
       install(DIRECTORY ${PYTHON_LIBS_DIR}
-              DESTINATION ${pv_runtime_dest}
+              DESTINATION ${PYTHON_LIBS_DEST}
               USE_SOURCE_PERMISSIONS
-              COMPONENT Runtime)
+              COMPONENT Runtime
+              REGEX "lib2to3/" EXCLUDE
+              REGEX "lib[-]old/" EXCLUDE
+              REGEX "plat[-].*" EXCLUDE
+              REGEX "wsgiref*" EXCLUDE
+              REGEX "distutils/" EXCLUDE)
     endif(PARAVIEW_INSTALL_PYTHON)
   endif(PARAVIEW_ENABLE_PYTHON)
 
@@ -174,7 +184,11 @@ if (PARAVIEW_INSTALL_THIRD_PARTY_LIBRARIES AND NOT APPLE)
       install(DIRECTORY ${mpi_bin_dir}/
         DESTINATION ${pv_runtime_dest}
         USE_SOURCE_PERMISSIONS
-        COMPONENT Runtime)
+        COMPONENT Runtime
+        PATTERN "mpicc*" EXCLUDE
+        PATTERN "mpicxx*" EXCLUDE
+        PATTERN "mpic++*" EXCLUDE
+        PATTERN "python*" EXCLUDE)
     endif(PARAVIEW_INSTALL_MPIEXEC AND MPIEXEC)
   endif(PARAVIEW_USE_MPI)
 
@@ -205,10 +219,9 @@ if (PARAVIEW_INSTALL_THIRD_PARTY_LIBRARIES AND NOT APPLE)
     endforeach(pluginname ${PARAVIEW_PLUGINLIST})
   endif()
 
-  install(CODE "
-include(\"${ParaView_CMAKE_DIR}/BundleUtilities.cmake\")
-fixup_bundle(\"${APPS}\"   \"${plugin_libs}\"   \"${search_path}\")
-" COMPONENT BrandedRuntime)
+  set(PARAVIEW_INSTALL_APPS ${APPS} CACHE INTERNAL "" FORCE)
+  set(PARAVIEW_INSTALL_PLUGIN_LIBS ${plugin_libs} CACHE INTERNAL "" FORCE)
+  set(PARAVIEW_INSTALL_LIBRARY_SEARCH_PATH ${search_path} CACHE INTERNAL "" FORCE)
 
 endif(PARAVIEW_INSTALL_THIRD_PARTY_LIBRARIES AND NOT APPLE)
 
@@ -218,11 +231,13 @@ set (PARAVIEW_EXTRA_INSTALL_RULES_FILE "" CACHE FILEPATH
   "Path to site-specific install rules for ParaView.")
 mark_as_advanced(PARAVIEW_EXTRA_INSTALL_RULES_FILE)
 
-if (EXISTS "${PARAVIEW_EXTRA_INSTALL_RULES_FILE}")
-  foreach(rule_file ${PARAVIEW_EXTRA_INSTALL_RULES_FILE})
+
+foreach(rule_file ${PARAVIEW_EXTRA_INSTALL_RULES_FILE})
+  if (EXISTS "${rule_file}")
     include("${rule_file}")
-  endforeach(rule_file ${PARAVIEW_EXTRA_INSTALL_RULES_FILE})
-endif (EXISTS "${PARAVIEW_EXTRA_INSTALL_RULES_FILE}")
+  endif (EXISTS "${rule_file}")
+endforeach(rule_file ${PARAVIEW_EXTRA_INSTALL_RULES_FILE})
+
 
 #------------------------------------------------------------------------
 # Install the .plugins configuration file.
@@ -232,39 +247,47 @@ install(FILES "${EXECUTABLE_OUTPUT_PATH}/.plugins"
 
 # Call this last so the install script runs after the above targets are installed:
 #
-if(APPLE)
+#if(APPLE)
+#
+#  option(PARAVIEW_BUILD_AS_APPLICATION_BUNDLE "Build ParaView as a Mac Application Bundle" ON)
+#  if(PARAVIEW_BUILD_AS_APPLICATION_BUNDLE)
+#    set (ParaView_BUNDLE_LOCATION "" CACHE STRING
+#      "Subdirectory in which to place ParaView app inside a bundle.")
 
-  set (ParaView_BUNDLE_LOCATION "" CACHE STRING
-  "Subdirectory in which to place ParaView app inside a bundle.")
+#    mark_as_advanced(ParaView_BUNDLE_LOCATION)
 
-  mark_as_advanced(ParaView_BUNDLE_LOCATION)
-
-  set(distributed_plugins ${PARAVIEW_PLUGINLIST})
-  set(PV_EXE_NAME "paraview")
-  set(OSX_MAKE_STANDALONE_BUNDLE_CMAKE_SCRIPT
-    "${CMAKE_CURRENT_BINARY_DIR}/ParaView_OSX_MakeStandAloneBundle.cmake")
-  set(OSX_MAKE_STANDALONE_BUNDLE_BASH_SCRIPT
-    "${CMAKE_CURRENT_BINARY_DIR}/ParaView_OSX_MakeStandAloneBundle.sh")
+#    set(distributed_plugins ${PARAVIEW_PLUGINLIST})
+#    set(PV_EXE_NAME "paraview")
+#    set(OSX_MAKE_STANDALONE_BUNDLE_CMAKE_SCRIPT
+#      "${CMAKE_CURRENT_BINARY_DIR}/ParaView_OSX_MakeStandAloneBundle.cmake")
+#    set(OSX_MAKE_STANDALONE_BUNDLE_BASH_SCRIPT
+#      "${CMAKE_CURRENT_BINARY_DIR}/ParaView_OSX_MakeStandAloneBundle.sh")
     
-  set (QT_SQLLITE_PLUGINS_DIR ${QT_PLUGINS_DIR}/sqldrivers)
+#    set (QT_SQLLITE_PLUGINS_DIR ${QT_PLUGINS_DIR}/sqldrivers)
 
-  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/CompleteBundle.cmake.in"
-    "${OSX_MAKE_STANDALONE_BUNDLE_CMAKE_SCRIPT}" @ONLY IMMEDIATE)
-  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/CreateBundle.sh.in"
-    "${OSX_MAKE_STANDALONE_BUNDLE_BASH_SCRIPT}" @ONLY IMMEDIATE)
+#    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/CompleteBundle.cmake.in"
+#      "${OSX_MAKE_STANDALONE_BUNDLE_CMAKE_SCRIPT}" @ONLY IMMEDIATE)
+#    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/CreateBundle.sh.in"
+#      "${OSX_MAKE_STANDALONE_BUNDLE_BASH_SCRIPT}" @ONLY IMMEDIATE)
 
-  install(SCRIPT "${OSX_MAKE_STANDALONE_BUNDLE_CMAKE_SCRIPT}" COMPONENT Bundle)
-endif(APPLE)
+#    install(SCRIPT "${OSX_MAKE_STANDALONE_BUNDLE_CMAKE_SCRIPT}" COMPONENT Bundle)
+#  endif(PARAVIEW_BUILD_AS_APPLICATION_BUNDLE)
+#endif(APPLE)
 
-set(_VERSION_PATCH "${PARAVIEW_VERSION_PATCH}")
-if(PARAVIEW_VERSION_RC)
-  set(_VERSION_PATCH "${PARAVIEW_VERSION_PATCH}-RC${PARAVIEW_VERSION_RC}")
-endif(PARAVIEW_VERSION_RC)
+# Call FixupBundle in a subdirectory
+add_subdirectory(LastConfigureStep)
 
 set(_package_name "ParaView")
 if(PARAVIEW_INSTALL_DEVELOPMENT)
   set(_package_name "ParaView-Development")
 endif(PARAVIEW_INSTALL_DEVELOPMENT)
+
+set(_paraview_version_patch_full "${PARAVIEW_VERSION_PATCH}")
+if(NOT "${PARAVIEW_VERSION_PATCH_EXTRA}" STREQUAL "")
+  set(_paraview_version_patch_full 
+    "${PARAVIEW_VERSION_PATCH}-${PARAVIEW_VERSION_PATCH_EXTRA}"
+  )
+endif(NOT "${PARAVIEW_VERSION_PATCH_EXTRA}" STREQUAL "")
 
 #------------------------------------------------------------------------
 # Install ParaView client
@@ -273,7 +296,7 @@ build_paraview_client_cpack_config_init(
     ORGANIZATION "Kitware Inc."
     VERSION_MAJOR "${PARAVIEW_VERSION_MAJOR}"
     VERSION_MINOR "${PARAVIEW_VERSION_MINOR}"
-    VERSION_PATCH ${_VERSION_PATCH}
+    VERSION_PATCH "${_paraview_version_patch_full}"
     DESCRIPTION "ParaView is a scientific visualization tool"
     LICENSE_FILE "${ParaView_SOURCE_DIR}/License_v1.2.txt"
     DESCRIPTION_FILE "${ParaView_SOURCE_DIR}/License_v1.2.txt"

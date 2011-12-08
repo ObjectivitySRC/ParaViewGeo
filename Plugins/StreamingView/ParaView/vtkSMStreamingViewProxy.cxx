@@ -60,16 +60,13 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =========================================================================*/
 
 #include "vtkSMStreamingViewProxy.h"
-#include "vtkObjectFactory.h"
-#include "vtkClientServerStream.h"
 
-#include "vtkProcessModule.h"
-#include "vtkSMStreamingRepresentationProxy.h"
+#include "vtkClientServerStream.h"
+#include "vtkObjectFactory.h"
 #include "vtkSMInputProperty.h"
 #include "vtkSMPropertyHelper.h"
 #include "vtkSMProxyManager.h"
 #include "vtkSMRepresentationProxy.h"
-#include "vtkStreamLibraryWrapper.h"
 
 //-----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSMStreamingViewProxy);
@@ -100,28 +97,16 @@ void vtkSMStreamingViewProxy::CreateVTKObjects()
     return;
     }
 
-  vtkProcessModule *pm = vtkProcessModule::GetProcessModule();
-  vtkClientServerStream stream;
-  vtkClientServerID id = pm->NewStreamObject("vtkStreamLibraryWrapper", stream);
-  stream << vtkClientServerStream::Invoke
-         << id << "EnableWrapping"
-         << vtkClientServerStream::End;
-  pm->DeleteStreamObject(id, stream);
-  pm->SendStream(this->GetConnectionID(),
-                 vtkProcessModule::CLIENT_AND_SERVERS,
-                 stream);
-
   this->Superclass::CreateVTKObjects();
 
   this->Driver = this->GetSubProxy("StreamingDriver");
+  vtkClientServerStream stream;
   stream << vtkClientServerStream::Invoke
-         << this->GetID()
+         << VTKOBJECT(this)
          << "SetStreamDriver"
-         << this->Driver->GetID()
+         << VTKOBJECT(this->Driver)
          << vtkClientServerStream::End;
-  pm->SendStream(this->GetConnectionID(),
-                 vtkProcessModule::CLIENT_AND_SERVERS,
-                 stream);
+  this->ExecuteStream(stream);
 }
 
 //-----------------------------------------------------------------------------
@@ -173,4 +158,16 @@ bool vtkSMStreamingViewProxy::IsDisplayDone()
     }
 
   return false;
+}
+
+//----------------------------------------------------------------------------
+void vtkSMStreamingViewProxy::CaptureWindowInternalRender()
+{
+  bool done = false;
+  this->InteractiveRender(); //doing this to force it to restart
+  while (!done)
+    {
+    this->StillRender();
+    done = this->IsDisplayDone();
+    }
 }

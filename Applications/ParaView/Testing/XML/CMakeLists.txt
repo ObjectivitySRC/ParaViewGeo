@@ -11,7 +11,12 @@ IF(NOT PARAVIEW_USE_VISITBRIDGE)
     ${CMAKE_CURRENT_SOURCE_DIR}/AnalyzeReaderWriterPlugin.xml)
 ELSE(NOT PARAVIEW_USE_VISITBRIDGE)
   SET (TESTS_WITH_BASELINES ${TESTS_WITH_BASELINES}
-    ${CMAKE_CURRENT_SOURCE_DIR}/VisItBridge.xml)
+    ${CMAKE_CURRENT_SOURCE_DIR}/VisItBridgeChombo.xml
+    ${CMAKE_CURRENT_SOURCE_DIR}/VisItBridgeEnzo.xml
+    ${CMAKE_CURRENT_SOURCE_DIR}/VisItBridgeNas.xml
+    ${CMAKE_CURRENT_SOURCE_DIR}/VisItBridgePdb.xml
+    ${CMAKE_CURRENT_SOURCE_DIR}/VisItBridgePixie.xml
+    ${CMAKE_CURRENT_SOURCE_DIR}/VisItBridgeSamrai.xml)
 ENDIF(NOT PARAVIEW_USE_VISITBRIDGE)
 
 
@@ -39,6 +44,7 @@ SET (TESTS_WITH_BASELINES
   ${CMAKE_CURRENT_SOURCE_DIR}/ExodusIIPanel.xml
   ${CMAKE_CURRENT_SOURCE_DIR}/ExodusModeShapes.xml
   ${CMAKE_CURRENT_SOURCE_DIR}/ExodusXML.xml
+  ${CMAKE_CURRENT_SOURCE_DIR}/ExportX3dPOVVRML.xml
   ${CMAKE_CURRENT_SOURCE_DIR}/ExTimeseries.xml
   ${CMAKE_CURRENT_SOURCE_DIR}/ExTimeseries2.xml
   ${CMAKE_CURRENT_SOURCE_DIR}/ExtractBlock.xml
@@ -91,6 +97,7 @@ SET (TESTS_WITH_BASELINES
   ${CMAKE_CURRENT_SOURCE_DIR}/UndoRedo5.xml
   ${CMAKE_CURRENT_SOURCE_DIR}/UndoRedo6.xml
   ${CMAKE_CURRENT_SOURCE_DIR}/UndoRedo7.xml
+  ${CMAKE_CURRENT_SOURCE_DIR}/UndoRedo8.xml
   ${CMAKE_CURRENT_SOURCE_DIR}/UnstructuredOutline.xml
   ${CMAKE_CURRENT_SOURCE_DIR}/VariableSelector.xml
   ${CMAKE_CURRENT_SOURCE_DIR}/VariableSelector1.xml
@@ -120,6 +127,7 @@ SET (UndoRedo6_BREAK TRUE)
   # <-- since this changes view settings.
 SET (UndoRedo1_BREAK TRUE)
 SET (UndoRedo2_BREAK TRUE)
+SET (UndoRedo7_BREAK TRUE)
   # <-- since these are just long tests, they result in timeouts.
 
 SET (ViewSettingsDialog_BREAK TRUE)
@@ -143,6 +151,7 @@ SET (SPTimeseries_BREAK TRUE)
 SET (XYChart_BREAK TRUE)
 SET (XYHistogram_BREAK TRUE)
 
+SET(ExtractLevel_BREAK TRUE)
 
 
 # Add image threshold overrides for tests.
@@ -164,6 +173,13 @@ IF (PARAVIEW_USE_MPI)
 
   SET (SpreadSheet1_DISABLE_CS TRUE)
   SET (SpreadSheet1_DISABLE_CRS TRUE)
+
+  # The hierchical fractal source is a temporary testing source and it does not
+  # create the dataset correctly in parallel. Since it's a testing source, I am
+  # just going to disable the test in parallel. We can fix the source when
+  # needed.
+  SET (RectilinearFractal_DISABLE_CS TRUE)
+  SET (RectilinearFractal_DISABLE_CRS TRUE)
 ENDIF (PARAVIEW_USE_MPI)
 
 # Composite Surface Selection is currently broken in everything but bultin

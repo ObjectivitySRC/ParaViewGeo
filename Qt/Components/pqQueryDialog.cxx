@@ -173,17 +173,15 @@ pqQueryDialog::~pqQueryDialog()
 //-----------------------------------------------------------------------------
 void pqQueryDialog::setupSpreadSheet()
 {
+  this->Internals->spreadsheet->setModel(NULL);
   if(this->Internals->source->currentPort() == NULL ||
      this->Internals->source->currentPort()->getSource()->getProxy()->GetObjectsCreated() != 1)
     {
-    this->Internals->spreadsheet->setModel(NULL);
     return;
     }
   vtkSMProxyManager* pxm = vtkSMProxyManager::GetProxyManager();
-  vtkIdType cid = this->Internals->source->currentPort()->getServer()->GetConnectionID();
 
   vtkSMProxy* repr = pxm->NewProxy("representations", "SpreadSheetRepresentation");
-  repr->SetConnectionID(cid);
   // we always want to show all the blocks in the dataset, since we don't have a
   // block chooser widget in this dialog.
   vtkSMPropertyHelper(repr, "CompositeDataSetIndex").Set(0);
@@ -194,7 +192,6 @@ void pqQueryDialog::setupSpreadSheet()
 
   vtkSMViewProxy* view = vtkSMViewProxy::SafeDownCast(
     pxm->NewProxy("views", "SpreadSheetView"));
-  view->SetConnectionID(cid);
   vtkSMPropertyHelper(view, "SelectionOnly").Set(1);
   vtkSMPropertyHelper(view, "Representations").Set(repr);
   vtkSMPropertyHelper(view, "ViewSize").Set(0, 1);
@@ -206,7 +203,10 @@ void pqQueryDialog::setupSpreadSheet()
   this->Internals->RepresentationProxy.TakeReference(repr);
   this->Internals->DataModel = new pqSpreadSheetViewModel(view, this);
   this->Internals->DataModel->setActiveRepresentationProxy(repr);
-  this->Internals->spreadsheet->setModel(this->Internals->DataModel);
+  // We deliberately don't set the model on the view here. We do that
+  // after all updates have happened. This keeps any progress events from
+  // mixing with the paint events and causing random test failures on
+  // dashboards (FindDataDialog test).
 }
 
 #include <QInputEvent>
@@ -305,10 +305,13 @@ void pqQueryDialog::runQuery()
     {
     return;
     }
-
   selSource->UpdateVTKObjects();
 
   this->setupSpreadSheet();
+
+  // setupSpreadSheet already does this, but I am doing this again to be
+  // extra sure :).
+  this->Internals->spreadsheet->setModel(NULL);
 
   this->Internals->source->currentPort()->setSelectionInput(
       vtkSMSourceProxy::SafeDownCast(selSource), 0);
@@ -324,7 +327,14 @@ void pqQueryDialog::runQuery()
   // points etc. based on what was selected.
   vtkSMPropertyHelper(repr, "FieldAssociation").Set(attr_type);
   repr->UpdateVTKObjects();
+
+  // this may cause progress events. These can result in paint-event for the table
+  // view which could prematurely start querying information from the model.
+  // To avoid that issue, we don't set the model on  the view until after this call.
   this->Internals->ViewProxy->StillRender();
+
+  // now set the model on the view.
+  this->Internals->spreadsheet->setModel(this->Internals->DataModel);
 
   // Once a query has been made, we enable components of the GUI that use the
   // selection

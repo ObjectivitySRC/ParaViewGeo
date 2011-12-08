@@ -412,11 +412,13 @@ MACRO(ADD_PARAVIEW_VIEW_MODULE OUTIFACES OUTSRCS)
   CONFIGURE_FILE(${ParaView_CMAKE_DIR}/pqViewModuleImplementation.cxx.in
                  ${CMAKE_CURRENT_BINARY_DIR}/${ARG_VIEW_TYPE}Implementation.cxx @ONLY)
 
-  GET_DIRECTORY_PROPERTY(include_dirs_tmp INCLUDE_DIRECTORIES)
-  SET_DIRECTORY_PROPERTIES(PROPERTIES INCLUDE_DIRECTORIES "${QT_INCLUDE_DIRS};${PARAVIEW_GUI_INCLUDE_DIRS}")
-  SET(VIEW_MOC_SRCS)
-  QT4_WRAP_CPP(VIEW_MOC_SRCS ${CMAKE_CURRENT_BINARY_DIR}/${ARG_VIEW_TYPE}Implementation.h)
-  SET_DIRECTORY_PROPERTIES(PROPERTIES INCLUDE_DIRECTORIES "${include_dirs_tmp}")
+  IF(PARAVIEW_BUILD_QT_GUI)
+    GET_DIRECTORY_PROPERTY(include_dirs_tmp INCLUDE_DIRECTORIES)
+    SET_DIRECTORY_PROPERTIES(PROPERTIES INCLUDE_DIRECTORIES "${QT_INCLUDE_DIRS};${PARAVIEW_GUI_INCLUDE_DIRS}")
+    SET(VIEW_MOC_SRCS)
+    QT4_WRAP_CPP(VIEW_MOC_SRCS ${CMAKE_CURRENT_BINARY_DIR}/${ARG_VIEW_TYPE}Implementation.h)
+    SET_DIRECTORY_PROPERTIES(PROPERTIES INCLUDE_DIRECTORIES "${include_dirs_tmp}")
+  ENDIF(PARAVIEW_BUILD_QT_GUI)
 
   IF(ARG_DISPLAY_PANEL)
     ADD_PARAVIEW_DISPLAY_PANEL(OUT_PANEL_IFACES PANEL_SRCS 
@@ -846,7 +848,8 @@ ENDMACRO(PARAVIEW_QT4_ADD_RESOURCES)
 #  REQUIRED_ON_SERVER is to specify whether this plugin should be loaded on server
 #  REQUIRED_ON_CLIENT is to specify whether this plugin should be loaded on client
 #  REQUIRED_PLUGINS is to specify the plugin names that this plugin depends on
-
+#  CS_KITS is experimental option to add wrapped kits. This may change in
+#  future.
 # ADD_PARAVIEW_PLUGIN(Name Version
 #     [SERVER_MANAGER_SOURCES source files]
 #     [SERVER_MANAGER_XML XMLFile]
@@ -860,6 +863,7 @@ ENDMACRO(PARAVIEW_QT4_ADD_RESOURCES)
 #     [REQUIRED_ON_SERVER] 
 #     [REQUIRED_ON_CLIENT]
 #     [REQUIRED_PLUGINS pluginname1 pluginname2]
+#     [CS_KITS kit1 kit2...]
 #  )
 FUNCTION(ADD_PARAVIEW_PLUGIN NAME VERSION)
   SET(QT_RCS)
@@ -877,6 +881,7 @@ FUNCTION(ADD_PARAVIEW_PLUGIN NAME VERSION)
   SET(ARG_GUI_SOURCES)
   SET(ARG_REQUIRED_PLUGINS)
   SET(ARG_AUTOLOAD)
+  SET(ARG_CS_KITS)
 
   SET(PLUGIN_NAME "${NAME}")
   SET(PLUGIN_VERSION "${VERSION}")
@@ -890,7 +895,7 @@ FUNCTION(ADD_PARAVIEW_PLUGIN NAME VERSION)
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
 
   PV_PLUGIN_PARSE_ARGUMENTS(ARG 
-    "SERVER_MANAGER_SOURCES;SERVER_MANAGER_XML;SERVER_SOURCES;PYTHON_MODULES;GUI_INTERFACES;GUI_RESOURCES;GUI_RESOURCE_FILES;GUI_SOURCES;SOURCES;REQUIRED_PLUGINS;REQUIRED_ON_SERVER;REQUIRED_ON_CLIENT;AUTOLOAD"
+    "SERVER_MANAGER_SOURCES;SERVER_MANAGER_XML;SERVER_SOURCES;PYTHON_MODULES;GUI_INTERFACES;GUI_RESOURCES;GUI_RESOURCE_FILES;GUI_SOURCES;SOURCES;REQUIRED_PLUGINS;REQUIRED_ON_SERVER;REQUIRED_ON_CLIENT;AUTOLOAD;CS_KITS"
     "" ${ARGN} )
 
   PV_PLUGIN_LIST_CONTAINS(reqired_server_arg "REQUIRED_ON_SERVER" ${ARGN})
@@ -960,6 +965,17 @@ FUNCTION(ADD_PARAVIEW_PLUGIN NAME VERSION)
     ${SM_SRCS}
     ${ARG_SERVER_SOURCES}
     ${PY_SRCS})
+
+  SET (PLUGIN_EXTRA_CS_INITS)
+  SET (PLUGIN_EXTRA_CS_INITS_EXTERNS)
+  IF (ARG_CS_KITS)
+    FOREACH(kit ${ARG_CS_KITS})
+      SET (PLUGIN_EXTRA_CS_INITS
+        "${kit}CS_Initialize(interp);\n${PLUGIN_EXTRA_CS_INITS}")
+      SET (PLUGIN_EXTRA_CS_INITS_EXTERNS
+        "extern \"C\" void ${kit}CS_Initialize(vtkClientServerInterpreter*);\n${PLUGIN_EXTRA_CS_INITS_EXTERNS}")
+    ENDFOREACH(kit)
+  ENDIF (ARG_CS_KITS)
 
   IF(GUI_SRCS OR SM_SRCS OR ARG_SOURCES OR ARG_PYTHON_MODULES)
     CONFIGURE_FILE(
@@ -1142,3 +1158,24 @@ FUNCTION(WRITE_PLUGINS_FILE)
 
   FILE(WRITE "${EXECUTABLE_OUTPUT_PATH}/.plugins" "${plugins_ini}")
 ENDFUNCTION(WRITE_PLUGINS_FILE)
+
+# create a header file containing a paraview_init_static_plugins() method which
+# calls PV_PLUGIN_IMPORT for each plugin in the plugins list
+macro(write_static_plugins_init_file)
+  set(plugins_init_function "#include \"vtkPVPlugin.h\"\n\n")
+
+  # write PV_PLUGIN_IMPORT_INIT calls
+  foreach(plugin_name ${PARAVIEW_PLUGINLIST})
+    set(plugins_init_function "${plugins_init_function}PV_PLUGIN_IMPORT_INIT(${plugin_name});\n")
+  endforeach()
+  set(plugins_init_function "${plugins_init_function}\n")
+
+  # write PV_PLUGIN_IMPORT calls
+  set(plugins_init_function "${plugins_init_function}inline void paraview_static_plugins_init()\n{\n")
+  foreach(plugin_name ${PARAVIEW_PLUGINLIST})
+    set(plugins_init_function "${plugins_init_function}  PV_PLUGIN_IMPORT(${plugin_name});\n")
+  endforeach()
+  set(plugins_init_function "${plugins_init_function}}\n")
+
+  file(WRITE "${CMAKE_BINARY_DIR}/pvStaticPluginsInit.h" "${plugins_init_function}")
+endmacro()

@@ -81,7 +81,7 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "vtkSMPropertyHelper.h"
 #include "vtkSMStreamingViewProxy.h"
-#include "vtkSMStreamingRepresentationProxy.h"
+#include "vtkSMPVRepresentationProxy.h"
 
 class pqStreamingControls::pqInternals
   : public Ui::pqStreamingControls
@@ -120,6 +120,14 @@ pqStreamingControls::pqStreamingControls(QWidget* p)
   this->Internals->cache_size->setItemData(8, 64);
   this->Internals->cache_size->setItemData(9, 128);
   this->Internals->cache_size->setItemData(10, 256);
+  this->Internals->cache_size->setItemData(11, 512);
+  this->Internals->cache_size->setItemData(12, 1024);
+  this->Internals->cache_size->setItemData(13, 2048);
+  this->Internals->cache_size->setItemData(14, 4096);
+  this->Internals->cache_size->setItemData(15, 8192);
+  this->Internals->cache_size->setItemData(16, 16384);
+  this->Internals->cache_size->setItemData(17, 32768);
+  this->Internals->cache_size->setItemData(18, 65536);
 
   this->Internals->CacheSizeAdaptor = new pqSignalAdaptorComboBox(
     this->Internals->cache_size);
@@ -297,6 +305,16 @@ void pqStreamingControls::updateTrackedView()
        driver, driver->GetProperty("RefinementDepth"));
 
     this->Internals->ViewLinks.addPropertyLink
+      (this->Internals->cell_pixel_factor, "value",
+       SIGNAL(valueChanged(double)),
+       driver, driver->GetProperty("CellPixelFactor"));
+
+    this->Internals->ViewLinks.addPropertyLink
+      (this->Internals->back_face_factor, "value",
+       SIGNAL(valueChanged(double)),
+       driver, driver->GetProperty("BackFaceFactor"));
+
+    this->Internals->ViewLinks.addPropertyLink
       (this->Internals->max_depth, "value", SIGNAL(valueChanged(int)),
        driver, driver->GetProperty("DepthLimit"));
 
@@ -331,8 +349,8 @@ void pqStreamingControls::updateTrackedRepresentation()
     pqActiveObjects::instance().activeRepresentation();
   if (rep)
     {
-    vtkSMStreamingRepresentationProxy *sRepProxy =
-      vtkSMStreamingRepresentationProxy::SafeDownCast(rep->getProxy());
+    vtkSMPVRepresentationProxy *sRepProxy =
+      vtkSMPVRepresentationProxy::SafeDownCast(rep->getProxy());
     if (!sRepProxy)
       {
       return;

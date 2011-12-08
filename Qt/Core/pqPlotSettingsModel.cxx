@@ -32,9 +32,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pqPlotSettingsModel.h"
 
 #include "pqDataRepresentation.h"
+#include "pqUndoStack.h"
 #include "vtkChartRepresentation.h"
-#include "vtkSMPropertyHelper.h"
+#include "vtkEventQtSlotConnect.h"
 #include "vtkSMChartRepresentationProxy.h"
+#include "vtkSMPropertyHelper.h"
 #include "vtkWeakPointer.h"
 
 #include <QPointer>
@@ -44,11 +46,19 @@ class pqPlotSettingsModel::pqImplementation
 {
 public:
   pqImplementation()
-  {
-  }
+    {
+    this->Connection = vtkEventQtSlotConnect::New();
+    }
+
+  ~pqImplementation()
+    {
+    this->Connection->Delete();
+    this->Connection = NULL;
+    }
 
   vtkWeakPointer<vtkSMChartRepresentationProxy> RepresentationProxy;
   QPointer<pqDataRepresentation> Representation;
+  vtkEventQtSlotConnect* Connection;
 
   vtkChartRepresentation* GetVTKRepresentation()
     {
@@ -82,6 +92,7 @@ void pqPlotSettingsModel::setRepresentation(pqDataRepresentation* rep)
     return;
     }
 
+  this->Implementation->Connection->Disconnect();
   if (this->Implementation->Representation)
     {
     QObject::disconnect(this->Implementation->Representation, 0, this, 0);
@@ -90,6 +101,13 @@ void pqPlotSettingsModel::setRepresentation(pqDataRepresentation* rep)
   this->Implementation->RepresentationProxy =
     vtkSMChartRepresentationProxy::SafeDownCast(rep->getProxy());
   this->Implementation->Representation = rep;
+  if (this->Implementation->RepresentationProxy)
+    {
+    this->Implementation->Connection->Connect(
+      this->Implementation->RepresentationProxy,
+      vtkCommand::PropertyModifiedEvent,
+      this, SLOT(emitDataChanged()));
+    }
 }
 
 pqDataRepresentation* pqPlotSettingsModel::representation() const
@@ -227,6 +245,15 @@ Qt::ItemFlags pqPlotSettingsModel::flags(const QModelIndex &idx) const
 }
 
 //-----------------------------------------------------------------------------
+void pqPlotSettingsModel::emitDataChanged()
+{
+  emit this->dataChanged(
+    this->createIndex(0, 0),
+    this->createIndex(this->rowCount(QModelIndex())-1, 0));
+  this->updateCheckState(0, Qt::Horizontal);
+}
+
+//-----------------------------------------------------------------------------
 void pqPlotSettingsModel::reload()
 {
   this->reset();
@@ -244,6 +271,7 @@ void pqPlotSettingsModel::setSeriesEnabled(int row, bool enabled)
 {
   if (row >= 0 && row < this->rowCount(QModelIndex()))
     {
+    BEGIN_UNDO_SET("Change Series Visibility");
     vtkSMPropertyHelper(this->Implementation->RepresentationProxy,
       "SeriesVisibility").SetStatus(
       this->getSeriesName(row), enabled ? 1 : 0);
@@ -255,6 +283,7 @@ void pqPlotSettingsModel::setSeriesEnabled(int row, bool enabled)
     emit this->redrawChart();
     emit this->rescaleChart();
     this->updateCheckState(0, Qt::Horizontal);
+    END_UNDO_SET();
     }
 }
 
@@ -271,11 +300,13 @@ void pqPlotSettingsModel::setSeriesLabel(int row, const QString& label)
 {
   if (row >= 0 && row < this->rowCount(QModelIndex()))
     {
+    BEGIN_UNDO_SET("Change Series Label");
     vtkSMPropertyHelper(this->Implementation->RepresentationProxy,
       "SeriesLabel").SetStatus(
       this->getSeriesName(row), label.toAscii().data());
     this->Implementation->RepresentationProxy->UpdateVTKObjects();
     emit this->redrawChart();
+    END_UNDO_SET();
     }
 }
 
@@ -293,6 +324,7 @@ void pqPlotSettingsModel::setSeriesColor(int row, const QColor &color)
 {
   if (row >= 0 && row < this->rowCount(QModelIndex()))
     {
+    BEGIN_UNDO_SET("Change Series Color");
     double double_color[3];
     qreal qreal_color[3];
     color.getRgbF(qreal_color, qreal_color+1, qreal_color+2);
@@ -306,6 +338,7 @@ void pqPlotSettingsModel::setSeriesColor(int row, const QColor &color)
     QModelIndex idx = this->createIndex(row, 1);
     emit this->dataChanged(idx, idx);
     emit this->redrawChart();
+    END_UNDO_SET();
     }
 }
 
@@ -323,11 +356,13 @@ void pqPlotSettingsModel::setSeriesThickness(int row, int value)
 {
   if (row >= 0 && row < this->rowCount(QModelIndex()))
     {
+    BEGIN_UNDO_SET("Change Series Line Thickness");
     vtkSMPropertyHelper(this->Implementation->RepresentationProxy,
       "SeriesLineThickness").SetStatus(
       this->getSeriesName(row), value);
     this->Implementation->RepresentationProxy->UpdateVTKObjects();
     emit this->redrawChart();
+    END_UNDO_SET();
     }
 }
 
@@ -343,11 +378,13 @@ void pqPlotSettingsModel::setSeriesStyle(int row, int value)
 {
   if (row >= 0 && row < this->rowCount(QModelIndex()))
     {
+    BEGIN_UNDO_SET("Change Series Line Style");
     vtkSMPropertyHelper(this->Implementation->RepresentationProxy,
       "SeriesLineStyle").SetStatus(
       this->getSeriesName(row), value);
     this->Implementation->RepresentationProxy->UpdateVTKObjects();
     emit this->redrawChart();
+    END_UNDO_SET();
     }
 }
 
@@ -363,11 +400,13 @@ void pqPlotSettingsModel::setSeriesAxisCorner(int row, int value)
 {
   if (row >= 0 && row < this->rowCount(QModelIndex()))
     {
+    BEGIN_UNDO_SET("Change Series Axes Placement");
     vtkSMPropertyHelper(this->Implementation->RepresentationProxy,
       "SeriesPlotCorner").SetStatus(
       this->getSeriesName(row), value);
     this->Implementation->RepresentationProxy->UpdateVTKObjects();
     emit this->redrawChart();
+    END_UNDO_SET();
     }
 }
 
@@ -383,11 +422,13 @@ void pqPlotSettingsModel::setSeriesMarkerStyle(int row, int value)
 {
   if (row >= 0 && row < this->rowCount(QModelIndex()))
     {
+    BEGIN_UNDO_SET("Change Series Marker Style");
     vtkSMPropertyHelper(this->Implementation->RepresentationProxy,
       "SeriesMarkerStyle").SetStatus(
       this->getSeriesName(row), value);
     this->Implementation->RepresentationProxy->UpdateVTKObjects();
     emit this->redrawChart();
+    END_UNDO_SET();
     }
 }
 

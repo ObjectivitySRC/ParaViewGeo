@@ -10,7 +10,7 @@ if(APPLE)
   if(NOT CMAKE_OSX_DEPLOYMENT_TARGET OR "${CMAKE_OSX_DEPLOYMENT_TARGET}" STREQUAL "")
     set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "force build for 64-bit Leopard" FORCE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "10.5" CACHE STRING "force build for 64-bit Leopard" FORCE)
-    set(CMAKE_OSX_SYSROOT "/Developer/SDKs/MacOSX10.5.sdk" CACHE PATH "force build for 64-bit Leopard" FORCE)
+    set(CMAKE_OSX_SYSROOT "/Developer/SDKs/MacOSX10.6.sdk" CACHE PATH "force build for 64-bit Leopard" FORCE)
   endif()
 
   set(pv_apple_compiler_args
@@ -23,12 +23,16 @@ if(APPLE)
       message(FATAL_ERROR "error: CMAKE_OSX_SYSROOT='${CMAKE_OSX_SYSROOT}' does not exist")
     endif()
   endif()
+
+  if(APPLE)
+    set(paraview_osx_flags "-arch x86_64 -mmacosx-version-min=@CMAKE_OSX_DEPLOYMENT_TARGET@ -isysroot @CMAKE_OSX_SYSROOT@")
+  endif()
 endif()
 
 project(ParaViewSuperBuild)
 
 set(ParaViewSuperBuild_CMAKE_SOURCE_DIR ${ParaViewSuperBuild_SOURCE_DIR})
-set(ParaViewSuperBuild_CMAKE_BINARY_DIR ${ParaViewSuperBuild_BINARY_DIR})
+set(ParaViewSuperBuild_CMAKE_BINARY_DIR ${ParaViewSuperBuild_BINARY_DIR}/CMake)
 
 #------------------------------------------------------------------------------
 # Update CMake module path
@@ -40,17 +44,25 @@ set(CMAKE_MODULE_PATH
   ${CMAKE_MODULE_PATH}
   )
 
+#------------------------------------------------------------------------------
+# Configure Common environment file
+#------------------------------------------------------------------------------
+
+configure_file(${ParaViewSuperBuild_CMAKE_SOURCE_DIR}/paraview_common_environment.cmake.in
+  ${ParaViewSuperBuild_CMAKE_BINARY_DIR}/paraview_common_environment.cmake @ONLY)
+
 #-----------------------------------------------------------------------------
 # Enable and setup External project global properties
 #-----------------------------------------------------------------------------
 
-INCLUDE(ExternalProject)
+include(ExternalProject)
 
 #-----------------------------------------------------------------------------
-# Git protocole option
+# Git protocol option
 #-----------------------------------------------------------------------------
 
 option(GIT_USE_GIT_PROTOCOL "If behind a firewall turn this off to use http instead." ON)
+set(ENABLE_YT OFF CACHE BOOL "Install yt for astrophysics analysis")
 
 set(git_protocol "git")
 if(NOT Slicer_USE_GIT_PROTOCOL)
@@ -91,8 +103,15 @@ set(pv_compiler_args
 
 set(pv_tpl_cxx_flags ${CMAKE_CXX_FLAGS})
 set(pv_tpl_c_flags ${CMAKE_C_FLAGS})
-set(pv_cxx_flags ${CMAKE_CXX_FLAGS})
-set(pv_c_flags ${CMAKE_C_FLAGS})
+
+
+if(WIN32)
+  set(pv_cxx_flags ${CMAKE_CXX_FLAGS})
+  set(pv_c_flags ${CMAKE_C_FLAGS})
+else()
+  set(pv_cxx_flags "${CMAKE_CXX_FLAGS} -L${ParaViewSuperBuild_CMAKE_BINARY_DIR}/lib -I${ParaViewSuperBuild_CMAKE_BINARY_DIR}/include")
+  set(pv_c_flags "${CMAKE_C_FLAGS} -L${ParaViewSuperBuild_CMAKE_BINARY_DIR}/lib -I${ParaViewSuperBuild_CMAKE_BINARY_DIR}/include")
+endif()
 
 if(WIN32)
   list(APPEND pv_compiler_args -DCMAKE_BUILD_TYPE:STRING=${CMAKE_CFG_INTDIR})
@@ -123,6 +142,10 @@ endif()
 include(CheckFortran)
 
 #------------------------------------------------------------------------------
+configure_file(${ParaViewSuperBuild_SOURCE_DIR}/CTestCustom.ctest.in
+  ${ParaViewSuperBuild_BINARY_DIR}/CTestCustom.ctest @ONLY)
+
+#------------------------------------------------------------------------------
 # Establish Target Dependencies based on Selected Options
 #------------------------------------------------------------------------------
 
@@ -131,16 +154,52 @@ include(PackageVersions)
 set(python_dependencies)
 set(CLAPACK_dependencies)
 set(NUMPY_dependencies)
+set(MPL_dependencies)
+set(Cython_dependencies)
+set(h5py_dependencies)
 set(Manta_dependencies)
 set(OpenMPI_dependencies)
 set(ParaView_dependencies)
 
 set(PARAVIEW_FIXUP_BUNDLE_SEARCH_PATHS)
-
+set(PARAVIEW_EXTERNAL_PLUGIN_DIRS)
 set(MPI_ARGS)
 
-if(NOT APPLE)
+# Build a common zlib used by several dependencies
+include(External_zlib)
+set(ZLIB_ARGS
+   -DVTK_USE_SYSTEM_ZLIB:BOOL=ON
+   -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}
+   -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY})
+list(APPEND ParaView_dependencies zlib)
+list(APPEND png_dependencies zlib)
+list(APPEND python_dependencies zlib)
 
+# Build a common szip used by several dependencies
+include(External_szip)
+#set(SZIP_ARGS
+#   -DVTK_USE_SYSTEM_ZLIB:BOOL=ON
+#   -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}
+#   -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY})
+
+# Build a common png used by several dependencies
+include(External_png)
+# can't get paraview to build SMExtractDocumentation with externally built png
+# until then ParaView will still use the system png.
+set(PNG_ARGS
+  -DVTK_USE_SYSTEM_PNG:BOOL=ON
+  -DPNG_PNG_INCLUDE_DIR:PATH=${PNG_INCLUDE_DIR}
+  -DPNG_LIBRARY:FILEPATH=${PNG_LIBRARY})
+list(APPEND ParaView_dependencies png)
+
+if(WIN32)
+  list(APPEND PARAVIEW_FIXUP_BUNDLE_SEARCH_PATHS ${png_install}/bin)
+else()
+  get_filename_component(PNG_DIR "${PNG_LIBRARY}" PATH)
+  list(APPEND PARAVIEW_FIXUP_BUNDLE_SEARCH_PATHS ${PNG_DIR})
+endif()
+
+if(NOT APPLE)
   if(WIN32)
     include(External_OpenMPI)
     list(APPEND ParaView_dependencies OpenMPI)
@@ -150,26 +209,21 @@ if(NOT APPLE)
   endif()
 
   set(MPI_ARGS
+    -DMPI_DIR:PATH=${MPI_INSTALL}
     -DPARAVIEW_USE_MPI:BOOL=ON
     -DMPIEXEC:FILEPATH=${MPIEXEC}
+    -DVTK_MPIRUN_EXE:FILEPATH=${MPIEXEC}
     -DMPI_INCLUDE_PATH:PATH=${MPI_INCLUDE_PATH}
     -DMPI_LIBRARY:FILEPATH=${MPI_LIBRARY}
     -DMPI_EXTRA_LIBRARY:FILEPATH=${MPI_EXTRA_LIBRARY}
     -DPARAVIEW_INSTALL_MPIEXEC:BOOL=ON)
-
-  if(NOT WIN32)
-    set(MPI_COMPILER_ARGS
-       -DCMAKE_C_COMPILER:FILEPTH=${MPI_C_COMPILER}
-       -DCMAKE_CXX_COMPILER:FILEPATH=${MPI_CXX_COMPILER})
-    list(APPEND MPI_ARGS ${MPI_COMPILER_ARGS})
-  endif()
 
   include(External_Python)
   list(APPEND ParaView_depenencies Python)
 
   set(NUMPY_dependencies python)
 
-  if(CMAKE_Fortran_COMPILER)
+  if(CMAKE_Fortran_COMPILER AND NOT WIN32 AND NOT UNIX)
     include(External_LAPACK)
     list(APPEND NUMPY_dependencies LAPACK)
     list(APPEND ParaView_dependencies LAPACK)
@@ -180,23 +234,6 @@ if(NOT APPLE)
   endif()
 
   include(External_NUMPY)
-
-  if(NOT WIN32)
-    option(PARAVIEW_BUILD_PLUGIN_VisTrailsPlugin "Build Depenednecies for VisTrails" FALSE)
-    mark_as_advanced(PARAVIEW_BUILD_PLUGIN_VisTrailsPlugin)
-    if(PARAVIEW_BUILD_PLUGIN_VisTrailsPlugin)
-      # Build SIP and PyQt for vistrails plugin.
-      set(SIP_dependencies python)
-      include(External_SIP)
-      list(APPEND PyQt_dependencies SIP)
-      set(PyQt_dependencies python SIP)
-      include(External_PyQt)
-      list(APPEND ParaView_dependencies PyQt)
-
-      set(VISTRAILS_ARGS
-        -DPARAVIEW_BUILD_PLUGIN_VisTrailsPlugin:BOOL=ON)
-    endif()
-  endif()
 else()
 
   find_package(PythonInterp)
@@ -208,21 +245,24 @@ else()
     set(PYTHON_INCLUDE_DIR "/System/Library/Frameworks/Python.framework/Versions/2.5/include/python2.5" CACHE FILEPATH "" FORCE)
   endif()
 
-  find_package(MPI)
-  set(MPI_ARGS
-    -DPARAVIEW_USE_MPI:BOOL=ON
-    -DMPIEXEC:FILEPATH=${MPIEXEC}
-    -DMPI_INCLUDE_PATH:PATH=${MPI_INCLUDE_PATH}
-    -DMPI_LIBRARY:FILEPATH=${MPI_LIBRARY}
-    -DMPI_EXTRA_LIBRARY:FILEPATH=${MPI_EXTRA_LIBRARY}
-    -DPARAVIEW_INSTALL_MPIEXEC:BOOL=OFF)
+  #find_package(MPI)
+  #set(MPI_ARGS
+  #  -DPARAVIEW_USE_MPI:BOOL=OFF
+  #  -DMPI_DIR:PATH=${MPI_INSTALL}
+  #  -DMPIEXEC:FILEPATH=${MPIEXEC}
+  #  -DVTK_MPIRUN_EXE:FILEPATH=${MPIEXEC}
+  #  -DMPI_INCLUDE_PATH:PATH=${MPI_INCLUDE_PATH}
+  #  -DMPI_LIBRARY:FILEPATH=${MPI_LIBRARY}
+  #  -DMPI_EXTRA_LIBRARY:FILEPATH=${MPI_EXTRA_LIBRARY}
+  #  -DPARAVIEW_INSTALL_MPIEXEC:BOOL=ON)
 
   include(External_NUMPY)
 endif()
 
 set(MANTA_ARGS)
 # Manta doesn't compile on Windows x64 currently
-if(NOT (WIN32 AND "${CMAKE_SIZEOF_VOID_P}" EQUAL 8))
+#if(NOT (WIN32 AND "${CMAKE_SIZEOF_VOID_P}" EQUAL 8))
+if(NOT WIN32)
   include(External_Manta)
   set(MANTA_ARGS
     -DPARAVIEW_BUILD_PLUGIN_Manta:BOOL=ON
@@ -234,15 +274,6 @@ endif()
 include(External_Boost)
 list(APPEND ParaView_dependencies Boost)
 
-# Build a common zlib used by several dependencies
-include(External_zlib)
-set(ZLIB_ARGS
-   -DVTK_USE_SYSTEM_ZLIB:BOOL=ON
-   -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}
-   -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY})
-list(APPEND ParaView_dependencies zlib)
-list(APPEND png_dependencies zlib)
-
 if(WIN32)
   list(APPEND PARAVIEW_FIXUP_BUNDLE_SEARCH_PATHS ${zlib_install}/bin)
 else()
@@ -250,39 +281,65 @@ else()
   list(APPEND PARAVIEW_FIXUP_BUNDLE_SEARCH_PATHS ${ZLIB_DIR})
 endif()
 
-if(NOT APPLE)
-  # Build a common png used by several dependencies
-  include(External_png)
-  set(PNG_ARGS
-    -DVTK_USE_SYSTEM_PNG:BOOL=OFF
-    -DPNG_PNG_INCLUDE_DIR:PATH=${PNG_INCLUDE_DIR}
-    -DPNG_LIBRARY:FILEPATH=${PNG_LIBRARY})
-  list(APPEND ParaView_dependencies png)
-
-  if(WIN32)
-    list(APPEND PARAVIEW_FIXUP_BUNDLE_SEARCH_PATHS ${png_install}/bin)
-  else()
-    get_filename_component(PNG_DIR "${PNG_LIBRARY}" PATH)
-    list(APPEND PARAVIEW_FIXUP_BUNDLE_SEARCH_PATHS ${PNG_DIR})
-  endif()
-endif()
-
 # Build HDF5
-list(APPEND HDF5_dependencies zlib)
+list(APPEND HDF5_dependencies zlib szip)
 list(APPEND ParaView_dependencies HDF5)
 include(External_HDF5)
 set(HDF5_ARGS
   -DVTK_USE_SYSTEM_HDF5:BOOL=ON
+  -DHDF5_DIR:PATH=${HDF5_install}
+  -DHDF5_FOUND:BOOL=ON
   -DHDF5_INCLUDE_DIRS:PATH=${HDF5_INCLUDE_DIR}
   -DHDF5_INCLUDE_DIR:PATH=${HDF5_INCLUDE_DIR}
   -DHDF5_LIBRARIES:FILEPATH=${HDF5_LIBRARY}
-  -DHDF5_LIBRARY:FILEPATH=${HDF5_LIBRARY})
+  -DHDF5_LIBRARY:FILEPATH=${HDF5_LIBRARY}
+  -DHDF5_hdf5_LIBRARY:FILEPATH=${HDF5_LIBRARY}
+  -DHDF5_hdf5_LIBRARY_RELEASE:FILEPATH=${HDF5_LIBRARY})
 
 if(WIN32)
   list(APPEND PARAVIEW_FIXUP_BUNDLE_SEARCH_PATHS ${HDF5_install}/bin)
 else()
   get_filename_component(HDF5_DIR "${HDF5_LIBRARY}" PATH)
   list(APPEND PARAVIEW_FIXUP_BUNDLE_SEARCH_PATHS ${HDF5_DIR})
+endif()
+
+set(freetype_dependencies zlib)
+list(APPEND ParaView_dependencies freetype)
+include(External_freetype)
+set(freetype_ARGS
+  -DVKT_USE_SYSTEM_FREETYPE:BOOL=ON
+  -DFREETYPE_INCLUDE_DIR_freetype2:PATH=${FT_INCLUDE_DIR}/freetype
+  -DFREETYPE_INCLUDE_DIR_ft2build:PATH=${FT_INCLUDE_DIR}
+  -DFREETYPE_LIBRARY:FILEPATH=${FT_LIBRARY}
+  )
+
+if(WIN32)
+  list(APPEND PARAVIEW_FIXUP_BUNDLE_SEARCH_PATHS ${freetype_install}/bin)
+else()
+  get_filename_component(FT_DIR "${FT_LIBRARY}" PATH)
+  list(APPEND PARAVIEW_FIXUP_BUNDLE_SEARCH_PATHS ${FT_DIR})
+endif()
+
+if(ENABLE_YT)
+  set(MPL_dependencies NUMPY zlib)
+  list(APPEND MPL_dependencies freetype png)
+  include(External_MPL)
+
+  set(Cython_dependencies NUMPY)
+  include(External_Cython)
+
+  set(h5py_dependencies NUMPY HDF5 Cython)
+  include(External_h5py)
+
+  set(yt_dependencies NUMPY HDF5 MPL h5py)
+  if(NOT APPLE)
+    set(distribute_dependencies PYTHON)
+    include(External_distribute)
+    list(APPEND yt_dependencies distribute)
+  endif()
+
+  include(External_yt)
+  list(APPEND ParaView_dependencies yt)
 endif()
 
 # Build Silo
@@ -317,6 +374,17 @@ else()
   list(APPEND PARAVIEW_FIXUP_BUNDLE_SEARCH_PATHS ${CGNS_DIR})
 endif()
 
+if(NOT WIN32)
+  include(External_FFMPEG)
+  set(FFMPEG_ARGS
+    -DVTK_USE_FFMPEG_ENCODER:BOOL=ON
+    -DFFMPEG_INCLUDE_DIR:PATH=${FFMPEG_INCLUDE_DIR}
+    -DFFMPEG_avcodec_LIBRARY:FILEPATH=${FFMPEG_avcodec_LIBRARY}
+    -DFFMPEG_avformat_LIBRARY:FILEPATH=${FFMPEG_avformat_LIBRARY}
+    -DFFMPEG_avutil_LIBRARY:FILEPATH=${FFMPEG_avutil_LIBRARY}
+    -DFFMPEG_swscale_LIBRARY:FILEPATH=${FFMPEG_swscale_LIBRARY})
+  list(APPEND ParaView_dependencies FFMPEG)
+endif()
 
 # Build VRPN
 list(APPEND ParaView_dependencies VRPN)
@@ -333,34 +401,88 @@ else()
   list(APPEND PARAVIEW_FIXUP_BUNDLE_SEARCH_PATHS ${VRPN_DIR})
 endif()
 
-if(NOT WIN32)
-  include(External_FFMPEG)
-  set(FFMPEG_ARGS
-    -DVTK_USE_FFMPEG_ENCODER:BOOL=ON
-    -DFFMPEG_INCLUDE_DIR:PATH=${FFMPEG_INCLUDE_DIR}
-    -DFFMPEG_avcodec_LIBRARY:FILEPATH=${FFMPEG_avcodec_LIBRARY}
-    -DFFMPEG_avformat_LIBRARY:FILEPATH=${FFMPEG_avformat_LIBRARY}
-    -DFFMPEG_avutil_LIBRARY:FILEPATH=${FFMPEG_avutil_LIBRARY}
-    -DFFMPEG_swscale_LIBRARY:FILEPATH=${FFMPEG_swscale_LIBRARY})
-  list(APPEND ParaView_dependencies FFMPEG)
+# Build AcuSolveReaderPlugin
+if(NOT APPLE)
+  option(PARAVIEW_BUILD_PLUGIN_AcuSolveReader "Build AcuSolveReader Plugin" FALSE)
+  set(AcuSolve_ARGS)
+  if(PARAVIEW_BUILD_PLUGIN_AcuSolveReader)
+    list(APPEND ParaView_dependencies AcuSolveReaderPlugin)
+    include(External_AcuSolveReaderPlugin)
+    set(AcuSolve_ARGS
+      -DPARAVIEW_BUILD_PLUGIN_AcuSolveReader:BOOL=ON
+    )
+    list(APPEND PARAVIEW_EXTERNAL_PLUGIN_DIRS ${AcuSolveReaderPlugin_source})
+  else()
+    set(AcuSolve_ARGS
+      -DPARAVIEW_BUILD_PLUGIN_AcuSolveReader:BOOL=OFF
+    )
+  endif()
+endif()
+
+# Build VisTrailsPlugin
+option(PARAVIEW_BUILD_PLUGIN_VisTrails "Build VisTrails Plugin" FALSE)
+set(VisTrails_ARGS)
+if(PARAVIEW_BUILD_PLUGIN_VisTrails)
+  include(External_VisTrails)
+  list(APPEND ParaView_dependencies VisTrails)
+  set(VisTrails_ARGS
+    -DPARAVIEW_BUILD_PLUGIN_VisTrails:BOOL=ON
+  )
+  list(APPEND PARAVIEW_EXTERNAL_PLUGIN_DIRS ${VisTrails_source})
+  # Build SIP and PyQt for vistrails plugin.
+  #set(SIP_dependencies python)
+  #include(External_SIP)
+  #list(APPEND PyQt_dependencies SIP)
+  #set(PyQt_dependencies python SIP)
+  #include(External_PyQt)
+  #list(APPEND ParaView_dependencies PyQt)
+
+else()
+  set(VisTrails_ARGS
+    -DPARAVIEW_BUILD_PLUGIN_VisTrails:BOOL=OFF
+  )
 endif()
 
 option(ParaView_BUILD_DOCUMENTATION "Build ParaView Documentation" FALSE)
 set(DOC_ARGS)
 if(ParaView_BUILD_DOCUMENTATION)
-
-  set(USERS_GUIDE_FILE "ParaView User's Guide.pdf")
-  find_file(PARAVIEW_USERS_GUIDE ${USERS_GUIDE_FILE})
-  mark_as_advanced(PARAVIEW_USERS_GUIDE)
+  file(DOWNLOAD ${PARAVIEW_USERS_GUIDE_URL}/${PARAVIEW_USERS_GUIDE_PDF_NO_SPACES} 
+      ${CMAKE_CURRENT_BINARY_DIR}/${PARAVIEW_USERS_GUIDE_PDF}  
+      EXPECTED_MD5 ${PARAVIEW_USERS_GUIDE_MD5})
 
   set(DOC_ARGS
     -DBUILD_DOCUMENTATION:BOOL=ON
     -DPARAVIEW_GENERATE_PROXY_DOCUMENTATION:BOOL=ON
     -DGENERATE_FILTERS_DOCUMENTATION:BOOL=ON
     -DDOCUMENTATION_HTML_HELP:BOOL=ON
-    -DPARAVIEW_USERS_GUIDE:FILEPATH=${PARAVIEW_USERS_GUIDE}
+    -DPARAVIEW_USERS_GUIDE:FILEPATH=${CMAKE_CURRENT_BINARY_DIR}/${PARAVIEW_USERS_GUIDE_PDF}
   )
 endif()
+
+set(PARAVIEW_EXTRA_INSTALL_RULES)
+
+# Install libz2 until we start building it ourselves.
+if(UNIX AND NOT APPLE)
+  list(APPEND PARAVIEW_EXTRA_INSTALL_RULES ${CMAKE_CURRENT_SOURCE_DIR}/install_bz2.cmake)
+endif()
+
+# Install FORTRAN runtime
+if(CMAKE_Fortran_COMPILER AND NOT WIN32)
+  get_filename_component(fortran_compiler ${CMAKE_Fortran_COMPILER} NAME_WE)
+  if("${fortran_compiler}" STREQUAL "gfortran")
+    set(FORTRAN_INSTALL_RULE_FILE
+      ${CMAKE_CURRENT_SOURCE_DIR}/install_gfortran.cmake)
+  elseif("${fortran_compiler}" STREQUAL "g77")
+    set(FORTRAN_INSTALL_RULE_FILE
+      ${CMAKE_CURRENT_SOURCE_DIR}/install_g2c.cmake)
+  elseif("${fortran_compiler}" STREQUAL "ifort")
+    #set(FORTRAN_INSTALL_RULE_FILE
+    #  ${CMAKE_CURRENT_SOURCE_DIR}/install_g2c.cmake)
+  endif()
+  list(APPEND PARAVIEW_EXTRA_INSTALL_RULES ${FORTRAN_INSTALL_RULE_FILE})
+endif()
+
+list(REMOVE_DUPLICATES PARAVIEW_FIXUP_BUNDLE_SEARCH_PATHS)
 
 #------------------------------------------------------------------------------
 # Configure and build ParaView
@@ -374,14 +496,21 @@ ExternalProject_Add(${proj}
   BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/ParaView-build
   CMAKE_CACHE_ARGS
     ${pv_compiler_args}
+    -DPARAVIEW_EXTRA_INSTALL_RULES_FILE:FILEPATH=${PARAVIEW_EXTRA_INSTALL_RULES}
+    -DCMAKE_CXX_FLAGS:STRING=${pv_cxx_flags}
+    -DCMAKE_C_FLAGS:STRING=${pv_c_flags}
     -DBUILD_SHARED_LIBS:BOOL=ON
     -DBUILD_TESTING:BOOL=OFF
     -DPARAVIEW_DISABLE_VTK_TESTING:BOOL=ON
     -DPARAVIEW_TESTING_WITH_PYTHON:BOOL=OFF
+    -DPARAVIEW_INSTALL_THIRD_PARTY_LIBRARIES:BOOL=ON
     -DPARAVIEW_FIXUP_BUNDLE_SEARCH_PATHS:STRING=${PARAVIEW_FIXUP_BUNDLE_SEARCH_PATHS}
+    -DPARAVIEW_EXTERNAL_PLUGIN_DIRS:STRING=${PARAVIEW_EXTERNAL_PLUGIN_DIRS}
     # Boost
     -DVTK_USE_BOOST:BOOL=ON
     -DBoost_INCLUDE_DIR:PATH=${Boost_INCLUDE_DIR}
+    -DBOOST_LIBRARYDIR:PATH=${BOOST_LIBRARYDIR}
+    -DBOOST_ROOT:PATH=${CMAKE_CURRENT_BINARY_DIR}
     # png
     ${PNG_ARGS}
     # Python
@@ -389,6 +518,7 @@ ExternalProject_Add(${proj}
     -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE}
     -DPYTHON_INCLUDE_DIR:PATH=${PYTHON_INCLUDE_DIR}
     -DPYTHON_LIBRARY:FILEPATH=${PYTHON_LIBRARY}
+    -DPARAVIEW_INSTALL_PYTHON:BOOL=ON
     # Qt
     -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
     # MPI
@@ -408,12 +538,14 @@ ExternalProject_Add(${proj}
     # VisIt - Silo
     ${Silo_ARGS}
     # VisTrails
-    ${VISTRAILS_ARGS}
+    ${VisTrails_ARGS}
     # VRPN Plugin
     ${VRPN_ARGS}
     # zlib
     ${ZLIB_ARGS}
+    -DPARAVIEW_BUILD_PLUGIN_CoProcessingScriptGenerator:BOOL=ON
+    ${AcuSolve_ARGS}
     # Documentation
     ${DOC_ARGS}
-  INSTALL_COMMAND ""
+  INSTALL_COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ParaViewSuperBuild_SOURCE_DIR}/.plugins <BINARY_DIR>/bin/
   )

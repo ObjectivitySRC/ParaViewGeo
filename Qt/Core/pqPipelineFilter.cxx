@@ -420,6 +420,7 @@ void pqPipelineFilter::inputChanged(const QString& portname)
   // The pqPipelineSource whose consumer changes raises the events when the 
   // consumer is removed added, so we don't need to raise any events here to 
   // let the world know that connections were broken/created.
+  emit this->producerChanged(portname);
 }
 
 //-----------------------------------------------------------------------------
@@ -474,9 +475,9 @@ void pqPipelineFilter::hideInputIfRequired(pqView* view)
           {
           // Conditionally turn off the input. The input should be turned
           // off if the representation is surface and the opacity is 1.
-          int reprType = sourceDisp->getRepresentationType();
-          if ((reprType != vtkSMPVRepresentationProxy::SURFACE &&
-              reprType != vtkSMPVRepresentationProxy::SURFACE_WITH_EDGES) ||
+          QString reprType = sourceDisp->getRepresentationType();
+          if ((reprType != "Surface" &&
+              reprType != "Surface With Edges") ||
             sourceDisp->getOpacity() < 1.0)
             {
             continue;

@@ -35,14 +35,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "QVTKWidget.h"
 #include "pqCoreExport.h"
 #include "vtkSmartPointer.h"
+#include "vtkWeakPointer.h"
+
 #include <QPointer>
 
 class vtkSMProxy;
+class vtkSMSession;
 
 /// pqQVTKWidget extends QVTKWidget to add awareness for view proxies. The
 /// advantage of doing that is that pqQVTKWidget can automatically update the
 /// "ViewPosition" and "ViewSize" properties on the view proxy whenever the
 /// widget's size/position changes.
+///
+/// This class also enables image-caching by default (image caching support is
+/// provided by the superclass).
 class PQCORE_EXPORT pqQVTKWidget : public QVTKWidget
 {
   Q_OBJECT
@@ -59,6 +65,10 @@ public:
   /// Set the view proxy.
   void setViewProxy(vtkSMProxy*);
 
+  /// Set the session.
+  /// This is only used when ViewProxy is not set.
+  void setSession(vtkSMSession*);
+
   /// If none is specified, then the parentWidget() is used. Position reference
   /// is a widget (typically an ancestor of this pqQVTKWidget) relative to which
   /// the position for the pqQVTKWidget should be determined.
@@ -73,9 +83,18 @@ protected:
   /// overloaded move handler
   virtual void moveEvent(QMoveEvent* event);
 
+  // method called in paintEvent() to render the image cache on to the device.
+  // return false, if cache couldn;t be used for painting. In that case, the
+  // paintEvent() method will continue with the default painting code.
+  virtual bool paintCachedImage();
+
+private slots:
+  void updateSizeProperties();
+
 private:
   Q_DISABLE_COPY(pqQVTKWidget)
   vtkSmartPointer<vtkSMProxy> ViewProxy;
+  vtkWeakPointer<vtkSMSession> Session;
   QPointer<QWidget> PositionReference;
 };
 

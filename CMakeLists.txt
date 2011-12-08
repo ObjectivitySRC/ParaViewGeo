@@ -6,7 +6,17 @@ FOREACH(policy CMP0012 CMP0013 CMP0014)
   ENDIF()
 ENDFOREACH()
 
+FOREACH(policy CMP0017)
+  IF(POLICY ${policy})
+    CMAKE_POLICY(SET ${policy} OLD)
+  ENDIF()
+ENDFOREACH()
+
 PROJECT(ParaView)
+SET(ParaView_CMAKE_DIR "${ParaView_SOURCE_DIR}/CMake")
+SET (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ParaView_CMAKE_DIR})
+
+INCLUDE(Utilities/Git/Git.cmake)
 
 IF(CMAKE_CROSSCOMPILING)
   FIND_PACKAGE(ParaView3CompileTools REQUIRED)
@@ -49,24 +59,27 @@ IF("${ParaView_SOURCE_DIR}"  STREQUAL "${ParaView_BINARY_DIR}")
 ENDIF("${ParaView_SOURCE_DIR}"  STREQUAL "${ParaView_BINARY_DIR}")
 
 #########################################################################
-SET(PARAVIEW_VERSION_MAJOR 3)
-SET(PARAVIEW_VERSION_MINOR 10)
-SET(PARAVIEW_VERSION_PATCH 4)
-#SET(PARAVIEW_VERSION_RC 1)
-SET(PARAVIEW_VERSION "${PARAVIEW_VERSION_MAJOR}.${PARAVIEW_VERSION_MINOR}")
-SET(PARAVIEW_VERSION_FULL "${PARAVIEW_VERSION}.${PARAVIEW_VERSION_PATCH}")
-IF(PARAVIEW_VERSION_RC)
-  SET(PARAVIEW_VERSION_FULL "${PARAVIEW_VERSION}.${PARAVIEW_VERSION_PATCH}-RC${PARAVIEW_VERSION_RC}")
-ENDIF()
+SET (PARAVIEW_VERSION_MAJOR 0)
+SET (PARAVIEW_VERSION_MINOR 0)
+SET (PARAVIEW_VERSION_PATCH -1)
+SET (PARAVIEW_VERSION "0.0")
+SET (PARAVIEW_VERSION_FULL "0.0.-1")
+SET (PARAVIEW_VERSION_IS_RELEASE FALSE)
 
-# See VTK/CMakeLists.txt for an explanation of this default selection.
-IF(PARAVIEW_VERSION_MINOR MATCHES "[02468]$")
+INCLUDE(ParaViewDetermineVersion)
+determine_version(
+  ${ParaView_SOURCE_DIR}
+  ${GIT_EXECUTABLE}
+  ${ParaView_SOURCE_DIR}/CMake/.paraview.version
+  "PARAVIEW")
+
+IF (PARAVIEW_VERSION_IS_RELEASE)
   # This is a release version.  Default to not use rpath.
   SET(VTK_USE_RPATH_DEFAULT OFF)
-ELSE(PARAVIEW_VERSION_MINOR MATCHES "[02468]$")
+ELSE()
   # This is a development version.  Default to use rpath.
   SET(VTK_USE_RPATH_DEFAULT ON)
-ENDIF(PARAVIEW_VERSION_MINOR MATCHES "[02468]$")
+ENDIF()
 
 #########################################################################
 # build VTK/Qt support
@@ -88,15 +101,15 @@ IF (PARAVIEW_BUILD_QT_GUI)
     MESSAGE(SEND_ERROR "Qt ${QT_MIN_VERSION} or greater not found.  Please check the QT_QMAKE_EXECUTABLE variable.")
   ELSE(NOT QT4_FOUND)
     # don't go greater than supported version
-    STRING(REGEX MATCH "^4\\.6\\.[0-9]+" qt_version_46_match "${QTVERSION}")
-    IF (NOT qt_version_46_match)
+    STRING(REGEX MATCH "^4\\.[6-7]\\.[0-9]+" qt_version_match "${QTVERSION}")
+    IF (NOT qt_version_match)
       STRING(REGEX MATCH "^4\\.[0-4]+\\.[0-9]+" qt_version46_x_tmp "${QTVERSION}")
       IF (qt_version46_x_tmp)
         MESSAGE(SEND_ERROR "Qt ${QTVERSION} not supported.  Please use ${QT_OFFICIAL_VERSION} (you may need to clean your dirtied cache).")
       ELSE (qt_version46_x_tmp)
         MESSAGE(WARNING "Warning: You are using Qt ${QTVERSION}. Officially supported version is Qt ${QT_OFFICIAL_VERSION}")
       ENDIF (qt_version46_x_tmp)
-    ENDIF (NOT qt_version_46_match)
+    ENDIF (NOT qt_version_match)
   ENDIF(NOT QT4_FOUND)
 ELSE (PARAVIEW_BUILD_QT_GUI)
   SET(VTK_USE_QT OFF CACHE BOOL "Build VTK with Qt Support" FORCE)
@@ -231,9 +244,6 @@ SET (dynamicHeaders)
 SET(VTK_MAKE_INSTANTIATOR       "${ParaView_SOURCE_DIR}/VTK/CMake")
 SET(VTKCS_CONFIG_DIR            "${ParaView_SOURCE_DIR}/Utilities/VTKClientServer/CMake")
 
-SET(ParaView_CMAKE_DIR "${ParaView_SOURCE_DIR}/CMake")
-SET (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ParaView_CMAKE_DIR})
-
 # used in ParaViewPlugins.cmake
 SET(ParaView_QT_DIR ${ParaView_SOURCE_DIR}/Qt)
 SET(PARAVIEW_QT_QMAKE_EXECUTABLE ${QT_QMAKE_EXECUTABLE})
@@ -308,7 +318,7 @@ ENDIF(PARAVIEW_ENABLE_PYTHON)
 
 SET(PARAVIEW_KWSYS_INCLUDE_DIRS ${PARAVIEW_INCLUDE_DIRS})
 SET(PARAVIEW_SERVER_MANAGER_RESOURCES_DIRECTORY 
-  "${ParaView_SOURCE_DIR}/Servers/ServerManager/Resources")
+  "${ParaView_SOURCE_DIR}/ParaViewCore/ServerImplementation/Resources")
 
 # Few more variable needed in ParaViewConfig.cmake
 # We don't worry about the debug/release configuration directories on windows
@@ -325,8 +335,11 @@ SET(PARAVIEW_SMTESTDRIVER_EXECUTABLE  ${EXECUTABLE_OUTPUT_PATH}/smTestDriver${PV
 # release/debug configuration gets considered.
 GET_TARGET_PROPERTY(PARAVIEW_PROCESS_XML_EXECUTABLE kwProcessXML LOCATION)
 
-
 ADD_SUBDIRECTORY(Plugins)
+
+#########################################################################
+# Add command line executables.
+ADD_SUBDIRECTORY(CommandLineExecutables)
 
 #########################################################################
 IF (PARAVIEW_BUILD_QT_GUI)
@@ -340,8 +353,10 @@ ENDIF (PARAVIEW_BUILD_QT_GUI)
 SET(PARAVIEW_TARGETS_FILE "${CMAKE_BINARY_DIR}/${PV_INSTALL_EXPORT_NAME}.cmake")
 
 GET_PROPERTY(VTK_TARGETS GLOBAL PROPERTY VTK_TARGETS)
-# The PYTHON_ADD_MODULE macro stores the list of static modules in a global property
-GET_PROPERTY(PY_STATIC_MODULES_LIST GLOBAL PROPERTY PY_STATIC_MODULES_LIST)
+IF (NOT PV_INSTALL_NO_LIBRARIES)
+  # The PYTHON_ADD_MODULE macro stores the list of static modules in a global property
+  GET_PROPERTY(PY_STATIC_MODULES_LIST GLOBAL PROPERTY PY_STATIC_MODULES_LIST)
+ENDIF (NOT PV_INSTALL_NO_LIBRARIES)
 EXPORT(TARGETS ${VTK_TARGETS} ${PY_STATIC_MODULES_LIST} FILE ${PARAVIEW_TARGETS_FILE})
 
 #########################################################################
@@ -447,7 +462,7 @@ IF (NOT PV_INSTALL_NO_DEVELOPMENT)
   SET(PARAVIEW_DATA_SERVER_EXECUTABLE             "\${ParaView_INSTALL_PREFIX}/${PV_INSTALL_BIN_DIR}/pvdataserver${PV_EXE_SUFFIX}")
   SET(PARAVIEW_RENDER_SERVER_EXECUTABLE           "\${ParaView_INSTALL_PREFIX}/${PV_INSTALL_BIN_DIR}/pvrenderserver${PV_EXE_SUFFIX}")
   SET(PARAVIEW_SMTESTDRIVER_EXECUTABLE            "\${ParaView_INSTALL_PREFIX}/${PV_INSTALL_BIN_DIR}/smTestDriver${PV_EXE_SUFFIX}")
-  SET(PARAVIEW_SERVER_MANAGER_RESOURCES_DIRECTORY "\${ParaView_INSTALL_PREFIX}/${PV_INSTALL_LIB_DIR}/Servers/ServerManager/Resources")
+  SET(PARAVIEW_SERVER_MANAGER_RESOURCES_DIRECTORY "\${ParaView_INSTALL_PREFIX}/${PV_INSTALL_LIB_DIR}/ParaViewCore/ServerImplementation/Resources")
   SET(VTKCS_CONFIG_DIR                            "\${ParaView_INSTALL_PREFIX}/${PV_INSTALL_CMAKE_DIR}")
   SET(PARAVIEW_TARGETS_FILE                       "\${ParaView_INSTALL_PREFIX}/${PV_INSTALL_CMAKE_DIR}/${PV_INSTALL_EXPORT_NAME}.cmake")
   SET(VTK_MAKE_INSTANTIATOR                       "\${ParaView_INSTALL_PREFIX}/${PV_INSTALL_CMAKE_DIR}")

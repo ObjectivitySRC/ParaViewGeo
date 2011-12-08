@@ -10,7 +10,6 @@ IF(PARAVIEW_ENABLE_PYTHON)
   SET(PYTHON_LINK_LIBRARIES
     vtkPVPythonInterpretor
     QtPython
-    vtkPVServerCommonPythonD
     vtkPVServerManagerPythonD
     ${PYTHON_LIBRARIES})
 
@@ -186,6 +185,7 @@ QT4_WRAP_CPP(MOC_BUILT_SOURCES
   pqThresholdPanel.h
   pqTimerLogDisplay.h
   pqToolTipTrapper.h
+  pqTriggerOnIdleHelper.h
   pqTwoDRenderViewOptions.h
   pqVCRController.h
   pqViewContextMenuHandler.h
@@ -254,6 +254,7 @@ SET(UI_FORMS
   Resources/UI/pqPluginDialog.ui
   Resources/UI/pqPointSourceControls.ui
   Resources/UI/pqProxyInformationWidget.ui
+  Resources/UI/pqPythonAnimationCue.ui
   Resources/UI/pqQueryClauseWidget.ui
   Resources/UI/pqQueryCompositeTreeDialog.ui
   Resources/UI/pqQueryDialog.ui
@@ -625,6 +626,8 @@ VTK_ADD_LIBRARY(pqComponents
   pqTimerLogDisplay.h
   pqToolTipTrapper.cxx
   pqToolTipTrapper.h
+  pqTriggerOnIdleHelper.cxx
+  pqTriggerOnIdleHelper.h
   pqTwoDRenderViewOptions.cxx
   pqTwoDRenderViewOptions.h
   pqUndoStackBuilder.cxx

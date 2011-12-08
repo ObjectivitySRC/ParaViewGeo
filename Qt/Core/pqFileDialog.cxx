@@ -436,9 +436,9 @@ void pqFileDialog::onCreateNewFolder()
 {
   // Add a directory entry with a default name to the model
   // This actually creates a directory with the given name,
-  //   but this temporary direectory will be deleted and a new one created
+  //   but this temporary directory will be deleted and a new one created
   //   once the user provides a new name for it.
-  //   FIXME: I guess we could insert an item into the model without
+  //   TODO: I guess we could insert an item into the model without
   //    actually creating a new directory but this way I could reuse code.
   QString dirName = QString("New Folder");
   int i=0;
@@ -672,26 +672,47 @@ QStringList pqFileDialog::buildFileGroup(const QString &filename)
 
   // if we find the file passed in is the parent of a group,
   // add the entire group to the return QList
-  QAbstractProxyModel* m = &this->Implementation->FileFilter;
-  int numrows = m->rowCount(QModelIndex());
-  for(int i=0; i<numrows; i++)
+  QAbstractProxyModel *model = &this->Implementation->FileFilter;
+
+  for(int row = 0; row < model->rowCount(); row++)
     {
-    QModelIndex idx = m->index(i, 0, QModelIndex());
-    QString cmp = m->data(idx, Qt::DisplayRole).toString();
-    if(filename == cmp)
+    QModelIndex rowIndex = model->index(row, 0);
+
+    for(int column = 0; column < model->columnCount(rowIndex); column++)
       {
-      QModelIndex sidx = m->mapToSource(idx);
-      QStringList sel_files = this->Implementation->Model->getFilePaths(sidx);
-      for(int j=0; j < sel_files.count(); ++j)
+      QModelIndex index;
+      if(column == 0)
         {
-        files.push_back(sel_files.at(j));
+        index = rowIndex;
+        }
+      else
+        {
+        index = model->index(0, column, rowIndex);
+        }
+
+      QString label = model->data(index, Qt::DisplayRole).toString();
+
+      if(filename == label)
+        {
+        if(column == 0)
+          {
+          QModelIndex sourceIndex = model->mapToSource(index);
+          files += this->Implementation->Model->getFilePaths(sourceIndex);
+          }
+        else
+          {
+          // UserRole will return the full file path
+          files += model->data(index, Qt::UserRole).toString();
+          }
         }
       }
     }
+
   if(files.empty())
     {
     files.append(this->Implementation->Model->absoluteFilePath(filename));
     }
+
   return files;
 }
 
@@ -881,18 +902,22 @@ bool pqFileDialog::getShowHidden()
 void pqFileDialog::onTextEdited(const QString &str)
 {
   this->Implementation->Ui.Favorites->clearSelection();
+
+  //really important to block signals so that the clearSelection
+  //doesn't cause a signal to be fired that calls fileSelectionChanged
+  this->Implementation->Ui.Files->blockSignals(true);
+  this->Implementation->Ui.Files->clearSelection();
   if (str.size() > 0 )
     {
-    pqFileDialog::FileMode realMode = this->Implementation->Mode;    
-    this->setFileMode(pqFileDialog::ExistingFile);
-    this->Implementation->Ui.Files->keyboardSearch(str);
-    this->setFileMode(realMode);
+    //convert the typed information to be this->Implementation->FileNames
+    this->Implementation->FileNames = 
+      str.split(this->Implementation->FileNamesSeperator,QString::SkipEmptyParts);
     }
   else
-    {
-    this->Implementation->Ui.Files->clearSelection();
+    {    
     this->Implementation->FileNames.clear();
     }
+  this->Implementation->Ui.Files->blockSignals(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -1092,7 +1117,6 @@ void pqFileDialog::fileSelectionChanged()
       fileNames.append(name);
       }
     }
-
   //if we are in directory mode we have to enable / disable the OK button
   //based on if the user has selected a file.
   if ( this->Implementation->Mode == pqFileDialog::Directory &&
@@ -1112,13 +1136,11 @@ void pqFileDialog::fileSelectionChanged()
     return;
     }
 
-  if (!this->Implementation->Ui.FileName->hasFocus())
-    {
-    //user is currently editing a name, don't change the text
-    this->Implementation->Ui.FileName->blockSignals(true);
-    this->Implementation->Ui.FileName->setText(fileString);
-    this->Implementation->Ui.FileName->blockSignals(false);
-    }
+  //user is currently editing a name, don't change the text
+  this->Implementation->Ui.FileName->blockSignals(true);
+  this->Implementation->Ui.FileName->setText(fileString);
+  this->Implementation->Ui.FileName->blockSignals(false);
+
   this->Implementation->FileNames = fileNames;
 }
 

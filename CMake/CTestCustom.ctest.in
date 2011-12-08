@@ -71,6 +71,7 @@ SET(CTEST_CUSTOM_WARNING_EXCEPTION
   "tk8.4.5/[^/]+/[^/]+.c[:\"]"
   "VTK/Utilities/vtktiff/"      
   "VTK/Utilities/vtkmpeg2encode/"      
+  "xhash.[0-9]+. : warning C4996: .+ was declard deprecated"
   "xtree.[0-9]+. : warning C4702: unreachable code"
   "warning LNK4221"
   "variable .var_args[2]*. is used before its value is set"
@@ -83,7 +84,7 @@ SET(CTEST_CUSTOM_WARNING_EXCEPTION
   ".include.QtCore"
   "include/features.h"
   "Qt/Python/pqPythonStream"
-  "python.+/pyconfig.h"
+  "ython.+/pyconfig.h"
   "vtkfreetype.src"
   "vtkfreetype.include"
   "OSServices.framework"
@@ -115,8 +116,19 @@ SET(CTEST_CUSTOM_WARNING_EXCEPTION
   # suppress warning from H5Part library.
   ".H5Part.src"
 
+  # suppress warning from MPI library.
+  "/mpicxx.h:"
+
   # ignore all size_t to int conversion warnings.
   "conversion from 'size_t' to"
+
+  # ignore protobuf generated code warning
+  "vtkPVMessage.pb.h"
+  "vtkSMMessage.h.*pragma GCC diagnostic"
+  "/google/protobuf/"
+
+  # ignore VRPN warnings
+  ".*vrpn.*"
   )
 
 SET(CTEST_CUSTOM_WARNING_EXCEPTION
@@ -170,5 +182,6 @@ SET(CTEST_CUSTOM_COVERAGE_EXCLUDE
   "Utilities.VisItBridge.databases"
   "Utilities.VisItBridge.include"
   "Utilities.VisItBridge.visit_vtk"
+  "Utilities.protobuf"
   )
 

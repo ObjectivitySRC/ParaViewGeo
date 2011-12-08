@@ -59,6 +59,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pqExodusIIPanel.h"
 #include "pqExtractCTHPartsPanel.h"
 #include "pqGlyphPanel.h"
+#include "pqInterfaceTracker.h"
 #include "pqIsoVolumePanel.h"
 #include "pqLoadedFormObjectPanel.h"
 #include "pqNetCDFPanel.h"
@@ -67,10 +68,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pqParticleTracerPanel.h"
 #include "pqPipelineFilter.h"
 #include "pqPipelineSource.h"
-#include "pqPluginManager.h"
 #include "pqPropertyManager.h"
 #include "pqProxyModifiedStateUndoElement.h"
 #include "pqSelectThroughPanel.h"
+#include "pqServer.h"
 #include "pqServerManagerModel.h"
 #include "pqServerManagerObserver.h"
 #include "pqSettings.h"
@@ -97,11 +98,13 @@ public:
     {
     if(QString("filters") == proxy->getProxy()->GetXMLGroup())
       {
-      if(QString("Cut") == proxy->getProxy()->GetXMLName())
+      if(QString("Cut") == proxy->getProxy()->GetXMLName() ||
+         QString("GenericCut") == proxy->getProxy()->GetXMLName())
         {
         return new pqCutPanel(proxy, p);
         }
-      if(QString("Clip") == proxy->getProxy()->GetXMLName())
+      if(QString("Clip") == proxy->getProxy()->GetXMLName() ||
+         QString("GenericClip") == proxy->getProxy()->GetXMLName())
         {
         return new pqClipPanel(proxy, p);
         }
@@ -114,7 +117,8 @@ public:
         {
         return new pqGlyphPanel(proxy, p);
         }
-      if(QString("StreamTracer") == proxy->getProxy()->GetXMLName())
+      if(QString("StreamTracer") == proxy->getProxy()->GetXMLName() ||
+         QString("GenericStreamTracer") == proxy->getProxy()->GetXMLName())
         {
         return new pqStreamTracerPanel(proxy, p);
         }
@@ -130,7 +134,8 @@ public:
         {
         return new pqIsoVolumePanel(proxy, p);
         }
-      if(QString("Contour") == proxy->getProxy()->GetXMLName())
+      if(QString("Contour") == proxy->getProxy()->GetXMLName() ||
+         QString("GenericContour") == proxy->getProxy()->GetXMLName())
         {
         return new pqContourPanel(proxy, p);
         }
@@ -166,11 +171,14 @@ public:
     if(QString("filters") == proxy->getProxy()->GetXMLGroup())
       {
       if(QString("Cut") == proxy->getProxy()->GetXMLName() ||
+         QString("GenericCut") == proxy->getProxy()->GetXMLName() ||
          QString("Clip") == proxy->getProxy()->GetXMLName() ||
+         QString("GenericClip") == proxy->getProxy()->GetXMLName() ||
          QString("Calculator") == proxy->getProxy()->GetXMLName() ||
          QString("ArbitrarySourceGlyph") == proxy->getProxy()->GetXMLName() ||
          QString("Glyph") == proxy->getProxy()->GetXMLName() ||
          QString("StreamTracer") == proxy->getProxy()->GetXMLName() ||
+         QString("GenericStreamTracer") == proxy->getProxy()->GetXMLName() ||
 //         QString("ExtractDataSets") == proxy->getProxy()->GetXMLName() ||
 //         QString("ParticleTracer") == proxy->getProxy()->GetXMLName() ||
          QString("Threshold") == proxy->getProxy()->GetXMLName() ||
@@ -178,6 +186,7 @@ public:
          QString("ExtractSelection") == proxy->getProxy()->GetXMLName() ||
          QString("ExtractSelectionOverTime") == proxy->getProxy()->GetXMLName() ||
          QString("Contour") == proxy->getProxy()->GetXMLName() ||
+         QString("GenericContour") == proxy->getProxy()->GetXMLName() ||
          QString("CTHPart") == proxy->getProxy()->GetXMLName() ||
          QString("RectilinearGridConnectivity") == proxy->getProxy()->GetXMLName())
         {
@@ -413,7 +422,7 @@ void pqObjectInspectorWidget::setProxy(pqProxy *proxy)
     const QString xml_name = proxy->getProxy()->GetXMLName();
 
     // search custom panels
-    pqPluginManager* pm = pqApplicationCore::instance()->getPluginManager();
+    pqInterfaceTracker* pm = pqApplicationCore::instance()->interfaceTracker();
     QObjectList ifaces = pm->interfaces();
     foreach(QObject* iface, ifaces)
       {
@@ -525,6 +534,7 @@ void pqObjectInspectorWidget::accept()
       this->show(source);
       pqProxyModifiedStateUndoElement* elem =
         pqProxyModifiedStateUndoElement::New();
+      elem->SetSession(source->getServer()->session());
       elem->MadeUnmodified(source);
       ADD_UNDO_ELEM(elem);
       elem->Delete();

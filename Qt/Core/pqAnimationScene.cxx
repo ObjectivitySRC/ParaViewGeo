@@ -36,11 +36,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vtkCommand.h"
 #include "vtkEventQtSlotConnect.h"
 #include "vtkPoints.h"
-#include "vtkProcessModule.h"
-#include "vtkSMAnimationSceneProxy.h"
 #include "vtkSmartPointer.h"
 #include "vtkSMPropertyHelper.h"
 #include "vtkSMPropertyLink.h"
+#include "vtkSMProxyManager.h"
 #include "vtkSMProxyProperty.h"
 #include "vtkSMUtilities.h"
 #include "vtkSMViewProxy.h"
@@ -83,17 +82,19 @@ pqAnimationScene::pqAnimationScene(const QString& group, const QString& name,
     vtkSMProxy* proxy, pqServer* server, QObject* _parent/*=NULL*/)
 : pqProxy(group, name, proxy, server, _parent)
 {
+  vtkObject* animationScene =
+    vtkObject::SafeDownCast(proxy->GetClientSideObject());
+
   this->Internals = new pqAnimationScene::pqInternals();
   vtkEventQtSlotConnect* connector = this->getConnector();
 
   connector->Connect(proxy->GetProperty("Cues"),
     vtkCommand::ModifiedEvent, this, SLOT(onCuesChanged()));
-  connector->Connect(proxy,
-    vtkCommand::AnimationCueTickEvent, 
+  connector->Connect(animationScene, vtkCommand::AnimationCueTickEvent,
     this, SLOT(onTick(vtkObject*, unsigned long, void*, void*)));
-  connector->Connect(proxy, vtkCommand::StartEvent,
+  connector->Connect(animationScene, vtkCommand::StartEvent,
     this, SIGNAL(beginPlay()));
-  connector->Connect(proxy, vtkCommand::EndEvent,
+  connector->Connect(animationScene, vtkCommand::EndEvent,
     this, SIGNAL(endPlay()));
 
   connector->Connect(
@@ -126,12 +127,6 @@ pqAnimationScene::pqAnimationScene(const QString& group, const QString& name,
 pqAnimationScene::~pqAnimationScene()
 {
   delete this->Internals;
-}
-
-//-----------------------------------------------------------------------------
-vtkSMAnimationSceneProxy* pqAnimationScene::getAnimationSceneProxy() const
-{
-  return vtkSMAnimationSceneProxy::SafeDownCast(this->getProxy());
 }
 
 //-----------------------------------------------------------------------------
@@ -343,6 +338,12 @@ pqAnimationCue* pqAnimationScene::createCue(vtkSMProxy* proxy,
 }
 
 //-----------------------------------------------------------------------------
+pqAnimationCue* pqAnimationScene::createCue(const QString& cuetype) 
+{
+  return this->createCueInternal(cuetype, NULL, NULL, -1);
+}
+
+//-----------------------------------------------------------------------------
 static void pqAnimationSceneResetCameraKeyFrameToCurrent(vtkSMProxy* ren,
                                                          vtkSMProxy* dest)
 {
@@ -475,7 +476,6 @@ pqAnimationCue* pqAnimationScene::createCueInternal(const QString& cuetype,
   pqObjectBuilder* builder = core->getObjectBuilder();
   vtkSMProxy* cueProxy = builder->createProxy(
     "animation", cuetype.toAscii().data(), this->getServer(), "animation");
-  cueProxy->SetServers(vtkProcessModule::CLIENT);
   pqAnimationCue* cue = smmodel->findItem<pqAnimationCue*>(cueProxy);
   if (!cue)
     {
@@ -484,17 +484,23 @@ pqAnimationCue* pqAnimationScene::createCueInternal(const QString& cuetype,
     }
   cue->setDefaultPropertyValues();
 
-  pqSMAdaptor::setProxyProperty(cueProxy->GetProperty("AnimatedProxy"), proxy);
-  pqSMAdaptor::setElementProperty(cueProxy->GetProperty("AnimatedPropertyName"), 
-    propertyname);
-  pqSMAdaptor::setElementProperty(cueProxy->GetProperty("AnimatedElement"), index);
-  cueProxy->UpdateVTKObjects();
+  if (proxy)
+    {
+    pqSMAdaptor::setProxyProperty(cueProxy->GetProperty("AnimatedProxy"), proxy);
+    pqSMAdaptor::setElementProperty(cueProxy->GetProperty("AnimatedPropertyName"), 
+      propertyname);
+    pqSMAdaptor::setElementProperty(cueProxy->GetProperty("AnimatedElement"), index);
+    cueProxy->UpdateVTKObjects();
+    }
 
   vtkSMProxy* sceneProxy = this->getProxy();
   pqSMAdaptor::addProxyProperty(sceneProxy->GetProperty("Cues"), cueProxy);
   sceneProxy->UpdateVTKObjects();
 
-  this->initializeCue(proxy, propertyname, index, cue);
+  if (proxy)
+    {
+    this->initializeCue(proxy, propertyname, index, cue);
+    }
 
   // We don't directly add this cue to the internal Cues, it will get added
   // as a side effect of the change in the "Cues" property.
@@ -616,11 +622,17 @@ void pqAnimationScene::onTick(vtkObject*, unsigned long, void*, void* info)
 //-----------------------------------------------------------------------------
 void pqAnimationScene::updateApplicationSettings()
 {
-  vtkSMAnimationSceneProxy *sceneProxy = this->getAnimationSceneProxy();
+  vtkSMProxyManager* pxm = this->getServer()->proxyManager();
+  vtkSMProxy* globalAnimationProperties =
+    pxm->NewProxy("misc", "GlobalAnimationProperties");
+  pqSMAdaptor::setElementProperty(globalAnimationProperties->GetProperty("CacheLimit"),
+    this->getCacheLimitSetting());
+  vtkSMProxy* sceneProxy = this->getProxy();
   pqSMAdaptor::setElementProperty(sceneProxy->GetProperty("Caching"),
                                   this->getCacheGeometrySetting());
-  pqSMAdaptor::setElementProperty(sceneProxy->GetProperty("CacheLimit"),
-                                  this->getCacheLimitSetting());
+  sceneProxy->UpdateVTKObjects();
+  globalAnimationProperties->UpdateVTKObjects();
+  globalAnimationProperties->Delete();
 }
 
 //-----------------------------------------------------------------------------
@@ -628,6 +640,13 @@ void pqAnimationScene::setCacheGeometrySetting(bool flag)
 {
   pqSettings *settings = pqApplicationCore::instance()->settings();
   settings->setValue("Animation/CacheGeometry", flag);
+
+  pqServerManagerModel* smmodel =
+    pqApplicationCore::instance()->getServerManagerModel();
+  foreach (pqAnimationScene* scene, smmodel->findItems<pqAnimationScene*>())
+    {
+    scene->updateApplicationSettings();
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -642,6 +661,13 @@ void pqAnimationScene::setCacheLimitSetting(int kilobytes)
 {
   pqSettings *settings = pqApplicationCore::instance()->settings();
   settings->setValue("Animation/CacheLimit", kilobytes);
+
+  pqServerManagerModel* smmodel =
+    pqApplicationCore::instance()->getServerManagerModel();
+  foreach (pqAnimationScene* scene, smmodel->findItems<pqAnimationScene*>())
+    {
+    scene->updateApplicationSettings();
+    }
 }
 
 //-----------------------------------------------------------------------------

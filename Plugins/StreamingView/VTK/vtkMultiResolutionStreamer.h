@@ -95,6 +95,17 @@ public:
   vtkSetMacro(Interacting, bool);
   vtkGetMacro(Interacting, bool);
 
+  // Description:
+  // Number of polygonal cells estimated from number of sources cells
+  // as sourcecells^CellPixelFactor.
+  vtkSetMacro(CellPixelFactor, double);
+  vtkGetMacro(CellPixelFactor, double);
+
+  // Description:
+  // Back facing pieces determined as those whose normal dot gaze is less than this.
+  void SetBackFaceFactor(double);
+  double GetBackFaceFactor();
+
 //BTX
 protected:
   vtkMultiResolutionStreamer();
@@ -116,6 +127,7 @@ protected:
   int Refine(vtkStreamingHarness *);
   int Coarsen(vtkStreamingHarness *);
   void Reap(vtkStreamingHarness *);
+  void PixelBackoff(vtkStreamingHarness *);
   bool AnyToRefine(vtkStreamingHarness *);
 
   enum {COARSEN, STAY, ADVANCE};
@@ -126,6 +138,7 @@ protected:
   int RefinementDepth;
   int DepthLimit;
   int MaxSplits;
+  double CellPixelFactor;
 
   bool Interacting;
 private:

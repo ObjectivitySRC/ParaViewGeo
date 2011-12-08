@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pqComparativeRenderView.h"
 
 // Server Manager Includes.
-#include "QVTKWidget.h"
+#include "pqQVTKWidget.h"
 #include "vtkCollection.h"
 #include "vtkEventQtSlotConnect.h"
 #include "vtkImageData.h"
@@ -56,7 +56,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class pqComparativeRenderView::pqInternal
 {
 public:
-  QMap<vtkSMViewProxy*, QPointer<QVTKWidget> > RenderWidgets;
+  QMap<vtkSMViewProxy*, QPointer<pqQVTKWidget> > RenderWidgets;
   vtkSmartPointer<vtkEventQtSlotConnect> VTKConnect;
 
   pqInternal()
@@ -83,7 +83,7 @@ pqComparativeRenderView::pqComparativeRenderView(
 //-----------------------------------------------------------------------------
 pqComparativeRenderView::~pqComparativeRenderView()
 {
-  foreach (QVTKWidget* widget, this->Internal->RenderWidgets.values())
+  foreach (pqQVTKWidget* widget, this->Internal->RenderWidgets.values())
     {
     delete widget;
     }
@@ -168,7 +168,7 @@ void pqComparativeRenderView::onComparativeVisLayoutChanged()
   // Destroy old QVTKWidgets widgets.
   foreach (vtkSMViewProxy* key, removed)
     {
-    QVTKWidget* item = this->Internal->RenderWidgets.take(key);
+    pqQVTKWidget* item = this->Internal->RenderWidgets.take(key);
     delete item;
     }
 
@@ -178,8 +178,9 @@ void pqComparativeRenderView::onComparativeVisLayoutChanged()
     vtkSMRenderViewProxy* renView = vtkSMRenderViewProxy::SafeDownCast(key);
     renView->UpdateVTKObjects();
 
-    QVTKWidget* widget = new QVTKWidget();
+    pqQVTKWidget* widget = new pqQVTKWidget();
     widget->SetRenderWindow(renView->GetRenderWindow());
+    widget->setSession(compView->GetSession());
     widget->installEventFilter(this);
     widget->setContextMenuPolicy(Qt::NoContextMenu);
     this->Internal->RenderWidgets[key] = widget;
@@ -187,8 +188,8 @@ void pqComparativeRenderView::onComparativeVisLayoutChanged()
 
   // Now layout the views.
   int dimensions[2];
-  compView->GetDimensions(dimensions);
-  if (compView->GetOverlayAllComparisons())
+  vtkSMPropertyHelper(compView, "Dimensions").Get(dimensions, 2);
+  if (vtkSMPropertyHelper(compView, "OverlayAllComparisons").GetAsInt() !=0)
     {
     dimensions[0] = dimensions[1] = 1;
     }
@@ -207,13 +208,11 @@ void pqComparativeRenderView::onComparativeVisLayoutChanged()
       int index = y*dimensions[0]+x;
       vtkSMViewProxy* view = vtkSMViewProxy::SafeDownCast(
         currentViews->GetItemAsObject(index));
-      QVTKWidget* vtkwidget = this->Internal->RenderWidgets[view];
+      pqQVTKWidget* vtkwidget = this->Internal->RenderWidgets[view];
       layout->addWidget(vtkwidget, y, x);
       }
     }
-  
   currentViews->Delete();
-
 }
 
 //-----------------------------------------------------------------------------
@@ -249,11 +248,12 @@ vtkImageData* pqComparativeRenderView::captureImage(int magnification)
 
   // Get the collection of view proxies
   int dimensions[2];
-  vtkCollection* currentViews =  vtkCollection::New();
-  this->getComparativeRenderViewProxy()->GetViews(currentViews);
-  this->getComparativeRenderViewProxy()->GetDimensions(dimensions);
+  vtkSMComparativeViewProxy* compView = this->getComparativeRenderViewProxy();
 
-  if (this->getComparativeRenderViewProxy()->GetOverlayAllComparisons())
+  vtkCollection* currentViews =  vtkCollection::New();
+  compView->GetViews(currentViews);
+  vtkSMPropertyHelper( compView, "Dimensions").Get(dimensions, 2);
+  if (vtkSMPropertyHelper(compView, "OverlayAllComparisons").GetAsInt() !=0)
     {
     dimensions[0] = dimensions[1] = 1;
     }
@@ -274,12 +274,11 @@ vtkImageData* pqComparativeRenderView::captureImage(int magnification)
         currentViews->GetItemAsObject(index));
       if (view)
         {
-#ifdef FIXME
         // There seems to be a bug where offscreen rendering
         // does not work with comparative view screenshots, so we
         // will force offscreen rendering off... FIXME!
-        view->SetUseOffscreenRenderingForScreenshots(0);
-#endif
+        vtkSMPropertyHelper(view, "UseOffscreenRenderingForScreenshots").Set(0);
+
         // Capture the image
         vtkImageData * image = view->CaptureWindow(magnification);
 

@@ -144,7 +144,7 @@ public:
   /// view. This is a convenience method, it gets
   /// the pqDisplayPolicy object from the pqApplicationCore
   /// are queries it.
-  virtual bool canDisplay(pqOutputPort* opPort) const =0;
+  virtual bool canDisplay(pqOutputPort* opPort) const;
 
   /// The annotation link used on representations to share the selection
   /// and annotations. This is only used in views aware of this link.
@@ -218,6 +218,12 @@ private slots:
   /// Called when a new representation is registered by the ServerManagerModel.
   /// We check if the representation belongs to this view.
   void representationCreated(pqRepresentation* repr);
+
+  /// This is called when the timer in render() times out. We test if the
+  /// current moment is a reasonable moment to render and if so, call
+  /// forceRender(). If there are any pending progress events, then we treat the
+  /// moment as not a "reasonable moment" to render and defer the render again.
+  void tryRender();
 
 protected:
   /// Constructor:

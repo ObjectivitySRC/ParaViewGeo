@@ -79,6 +79,7 @@
   <Proxy group="filters" name="CellDerivatives"/>
   <Proxy group="filters" name="CleanPolyData" />
   <Proxy group="filters" name="CleanUnstructuredGrid" />
+  <Proxy group="filters" name="CleanUnstructuredGridCells" />
   <Proxy group="filters" name="Clip" />
   <Proxy group="filters" name="ClipClosedSurface" />
   <Proxy group="filters" name="Contour" />
@@ -105,6 +106,7 @@
   <Proxy group="filters" name="ExtractHierarchicalDataSets" />
   <Proxy group="filters" name="FeatureEdges" />
   <Proxy group="filters" name="FFTSelectionOverTime" />
+  <Proxy group="filters" name="GaussianSplatter"/>
   <Proxy group="filters" name="GenerateIdScalars"/>
   <Proxy group="filters" name="Glyph" />
   <Proxy group="filters" name="Gradient" />
@@ -175,4 +177,10 @@
   <Proxy group="filters" name="TableToPolyData" />
   <Proxy group="filters" name="TableToStructuredGrid" />
   <Proxy group="filters" name="IsoVolume" />
+
+  <Proxy group="filters" name="GenericClip" />
+  <Proxy group="filters" name="GenericContour" />
+  <Proxy group="filters" name="GenericCut" />
+  <Proxy group="filters" name="GenericStreamTracer" />
+  <Proxy group="filters" name="GenericGeometryFilter" />
 </ParaViewFilters>

@@ -4,6 +4,7 @@
     list i.e. if two readers can read the same extension, then the reader
     apperaring later will be tried first when reading the file.
   -->
+  <ProxyManager type="reader" />
   <Proxy group="sources" name="LSDynaReader" />
   <Proxy group="sources" name="PVDReader" />
   <Proxy group="sources" name="XMLPolyDataReader"/>
@@ -65,6 +66,8 @@
   <Proxy group="sources" name="ParticleReader" />
   <Proxy group="sources" name="VPICReader" />
   <Proxy group="sources" name="WindBladeReader" />
+  <Proxy group="sources" name="NetCDFCAMReader" />
   <Proxy group="sources" name="NetCDFPOPReader" />
+  <Proxy group="sources" name="PNetCDFPOPReader" />
   <Proxy group="sources" name="MPASReader" />
 </ParaViewReaders>

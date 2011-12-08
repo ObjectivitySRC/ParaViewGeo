@@ -32,7 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pqDisplayRepresentationWidget.h"
 #include "ui_pqDisplayRepresentationWidget.h"
 
-#include "vtkSMEnumerationDomain.h"
 #include "vtkSMIntVectorProperty.h"
 
 #include<QPointer>
@@ -68,11 +67,11 @@ pqDisplayRepresentationWidget::pqDisplayRepresentationWidget(
 
   QObject::connect(this->Internal->Adaptor, 
     SIGNAL(currentTextChanged(const QString&)),
-    this, SLOT(onCurrentTextChanged(const QString&)), Qt::QueuedConnection);
+    this, SLOT(onCurrentTextChanged(const QString&)));
 
   QObject::connect(this->Internal->Adaptor, 
     SIGNAL(currentTextChanged(const QString&)),
-    this, SIGNAL(currentTextChanged(const QString&)), Qt::QueuedConnection);
+    this, SIGNAL(currentTextChanged(const QString&)));
 
   QObject::connect(&this->Internal->Links,
     SIGNAL(qtWidgetChanged()),
@@ -166,10 +165,7 @@ void pqDisplayRepresentationWidget::onQtWidgetChanged()
   int index = domainStrings.indexOf(text);
   if (index != -1)
     {
-    vtkSMEnumerationDomain* ed = vtkSMEnumerationDomain::SafeDownCast(
-      repProperty->GetDomain("enum"));
-    int representation = ed->GetEntryValue(index);
-    this->Internal->Display->setRepresentation(representation);
+    this->Internal->Display->setRepresentation(text);
     this->Internal->Links.blockSignals(true);
     //this->Internal->Links.accept();
     this->Internal->Links.blockSignals(false);

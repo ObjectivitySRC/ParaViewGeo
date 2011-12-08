@@ -180,7 +180,10 @@ QWidget* pqRenderViewBase::createWidget()
 #if defined(__APPLE__)
   if (this->AllowCaching)
     {
-    vtkwidget->setAutomaticImageCacheEnabled(true);
+    // Don't override the caching flag here. It is set correctly by
+    // pqQVTKWidget.  I don't know why this explicit marking cached dirty was
+    // done. But in case it's needed for streaming view, I am letting it be.
+    // vtkwidget->setAutomaticImageCacheEnabled(true);
 
     // help the QVTKWidget know when to clear the cache
     this->getConnector()->Connect(
@@ -237,8 +240,6 @@ void pqRenderViewBase::initializeAfterObjectsCreated()
   renderViewProxy = vtkSMRenderViewProxy::SafeDownCast(this->getProxy());
   if( renderViewProxy != NULL )
     {
-    pqProgressManager* progressManager;
-    progressManager = pqApplicationCore::instance()->getProgressManager();
     // Generate Signals when interaction event occurs ??? Here ???
     this->getConnector()->Connect(
         renderViewProxy->GetInteractor(),
@@ -294,7 +295,7 @@ void pqRenderViewBase::setDefaultPropertyValues()
   proxy->UpdateVTKObjects();
 
   this->restoreSettings(false);
-  this->resetCamera();
+  proxy->InvokeCommand("ResetCamera");
 }
 
 //-----------------------------------------------------------------------------
@@ -386,15 +387,13 @@ vtkSMProxy* pqRenderViewBase::createCameraManipulator(
     strManipName = "None";
     }
 
-  vtkSMProxyManager* pxm = vtkSMProxyManager::GetProxyManager();
-  vtkIdType cid = this->getServer()->GetConnectionID();
+  vtkSMProxyManager* pxm = this->proxyManager();
   vtkSMProxy *manip = pxm->NewProxy("cameramanipulators", 
     strManipName.toAscii().data());
   if(!manip)
     {
     return NULL;
     }
-  manip->SetConnectionID(cid);
   pqSMAdaptor::setElementProperty(manip->GetProperty("Button"), mouse);
   pqSMAdaptor::setElementProperty(manip->GetProperty("Shift"), shift);
   pqSMAdaptor::setElementProperty(manip->GetProperty("Control"), control);
@@ -459,7 +458,6 @@ static const char* pqGlobalRenderViewModuleMiscSettings [] = {
   };
 
 static const char* pqRenderViewModuleMiscSettings [] = {
-  "CacheLimit",
   "CameraParallelProjection",
   "CenterAxesVisibility",
   "OrientationAxesInteractivity",
@@ -697,6 +695,11 @@ bool pqRenderViewBase::eventFilter(QObject* caller, QEvent* e)
 //-----------------------------------------------------------------------------
 bool pqRenderViewBase::canDisplay(pqOutputPort* opPort) const
 {
+  if(this->Superclass::canDisplay(opPort))
+    {
+    return true;
+    }
+
   pqPipelineSource* source = opPort? opPort->getSource() :0;
   vtkSMSourceProxy* sourceProxy = source? 
     vtkSMSourceProxy::SafeDownCast(source->getProxy()) : 0;

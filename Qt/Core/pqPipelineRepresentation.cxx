@@ -42,20 +42,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vtkEventQtSlotConnect.h"
 #include "vtkGeometryRepresentation.h"
 #include "vtkMath.h"
+#include "vtkPVArrayInformation.h"
+#include "vtkPVDataInformation.h"
+#include "vtkPVDataSetAttributesInformation.h"
+#include "vtkPVTemporalDataInformation.h"
 #include "vtkProcessModule.h"
 #include "vtkProperty.h"
-#include "vtkPVArrayInformation.h"
-#include "vtkPVDataSetAttributesInformation.h"
-#include "vtkPVGeometryInformation.h"
-#include "vtkPVTemporalDataInformation.h"
-#include "vtkScalarsToColors.h"
-#include "vtkSmartPointer.h"
 #include "vtkSMDoubleVectorProperty.h"
 #include "vtkSMGlobalPropertiesManager.h"
+#include "vtkSMPVRepresentationProxy.h"
 #include "vtkSMPropertyHelper.h"
 #include "vtkSMProxyManager.h"
 #include "vtkSMProxyProperty.h"
-#include "vtkSMPVRepresentationProxy.h"
+#include "vtkScalarsToColors.h"
+#include "vtkSmartPointer.h"
 
 // Qt includes.
 #include <QList>
@@ -202,7 +202,7 @@ vtkSMProxy* pqPipelineRepresentation::getScalarOpacityFunctionProxy()
 //-----------------------------------------------------------------------------
 pqScalarOpacityFunction* pqPipelineRepresentation::getScalarOpacityFunction()
 {
-  if(this->getRepresentationType() == vtkSMPVRepresentationProxy::VOLUME)
+  if (this->getRepresentationType().compare("Volume", Qt::CaseInsensitive) == 0)
     {
     pqServerManagerModel* smmodel = 
       pqApplicationCore::instance()->getServerManagerModel();
@@ -221,12 +221,9 @@ void pqPipelineRepresentation::createHelperProxies()
 
   if (proxy->GetProperty("ScalarOpacityFunction"))
     {
-    vtkSMProxyManager* pxm = vtkSMProxyManager::GetProxyManager();
+    vtkSMProxyManager* pxm = this->proxyManager();
     vtkSMProxy* opacityFunction = 
       pxm->NewProxy("piecewise_functions", "PiecewiseFunction");
-    opacityFunction->SetConnectionID(this->getServer()->GetConnectionID());
-    opacityFunction->SetServers(
-      vtkProcessModule::CLIENT|vtkProcessModule::RENDER_SERVER);
     opacityFunction->UpdateVTKObjects();
 
     this->addHelperProxy("ScalarOpacityFunction", opacityFunction);
@@ -294,7 +291,7 @@ void pqPipelineRepresentation::setDefaultPropertyValues()
 
   // Set up some global property links by default.
   vtkSMGlobalPropertiesManager* globalPropertiesManager =
-    pqApplicationCore::instance()->getGlobalPropertiesManager();
+      pqApplicationCore::instance()->getGlobalPropertiesManager();
   // Note that the representation created for the 2D view doesn't even have
   // these properties.
   globalPropertiesManager->SetGlobalPropertyLink(
@@ -351,8 +348,12 @@ void pqPipelineRepresentation::setDefaultPropertyValues()
       {
       // Use slice representation by default for 2D image data.
       int* ext = dataInfo->GetExtent();
-      if (ext[0] == ext[1] || ext[2] == ext[3] || ext[4] == ext[5])
+      if (
+        (ext[0] == ext[1] || ext[2] == ext[3] || ext[4] == ext[5]) &&
+        /* slice not supported for composite datasets */
+        (dataInfo->GetCompositeDataSetType()==-1 ))
         {
+
         pqSMAdaptor::setEnumerationProperty(repr->GetProperty("Representation"),
           "Slice");
         }
@@ -388,15 +389,15 @@ void pqPipelineRepresentation::setDefaultPropertyValues()
     qobject_cast<pqPipelineRepresentation*>(
       this->getRepresentationForUpstreamSource());
   if (upstreamDisplay &&
-    vtkSMPropertyHelper(repr, "Representation").GetAsInt() == vtkSMPVRepresentationProxy::OUTLINE)
+    this->getRepresentationType().compare("Outline", Qt::CaseInsensitive) == 0)
     {
     // try to preserve the upstream representation type (except for volume
     // rendering).
-    int reprType = upstreamDisplay->getRepresentationType();
-    if (reprType != vtkSMPVRepresentationProxy::VOLUME)
+    if (upstreamDisplay->getRepresentationType().compare("Volume",
+        Qt::CaseInsensitive) != 0)
       {
       pqSMAdaptor::setElementProperty(repr->GetProperty("Representation"),
-        reprType);
+        upstreamDisplay->getRepresentationType());
       }
     }
 
@@ -431,6 +432,8 @@ void pqPipelineRepresentation::setDefaultPropertyValues()
     == "Outline")
     {
     // no need to determine scalar coloring for outline representation.
+    // just ensure that the color is empty (BUG #12180).
+    vtkSMPropertyHelper(repr, "ColorArrayName", true).Set((char*)NULL);
     return;
     }
 
@@ -542,6 +545,13 @@ void pqPipelineRepresentation::setDefaultPropertyValues()
 
   // Color by property.
   this->colorByArray(NULL, 0);
+
+  pqSettings *settings = pqApplicationCore::instance()->settings();
+  if(repr->GetProperty("AllowSpecularHighlightingWithScalarColoring"))
+    {
+    vtkSMPropertyHelper(repr, "AllowSpecularHighlightingWithScalarColoring").Set(
+      settings->value("allowSpecularHighlightingWithScalarColoring").toBool());
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -701,52 +711,30 @@ void pqPipelineRepresentation::colorByArray(const char* arrayname, int fieldtype
 }
 
 //-----------------------------------------------------------------------------
-int pqPipelineRepresentation::getRepresentationType() const
+QString pqPipelineRepresentation::getRepresentationType() const
 {
   vtkSMProxy* repr = this->getRepresentationProxy();
-  vtkSMPVRepresentationProxy* pvRepr = 
-    vtkSMPVRepresentationProxy::SafeDownCast(repr);
-  if (pvRepr)
+  if (repr && repr->GetProperty("Representation"))
     {
-    return pvRepr->GetRepresentation();
+    // this handles enumeration domains as well.
+    return vtkSMPropertyHelper(repr, "Representation").GetAsString(0);
     }
 
   const char* xmlname = repr->GetXMLName();
-  if (strcmp(xmlname, "SurfaceRepresentation") == 0)
-    {
-    int reprType = 
-      pqSMAdaptor::getElementProperty(repr->GetProperty("Representation")).toInt();
-    switch (reprType)
-      {
-    case VTK_POINTS:
-      return vtkSMPVRepresentationProxy::POINTS;
-
-    case VTK_WIREFRAME:
-      return vtkSMPVRepresentationProxy::WIREFRAME;
-
-    case vtkGeometryRepresentation::SURFACE_WITH_EDGES:
-      return vtkSMPVRepresentationProxy::SURFACE_WITH_EDGES;
-
-    case VTK_SURFACE:
-    default:
-      return vtkSMPVRepresentationProxy::SURFACE;
-      }
-    }
-  
   if (strcmp(xmlname, "OutlineRepresentation") == 0)
     {
-    return vtkSMPVRepresentationProxy::OUTLINE;
+    return "Outline";
     }
 
   if (strcmp(xmlname, "UnstructuredGridVolumeRepresentation") == 0 ||
     strcmp(xmlname, "UniformGridVolumeRepresentation") == 0)
     {
-    return vtkSMPVRepresentationProxy::VOLUME;
+    return "Volume";
     }
 
   if (strcmp(xmlname, "ImageSliceRepresentation") == 0)
     {
-    return vtkSMPVRepresentationProxy::SLICE;
+    return "Slice";
     }
 
   qCritical() << "pqPipelineRepresentation created for a incorrect proxy : " << xmlname;
@@ -929,10 +917,10 @@ QList<QString> pqPipelineRepresentation::getColorFields()
     return ret;
     }
 
-  int representation = this->getRepresentationType();
+  QString representation = this->getRepresentationType();
 
-  if (representation != vtkSMPVRepresentationProxy::VOLUME && 
-    representation != vtkSMPVRepresentationProxy::SLICE)
+  if (representation.compare("Volume", Qt::CaseInsensitive) != 0 &&
+    representation.compare("Slice", Qt::CaseInsensitive) != 0)
     {
     // Actor color is one way to color this part.
     // Not applicable when volume rendering.
@@ -962,16 +950,15 @@ QList<QString> pqPipelineRepresentation::getColorFields()
       dataSetType = dataInfo->GetDataSetType();// get data set type
       }
 
-    if(representation != vtkSMPVRepresentationProxy::VOLUME || (
-       representation == vtkSMPVRepresentationProxy::VOLUME &&
-       dataSetType != VTK_UNIFORM_GRID && 
-       dataSetType != VTK_STRUCTURED_POINTS &&
-       dataSetType != VTK_IMAGE_DATA ))
+    if (representation.compare("Volume", Qt::CaseInsensitive) != 0 || (
+        dataSetType != VTK_UNIFORM_GRID &&
+        dataSetType != VTK_STRUCTURED_POINTS &&
+        dataSetType != VTK_IMAGE_DATA ))
       {
       for(int i=0; i<cellinfo->GetNumberOfArrays(); i++)
         {
         vtkPVArrayInformation* info = cellinfo->GetArrayInformation(i);
-        if (representation == vtkSMPVRepresentationProxy::VOLUME &&
+        if (representation.compare("Volume", Qt::CaseInsensitive) == 0 &&
           info->GetNumberOfComponents() != 1)
           {
           // Skip vectors when volumerendering.
@@ -988,12 +975,12 @@ QList<QString> pqPipelineRepresentation::getColorFields()
   // get point arrays (only when not in outline mode.
   vtkPVDataSetAttributesInformation* pointinfo = 
      geomInfo->GetPointDataInformation();
-  if (pointinfo && representation != vtkSMPVRepresentationProxy::OUTLINE)
+  if (pointinfo && representation.compare("Outline", Qt::CaseInsensitive) != 0)
     {
     for(int i=0; i<pointinfo->GetNumberOfArrays(); i++)
       {
       vtkPVArrayInformation* info = pointinfo->GetArrayInformation(i);
-      if (representation == vtkSMPVRepresentationProxy::VOLUME &&
+      if (representation.compare("Volume", Qt::CaseInsensitive) == 0 &&
         info->GetNumberOfComponents() != 1)
         {
         // Skip vectors when volumerendering.
@@ -1193,11 +1180,10 @@ QString pqPipelineRepresentation::getColorField(bool raw)
 }
 
 //-----------------------------------------------------------------------------
-void pqPipelineRepresentation::setRepresentation(int representation)
+void pqPipelineRepresentation::setRepresentation(const QString& representation)
 {
   vtkSMRepresentationProxy* repr = this->getRepresentationProxy();
-  pqSMAdaptor::setElementProperty(
-    repr->GetProperty("Representation"), representation);
+  vtkSMPropertyHelper(repr, "Representation").Set(representation.toAscii().data());
   repr->UpdateVTKObjects();
   this->onRepresentationChanged();
 }
@@ -1211,9 +1197,9 @@ void pqPipelineRepresentation::onRepresentationChanged()
     return;
     }
 
-  int reprType = this->getRepresentationType();
-  if (reprType != vtkSMPVRepresentationProxy::VOLUME  &&
-    reprType != vtkSMPVRepresentationProxy::SLICE)
+  QString reprType = this->getRepresentationType();
+  if (reprType.compare("Volume", Qt::CaseInsensitive) != 0 &&
+    reprType.compare("Slice", Qt::CaseInsensitive) != 0)
     {
     // Nothing to do here.
     return;
@@ -1225,7 +1211,7 @@ void pqPipelineRepresentation::onRepresentationChanged()
     {
     qCritical() << 
       "Cannot volume render since no point (or cell) data available.";
-    this->setRepresentation(vtkSMPVRepresentationProxy::OUTLINE);
+    this->setRepresentation("Outline");
     return;
     }
 

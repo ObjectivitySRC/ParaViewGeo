@@ -44,6 +44,7 @@ class QHBoxLayout;
 
 class pqDataRepresentation;
 class pqPipelineRepresentation;
+class pqTriggerOnIdleHelper;
 class vtkEventQtSlotConnect;
 
 /// Provides a standard user interface for selecting among a collection 
@@ -107,9 +108,9 @@ private slots:
   /// Called when any important property on the display changes.
   /// This updates the selected value.
   void updateGUI();
-  void needReloadGUI();
   void updateComponents();
 
+  void reloadGUIInternal();
 private:
   /// Converts a variable type and name into a packed string representation 
   /// that can be used with a combo box.
@@ -127,6 +128,7 @@ private:
   vtkEventQtSlotConnect* VTKConnect;
   QPointer<pqPipelineRepresentation> Representation;
   QList<QString> AvailableArrays;
+  pqTriggerOnIdleHelper* ReloadGUIHelper;
 };
 
 #endif

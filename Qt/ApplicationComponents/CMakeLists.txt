@@ -52,7 +52,6 @@ SET (MOC_HEADERS
   pqFixPathsInStateFilesBehavior.h
   pqHelpReaction.h
   pqIgnoreSourceTimeReaction.h
-  pqUpdateProxyDefinitionsBehavior.h
   pqLoadDataReaction.h
   pqLoadStateReaction.h
   pqMainControlsToolbar.h
@@ -105,7 +104,6 @@ SET (UI_FILES
   Resources/UI/pqAxesToolbar.ui
   Resources/UI/pqCameraToolbar.ui
   Resources/UI/pqColorToolbar.ui
-  Resources/UI/pqCopyReactionDialog.ui
   Resources/UI/pqDefaultMainWindow.ui
   Resources/UI/pqEditMenuBuilder.ui
   Resources/UI/pqFileMenuBuilder.ui
@@ -186,8 +184,6 @@ SET (SOURCE_FILES
   pqHelpReaction.h
   pqIgnoreSourceTimeReaction.cxx
   pqIgnoreSourceTimeReaction.h
-  pqUpdateProxyDefinitionsBehavior.cxx
-  pqUpdateProxyDefinitionsBehavior.h
   pqLoadDataReaction.cxx
   pqLoadDataReaction.h
   pqLoadStateReaction.cxx

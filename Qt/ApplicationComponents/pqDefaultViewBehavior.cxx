@@ -38,7 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pqServer.h"
 #include "pqServerManagerModel.h"
 #include "pqSettings.h"
-#include "vtkProcessModule.h"
+#include "vtkSMSession.h"
 #include "vtkPVDisplayInformation.h"
 
 #include <QMessageBox>
@@ -59,10 +59,9 @@ void pqDefaultViewBehavior::onServerCreation(pqServer* server)
 
   // Check if it is possible to access display on the server. If not, we show a
   // message.
-  vtkProcessModule* pm = vtkProcessModule::GetProcessModule();
   vtkPVDisplayInformation* di = vtkPVDisplayInformation::New();
-  pm->GatherInformation(server->GetConnectionID(),
-    vtkProcessModule::RENDER_SERVER, di, pm->GetProcessModuleID());
+  server->session()->GatherInformation(
+    vtkSMSession::RENDER_SERVER, di, 0);
   if (!di->GetCanOpenDisplay())
     {
     QMessageBox::warning(pqCoreUtilities::mainWidget(),
@@ -78,10 +77,7 @@ void pqDefaultViewBehavior::onServerCreation(pqServer* server)
   if (curView != "None" && !curView.isEmpty()) 
     {
     // When a server is created, we create a new render view for it.
-    if (pqView* view = core->getObjectBuilder()->createView(curView, server))
-      {
-      view->render();
-      }
+    core->getObjectBuilder()->createView(curView, server);
     }
 
   // Show warning dialogs before server times out.

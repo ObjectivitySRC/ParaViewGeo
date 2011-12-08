@@ -44,7 +44,6 @@
 #include "vtkPVDataInformation.h"
 #include "vtkPVDataSetAttributesInformation.h"
 #include "vtkSelectionNode.h"
-#include "vtkSMFileSeriesReaderProxy.h"
 #include "vtkSMIdTypeVectorProperty.h"
 #include "vtkSMIntVectorProperty.h"
 #include "vtkSMOutputPort.h"
@@ -986,7 +985,6 @@ void pqSierraPlotToolsManager::slotPlotDialogAccepted()
   if (this->Internal->plotGUI->areVariablesSelected())
     {
     QList<QListWidgetItem *> selectedItems = this->Internal->plotGUI->getSelectedItems();
-    QList<QListWidgetItem *>::iterator iter = selectedItems.begin();
 
     if (! this->createPlotOverTime())
       {

@@ -32,22 +32,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pqApplicationOptions.h"
 #include "ui_pqApplicationOptions.h"
 
-#include "vtkSMProxyManager.h"
-#include "vtkSMProxyDefinitionIterator.h"
-#include "vtkSMPropertyHelper.h"
-#include "vtkProcessModuleAutoMPI.h"
-
+#include "pqActiveObjects.h"
 #include "pqAnimationScene.h"
 #include "pqApplicationCore.h"
 #include "pqChartRepresentation.h"
+#include "pqInterfaceTracker.h"
 #include "pqObjectInspectorWidget.h"
+#include "pqPipelineRepresentation.h"
 #include "pqPluginManager.h"
 #include "pqRenderView.h"
+#include "pqScalarsToColors.h"
 #include "pqServer.h"
+#include "pqServerManagerModel.h"
 #include "pqSetName.h"
 #include "pqSettings.h"
 #include "pqViewModuleInterface.h"
-#include "pqScalarsToColors.h"
+#include "vtkProcessModuleAutoMPI.h"
+#include "vtkPVConfig.h"
+#include "vtkPVProxyDefinitionIterator.h"
+#include "vtkSMPropertyHelper.h"
+#include "vtkSMProxyDefinitionManager.h"
+#include "vtkSMProxyManager.h"
 
 #include <QMenu>
 #include <QDoubleValidator>
@@ -73,7 +78,7 @@ pqApplicationOptions::pqApplicationOptions(QWidget *widgetParent)
   this->Internal->DefaultViewType->addItem("None", "None");
   // Get available view types.
   QObjectList ifaces =
-    pqApplicationCore::instance()->getPluginManager()->interfaces();
+    pqApplicationCore::instance()->interfaceTracker()->interfaces();
   foreach(QObject* iface, ifaces)
     {
     pqViewModuleInterface* vi = qobject_cast<pqViewModuleInterface*>(iface);
@@ -123,6 +128,15 @@ pqApplicationOptions::pqApplicationOptions(QWidget *widgetParent)
   QObject::connect(this->Internal->AutoMPI,
                   SIGNAL(toggled(bool)),
                   this, SIGNAL(changesAvailable()));
+  QObject::connect(this->Internal->StrictLoadBalancing,
+                   SIGNAL(toggled(bool)),
+                   this, SIGNAL(changesAvailable()));
+  QObject::connect(this->Internal->SpecularHighlighting,
+                   SIGNAL(toggled(bool)),
+                   this, SIGNAL(changesAvailable()));
+  QObject::connect(this->Internal->DisableSplashScreen,
+                   SIGNAL(toggled(bool)),
+                   this, SIGNAL(changesAvailable()));
 
   QObject::connect(this->Internal->ForegroundColor,
                   SIGNAL(chosenColorChanged(const QColor&)),
@@ -177,16 +191,44 @@ pqApplicationOptions::pqApplicationOptions(QWidget *widgetParent)
                    SIGNAL(clicked(bool)),
                    this, SLOT(onChartResetHiddenSeries()));
 
+#if defined(PARAVIEW_USE_MPI)
+  QObject::connect(&pqActiveObjects::instance(),
+    SIGNAL(serverChanged(pqServer*)),
+    this, SLOT(updatePalettes()));
+#else
+  this->Internal->LabelMultiCore->setEnabled(false);
+  this->Internal->AutoMPI->setEnabled(false);
+#endif
+
+  this->updatePalettes();
+}
+
+//-----------------------------------------------------------------------------
+pqApplicationOptions::~pqApplicationOptions()
+{
+  delete this->Internal;
+}
+
+//-----------------------------------------------------------------------------
+void pqApplicationOptions::updatePalettes()
+{
+  vtkSMProxyManager* pxm = vtkSMProxyManager::GetProxyManager();
+  if (pxm->GetSession() == NULL)
+    {
+    // cannot update the definitions since no valid session is present.
+    return;
+    }
+
+  delete this->Internal->Palette->menu();
   QMenu* paletteMenu = new QMenu(this->Internal->Palette)
     << pqSetName("paletteMenu");
   this->Internal->Palette->setMenu(paletteMenu);
 
-  vtkSMProxyManager* pxm = vtkSMProxyManager::GetProxyManager();
-  vtkSMProxyDefinitionIterator* iter = vtkSMProxyDefinitionIterator::New();
-  iter->SetModeToOneGroup();
-  for (iter->Begin("palettes"); !iter->IsAtEnd(); iter->Next())
+  vtkPVProxyDefinitionIterator* iter =
+    pxm->GetProxyDefinitionManager()->NewSingleGroupIterator("palettes");
+  for (iter->InitTraversal(); !iter->IsDoneWithTraversal(); iter->GoToNextItem())
     {
-    vtkSMProxy* prototype = pxm->GetPrototypeProxy("palettes", iter->GetKey());
+    vtkSMProxy* prototype = pxm->GetPrototypeProxy("palettes", iter->GetProxyName());
     if (prototype)
       {
       paletteMenu->addAction(prototype->GetXMLLabel())
@@ -194,18 +236,8 @@ pqApplicationOptions::pqApplicationOptions(QWidget *widgetParent)
       }
     }
   iter->Delete();
-
   QObject::connect(paletteMenu, SIGNAL(triggered(QAction*)),
-                   this, SLOT(onPalette(QAction*)));
-
-  vtkProcessModuleAutoMPI::
-    SetUseMulticoreProcessors (this->Internal->AutoMPI->isTristate());
-}
-
-//-----------------------------------------------------------------------------
-pqApplicationOptions::~pqApplicationOptions()
-{
-  delete this->Internal;
+    this, SLOT(onPalette(QAction*)));
 }
 
 //-----------------------------------------------------------------------------
@@ -261,9 +293,20 @@ void pqApplicationOptions::applyChanges()
   bool crashRecovery = this->Internal->CrashRecovery->isChecked();
   settings->setValue("crashRecovery",crashRecovery);
 
+#if defined(PARAVIEW_USE_MPI)
   bool autoMPI = this->Internal->AutoMPI->isChecked();
   settings->setValue("autoMPI",autoMPI);
   vtkProcessModuleAutoMPI::SetUseMulticoreProcessors(autoMPI);
+#endif
+
+  bool specularHighlighting = this->Internal->SpecularHighlighting->isChecked();
+  settings->setValue("allowSpecularHighlightingWithScalarColoring", specularHighlighting);
+
+  bool strictLoadBalancing = this->Internal->StrictLoadBalancing->isChecked();
+  settings->setValue("strictLoadBalancing", strictLoadBalancing);
+
+  bool disableSpashScreen = this->Internal->DisableSplashScreen->isChecked();
+  settings->setValue("disableSplashScreen", disableSpashScreen);
 
   settings->setValue("GlobalProperties/ForegroundColor",
     this->Internal->ForegroundColor->chosenColor());
@@ -291,6 +334,21 @@ void pqApplicationOptions::applyChanges()
   pqChartRepresentation::setHiddenSeriesSetting(hidden);
 
   pqApplicationCore::instance()->loadGlobalPropertiesFromSettings();
+
+  pqServerManagerModel *serverManagerModel = pqApplicationCore::instance()->
+    getServerManagerModel();
+
+  foreach(pqPipelineRepresentation *representation, serverManagerModel->findItems<pqPipelineRepresentation*>())
+    {
+    vtkSMProxy *proxy = representation->getProxy();
+    if(proxy->GetProperty("AllowSpecularHighlightingWithScalarColoring"))
+      {
+      vtkSMPropertyHelper(representation->getProxy(), "AllowSpecularHighlightingWithScalarColoring").Set(
+        settings->value("allowSpecularHighlightingWithScalarColoring").toBool());
+
+      proxy->UpdateVTKObjects();
+      }
+    }
 
   // render all views.
   pqApplicationCore::instance()->render();
@@ -325,10 +383,19 @@ void pqApplicationOptions::resetChanges()
   this->Internal->CrashRecovery->setChecked(
     settings->value("crashRecovery", false).toBool());
 
+#if defined(PARAVIEW_USE_MPI)
   this->Internal->AutoMPI->setChecked(
     settings->value("autoMPI", false).toBool());
-  vtkProcessModuleAutoMPI::
-    SetUseMulticoreProcessors(this->Internal->AutoMPI->isTristate());
+#endif
+
+  this->Internal->SpecularHighlighting->setChecked(
+    settings->value("allowSpecularHighlightingWithScalarColoring", false).toBool());
+
+  this->Internal->StrictLoadBalancing->setChecked(
+    settings->value("strictLoadBalancing", false).toBool());
+
+  this->Internal->DisableSplashScreen->setChecked(
+    settings->value("disableSplashScreen", false).toBool());
 
   this->Internal->ForegroundColor->setChosenColor(
     settings->value("GlobalProperties/ForegroundColor",
