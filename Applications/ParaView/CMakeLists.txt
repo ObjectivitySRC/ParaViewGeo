@@ -47,7 +47,7 @@ endif (CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
 #------------------------------------------------------------------------------
 # Build the client
 build_paraview_client(paraview
-    APPLICATION_NAME "ParaView"
+    APPLICATION_NAME "ParaViewGeo"
     TITLE "Objectivity ParaViewGeo ${PARAVIEW_VERSION_FULL} ${PARAVIEW_BUILD_ARCHITECTURE}-bit"
     ORGANIZATION  "ParaView"
     VERSION_MAJOR ${PARAVIEW_VERSION_MAJOR} 
