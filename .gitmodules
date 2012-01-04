@@ -18,4 +18,4 @@
 	url = git://paraview.org/VisItBridge.git
 [submodule "Plugins/PVGPlugins"]
 	path = Plugins/PVGPlugins
-	url = git://github.com/ObjectivitySRC/ParaViewGeoPlugins.git
+	url = git://github.com/ObjectivitySRC/PVGlugins.git
