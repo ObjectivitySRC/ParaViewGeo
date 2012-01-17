@@ -298,8 +298,8 @@ build_paraview_client_cpack_config_init(
     VERSION_MINOR "${PARAVIEW_VERSION_MINOR}"
     VERSION_PATCH "${_paraview_version_patch_full}"
     DESCRIPTION "ParaView is a scientific visualization tool"
-    LICENSE_FILE "${ParaView_SOURCE_DIR}/License_v1.2.txt"
-    DESCRIPTION_FILE "${ParaView_SOURCE_DIR}/License_v1.2.txt"
+    LICENSE_FILE "${ParaView_SOURCE_DIR}/PVG_LICENSE.txt"
+    DESCRIPTION_FILE "${ParaView_SOURCE_DIR}/PVG_LICENSE.txt"
     PACKAGE_EXECUTABLES "paraview;ParaView"
 )
 
